@@ -19,6 +19,11 @@ export default function CreateStorefrontPage() {
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
+  // Auto-fill from Google state
+  const [googleUrlInput, setGoogleUrlInput] = useState('');
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
+  const [autoFillSuccess, setAutoFillSuccess] = useState<string | null>(null);
+
   // Step 1: Business Identity
   const [businessName, setBusinessName] = useState('');
   const [slug, setSlug] = useState('');
@@ -32,6 +37,45 @@ export default function CreateStorefrontPage() {
   const [state, setState] = useState(activeTown.state);
   const [accentColor, setAccentColor] = useState('#f59e0b');
   const [coverImageUrl, setCoverImageUrl] = useState('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&auto=format&fit=crop&q=80');
+
+  const handleAutoFillFromGoogle = async (presetQuery?: string) => {
+    const query = (presetQuery !== undefined ? presetQuery : googleUrlInput).trim();
+    if (!query) return;
+
+    setIsAutoFilling(true);
+    setAutoFillSuccess(null);
+
+    try {
+      const res = await fetch('/api/extract-business', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urlOrQuery: query }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.business) {
+          const biz = data.business;
+          setBusinessName(biz.name);
+          setSlug(biz.name.toLowerCase().replace(/[^a-z0-9]/g, '-'));
+          setTagline(`Official Online Storefront for ${biz.name} in ${biz.town}, ${biz.state}`);
+          setDescription(biz.description || `${biz.name} offers premium local goods & foods with express delivery across ${biz.town}.`);
+          setLogoEmoji(biz.logoEmoji || '🏪');
+          if (biz.phone) setPhone(biz.phone);
+          if (biz.address) setAddress(biz.address);
+          setTown(biz.town);
+          setState(biz.state || 'NH');
+          setAccentColor(biz.accentColor || '#f59e0b');
+          setAutoFillSuccess(`Auto-filled details for "${biz.name}"!`);
+          playDeliveryChime();
+        }
+      }
+    } catch (err) {
+      console.warn('Auto-fill error:', err);
+    } finally {
+      setIsAutoFilling(false);
+    }
+  };
 
   // Step 2: Products / Menu Catalog
   const [products, setProducts] = useState<StorefrontProduct[]>([
@@ -253,6 +297,58 @@ export default function CreateStorefrontPage() {
               <div className="border-b border-white/5 pb-4">
                 <span className="text-[10px] font-mono uppercase text-amber-400">Step 1 of 3</span>
                 <h2 className="text-2xl font-black text-white uppercase">Business Brand & Identity</h2>
+              </div>
+
+              {/* Instant Auto-Fill from Google Search / Maps */}
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-400 text-xs font-bold font-mono uppercase">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Auto-Fill from Google Business Profile or Maps Link</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleAutoFillFromGoogle('Smoke World Ossipee')}
+                      className="text-[10px] text-amber-300 hover:text-white bg-white/5 px-2 py-0.5 rounded"
+                    >
+                      💨 Smoke World
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAutoFillFromGoogle('Pizza Barn Effingham')}
+                      className="text-[10px] text-amber-300 hover:text-white bg-white/5 px-2 py-0.5 rounded"
+                    >
+                      🍕 Pizza Barn
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={googleUrlInput}
+                    onChange={(e) => setGoogleUrlInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAutoFillFromGoogle(); }}
+                    placeholder="Paste Google Search link, Maps URL, or business name..."
+                    className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-400 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAutoFillFromGoogle()}
+                    disabled={isAutoFilling}
+                    className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase rounded-xl transition-all disabled:opacity-50 shrink-0 flex items-center gap-1.5"
+                  >
+                    <span>{isAutoFilling ? 'Extracting...' : 'Auto-Fill'}</span>
+                  </button>
+                </div>
+
+                {autoFillSuccess && (
+                  <p className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>{autoFillSuccess}</span>
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
