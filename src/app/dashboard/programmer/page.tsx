@@ -63,7 +63,7 @@ export default function NfcProgrammerPage() {
     googlePlaceId: 'ChIJb6eBq9f94okRGb_SmokeWorldOss',
     googleRating: 4.9,
     reviewsCount: 148,
-    googleReviewUrl: 'https://search.google.com/local/writereview?placeid=ChIJb6eBq9f94okRGb_SmokeWorldOss',
+    googleReviewUrl: 'https://www.google.com/search?q=smoke+world+ossipee',
     googleMapsUrl: 'https://www.google.com/search?q=smoke+world+ossipee',
     description: 'Premier regional smoke, vape, glass, tobacco accessories, and novelty shop located on Route 16 in Ossipee.',
     suggestedCardHeadline: 'Love your visit to Smoke World? Tap your phone to leave us a 5-star Google review!',

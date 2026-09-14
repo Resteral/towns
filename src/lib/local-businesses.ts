@@ -534,13 +534,17 @@ export function getBusinessesForTown(townName: string, state: string = 'NH'): Lo
 
 /**
  * Helper to generate official Google Review URLs from Place ID or Business Name
+ * Guarantees zero 404 errors by using Google Search review query when a synthetic Place ID is passed
  */
 export function buildGoogleReviewUrl(placeId?: string, businessName?: string, town?: string): string {
-  if (placeId && placeId.trim()) {
+  const isRealGooglePlaceId = placeId && placeId.startsWith('ChIJ') && !placeId.includes('_') && placeId.length >= 27;
+  if (isRealGooglePlaceId) {
     return `https://search.google.com/local/writereview?placeid=${placeId.trim()}`;
   }
-  const query = encodeURIComponent(`${businessName || ''} ${town || 'Effingham'} NH`);
-  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+  const cleanName = (businessName || 'Local Business').trim();
+  const cleanTown = (town || 'Ossipee').trim();
+  const query = encodeURIComponent(`${cleanName} ${cleanTown} NH`);
+  return `https://www.google.com/search?q=${query}`;
 }
 
 /**
