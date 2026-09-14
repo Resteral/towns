@@ -164,7 +164,7 @@ export default function HeroTapSimulator() {
                 </div>
 
                 <a
-                  href="https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4"
+                  href="https://www.google.com/search?q=Oasis+Coffee+Bakery+Effingham+NH"
                   target="_blank"
                   rel="noreferrer"
                   className="block w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20"

@@ -25,6 +25,16 @@ export default function TapRouterPage() {
   const [feedbackText, setFeedbackText] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  const getSafeReviewUrl = (c: NfcCardConfig | null) => {
+    if (!c) return 'https://www.google.com/search?q=Oasis+Coffee+Bakery+Effingham+NH';
+    if (c.googleReviewUrl && !c.googleReviewUrl.includes('search.google.com/local/writereview?placeid=ChIJ_') && !c.googleReviewUrl.includes('SmokeWorld') && !c.googleReviewUrl.includes('12345678')) {
+      return c.googleReviewUrl;
+    }
+    const cleanName = (c.businessName || 'Local Business').trim();
+    const cleanTown = (c.town || 'Effingham, NH').trim();
+    return `https://www.google.com/search?q=${encodeURIComponent(`${cleanName} ${cleanTown}`)}`;
+  };
+
   useEffect(() => {
     // Find matching card or fallback
     const foundCard = cards.find(c => c.id === cardId) || cards[0];
@@ -36,9 +46,8 @@ export default function TapRouterPage() {
         setIsRedirecting(true);
         recordTap(foundCard.id, 'direct_redirect');
         const timer = setTimeout(() => {
-          if (foundCard.googleReviewUrl) {
-            window.location.href = foundCard.googleReviewUrl;
-          }
+          const target = getSafeReviewUrl(foundCard);
+          window.location.href = target;
         }, 1000);
         return () => clearTimeout(timer);
       }
@@ -60,9 +69,8 @@ export default function TapRouterPage() {
       setIsRedirecting(true);
 
       setTimeout(() => {
-        if (card.googleReviewUrl) {
-          window.location.href = card.googleReviewUrl;
-        }
+        const target = getSafeReviewUrl(card);
+        window.location.href = target;
       }, 1400);
     } else {
       // 1-3 Stars: Negative Shield / Feedback
