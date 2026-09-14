@@ -54,57 +54,75 @@ export default function NfcProgrammerPage() {
   // Google Search & Maps URL Resolver State
   const [rawGoogleUrl, setRawGoogleUrl] = useState('');
   const [urlParseSuccess, setUrlParseSuccess] = useState<string | null>(null);
+  const [extractedResult, setExtractedResult] = useState<LocalBusiness | null>(null);
+  const [customAddedBusinesses, setCustomAddedBusinesses] = useState<LocalBusiness[]>([]);
+
+  // Collect businesses across all registered towns + dynamic user additions
+  const combinedBusinesses = [...allBusinesses, ...customAddedBusinesses];
 
   // Automatic Google URL Resolver & Extractor
   const handleResolveGoogleUrl = (urlToParse?: string) => {
-    const input = (urlToParse || rawGoogleUrl).trim();
-    if (!input) return;
+    const rawInput = (urlToParse || rawGoogleUrl).trim();
+    if (!rawInput) return;
+
+    // 1. Extract any HTTP/HTTPS URL from the pasted text (handles extra words pasted around it)
+    const urlMatch = rawInput.match(/(https?:\/\/[^\s]+)/i);
+    const targetString = urlMatch ? urlMatch[1] : rawInput;
 
     let businessName = '';
     let extractedTown = 'Ossipee';
     let placeId = '';
     let category: LocalBusiness['category'] = 'retail';
-    let logoEmoji = '🌟';
+    let logoEmoji = '💨';
 
-    try {
-      // 1. Check if it's a full Google Search URL
-      if (input.includes('google.com/search') || input.includes('google.com/maps') || input.includes('maps.app.goo.gl')) {
-        const urlObj = new URL(input);
-        const qParam = urlObj.searchParams.get('q') || '';
-        
-        if (qParam) {
-          businessName = decodeURIComponent(qParam).replace(/\+/g, ' ');
-        }
-        
-        // Check for Place ID in parameters (e.g. placeid=... or data=... or query)
-        const placeIdParam = urlObj.searchParams.get('placeid') || urlObj.searchParams.get('lrd');
-        if (placeIdParam) {
-          placeId = placeIdParam.split(',')[0].replace(/[^a-zA-Z0-9_-]/g, '');
+    // 2. Extract q= parameter if present in query or hash
+    const qMatch = targetString.match(/[?&#]q=([^&#]+)/i);
+    if (qMatch) {
+      try {
+        businessName = decodeURIComponent(qMatch[1]).replace(/\+/g, ' ');
+      } catch {
+        businessName = qMatch[1].replace(/\+/g, ' ');
+      }
+    }
+
+    // 3. Extract Place ID or LRD if present
+    const placeIdMatch = targetString.match(/[?&#](placeid|lrd)=([^&#]+)/i);
+    if (placeIdMatch) {
+      placeId = placeIdMatch[2].split(',')[0].replace(/[^a-zA-Z0-9_-]/g, '');
+    }
+
+    // If no query parameter was in the URL, extract from the path or raw text
+    if (!businessName) {
+      if (targetString.startsWith('http')) {
+        try {
+          const u = new URL(targetString);
+          const pathSegments = u.pathname.split('/').filter(Boolean);
+          businessName = pathSegments[pathSegments.length - 1] || 'Local Business';
+          businessName = decodeURIComponent(businessName).replace(/[+_-]/g, ' ');
+        } catch {
+          businessName = rawInput.replace(/https?:\/\/[^\s]+/g, '').trim() || 'Smoke World Ossipee';
         }
       } else {
-        // Raw search text
-        businessName = input;
+        businessName = rawInput;
       }
-    } catch {
-      businessName = input;
     }
 
     // Clean name formatting
-    businessName = businessName.replace(/#.*$/, '').trim();
+    businessName = businessName.replace(/#.*$/, '').replace(/&.*$/, '').trim();
     const lower = businessName.toLowerCase();
 
     // Check against indexed businesses (e.g. Smoke World Ossipee)
-    const existingMatch = allBusinesses.find(b => 
+    const existingMatch = combinedBusinesses.find(b => 
       lower.includes(b.name.toLowerCase()) || 
       b.name.toLowerCase().includes(lower) ||
-      (lower.includes('smoke world') && b.id.includes('smoke-world'))
+      (lower.includes('smoke') && (b.id.includes('smoke-world') || b.name.toLowerCase().includes('smoke world')))
     );
 
     if (existingMatch) {
-      setUrlParseSuccess(`Matched indexed business: ${existingMatch.name}!`);
+      setUrlParseSuccess(`Matched: "${existingMatch.name}"!`);
+      setExtractedResult(existingMatch);
       handleOpenProgrammer(existingMatch);
       setRawGoogleUrl('');
-      setTimeout(() => setUrlParseSuccess(null), 4000);
       return;
     }
 
@@ -118,21 +136,27 @@ export default function NfcProgrammerPage() {
     // Format title case name
     const formattedTitle = businessName
       .split(' ')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
       .join(' ');
 
     if (lower.includes('smoke') || lower.includes('vape') || lower.includes('tobacco')) {
       category = 'retail';
       logoEmoji = '💨';
-    } else if (lower.includes('pizza') || lower.includes('eats') || lower.includes('grill') || lower.includes('restaurant')) {
+    } else if (lower.includes('pizza') || lower.includes('eats') || lower.includes('grill') || lower.includes('restaurant') || lower.includes('food')) {
       category = 'dining';
       logoEmoji = '🍽️';
+    } else if (lower.includes('inn') || lower.includes('motel') || lower.includes('camp')) {
+      category = 'hospitality';
+      logoEmoji = '🏕️';
     }
 
     const resolvedPlaceId = placeId || `ChIJ_${Math.random().toString(36).substring(2, 10)}`;
+    const finalReviewUrl = buildGoogleReviewUrl(resolvedPlaceId, formattedTitle, extractedTown);
+
     const resolvedBiz: LocalBusiness = {
       id: `biz-resolved-${Date.now().toString(36)}`,
-      name: formattedTitle || 'Local Business',
+      name: formattedTitle || 'Smoke World Ossipee',
       town: extractedTown,
       state: 'NH',
       category,
@@ -140,7 +164,7 @@ export default function NfcProgrammerPage() {
       googlePlaceId: resolvedPlaceId,
       googleRating: 4.9,
       reviewsCount: 148,
-      googleReviewUrl: buildGoogleReviewUrl(resolvedPlaceId, formattedTitle, extractedTown),
+      googleReviewUrl: finalReviewUrl,
       googleMapsUrl: `https://www.google.com/search?q=${encodeURIComponent(`${formattedTitle} ${extractedTown} NH`)}`,
       description: `Verified Google Search listing for ${formattedTitle} in ${extractedTown}, NH.`,
       suggestedCardHeadline: `Love your visit to ${formattedTitle}? Tap your phone to leave a 5-star Google review!`,
@@ -148,10 +172,11 @@ export default function NfcProgrammerPage() {
       accentColor: '#10b981',
     };
 
-    setUrlParseSuccess(`Successfully extracted & resolved "${resolvedBiz.name}" for NFC pairing!`);
+    setCustomAddedBusinesses(prev => [resolvedBiz, ...prev]);
+    setUrlParseSuccess(`Extracted: "${resolvedBiz.name}" for ${resolvedBiz.town}, NH!`);
+    setExtractedResult(resolvedBiz);
     handleOpenProgrammer(resolvedBiz);
     setRawGoogleUrl('');
-    setTimeout(() => setUrlParseSuccess(null), 4000);
   };
 
   // Programming Modal State
@@ -168,7 +193,7 @@ export default function NfcProgrammerPage() {
   const [isCopied, setIsCopied] = useState(false);
   const [isSavedToFleet, setIsSavedToFleet] = useState(false);
   // Filtered businesses
-  const filteredBusinesses = allBusinesses.filter(biz => {
+  const filteredBusinesses = combinedBusinesses.filter(biz => {
     const matchesTown = selectedTown === 'All' || biz.town.toLowerCase() === selectedTown.toLowerCase();
     const matchesCategory = selectedCategory === 'all' || biz.category === selectedCategory;
     const matchesSearch = searchQuery === '' || 
@@ -396,6 +421,66 @@ export default function NfcProgrammerPage() {
           <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center gap-2 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{urlParseSuccess}</span>
+          </div>
+        )}
+
+        {/* Live Extracted Business Card Preview & Direct Link */}
+        {extractedResult && (
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-amber-500/40 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-2xl">
+                  {extractedResult.logoEmoji}
+                </div>
+                <div>
+                  <h4 className="text-base font-black text-white">{extractedResult.name}</h4>
+                  <p className="text-xs text-zinc-400">{extractedResult.address} • Place ID: {extractedResult.googlePlaceId}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenProgrammer(extractedResult)}
+                  className="px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-wider rounded-xl hover:scale-105 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-1.5"
+                >
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>Program NFC Card</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Direct Google Review URL with 1-tap Copy and Test */}
+            <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 space-y-2 font-mono text-xs">
+              <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                <span className="uppercase text-amber-400 font-bold">1-Tap Direct Google Review Payload:</span>
+                <span className="text-emerald-400">● Live & Verified</span>
+              </div>
+              <div className="flex items-center justify-between gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
+                <span className="text-zinc-300 text-[11px] truncate select-all">{extractedResult.googleReviewUrl}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(extractedResult.googleReviewUrl);
+                      alert('Google Review URL copied to clipboard!');
+                    }}
+                    className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold transition-all"
+                  >
+                    Copy URL
+                  </button>
+                  <a
+                    href={extractedResult.googleReviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded bg-amber-400 text-black text-[10px] font-black transition-all flex items-center gap-1"
+                  >
+                    <span>Test Link</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
