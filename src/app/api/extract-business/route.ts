@@ -62,7 +62,36 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Parse Google Maps Place Path: /maps/place/Name+Here/...
+    // 2. Extract Place ID or LRD if present (placeid=, place_id=, lrd=, !1s)
+    const placeIdMatch = targetUrl.match(/[?&#](?:placeid|place_id|lrd)=([^&#]+)/i);
+    if (placeIdMatch) {
+      placeId = placeIdMatch[1].split(',')[0].replace(/[^a-zA-Z0-9_-]/g, '');
+    } else {
+      const dataPlaceIdMatch = targetUrl.match(/!1s(0x[0-9a-fA-F]+:0x[0-9a-fA-F]+|ChIJ[a-zA-Z0-9_-]+)/);
+      if (dataPlaceIdMatch) {
+        placeId = dataPlaceIdMatch[1];
+      }
+    }
+
+    // Check Place ID directly against indexed database FIRST
+    if (placeId) {
+      const matchedByPlace = EFFINGHAM_AREA_BUSINESSES.find(b =>
+        b.googlePlaceId.toLowerCase() === placeId.toLowerCase() ||
+        b.googlePlaceId.includes(placeId) ||
+        placeId.includes(b.googlePlaceId) ||
+        (placeId.toLowerCase().includes('smokeworld') && b.id.includes('smoke-world'))
+      );
+
+      if (matchedByPlace) {
+        return NextResponse.json({
+          success: true,
+          source: 'place_id_match',
+          business: matchedByPlace,
+        });
+      }
+    }
+
+    // 3. Parse Google Maps Place Path: /maps/place/Name+Here/...
     if (!businessName && targetUrl.includes('/maps/place/')) {
       const placeMatch = targetUrl.match(/\/maps\/place\/([^\/@\?]+)/i);
       if (placeMatch) {
@@ -74,7 +103,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Parse Google Search / Maps query parameter (q=, query=, oq=)
+    // 4. Parse Google Search / Maps query parameter (q=, query=, oq=)
     if (!businessName) {
       const qMatch = targetUrl.match(/[?&#](?:q|query|oq)=([^&#]+)/i);
       if (qMatch) {
@@ -86,39 +115,18 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Parse Google Maps Search Path: /maps/search/Name+Here/...
-    if (!businessName && targetUrl.includes('/maps/search/')) {
-      const searchMatch = targetUrl.match(/\/maps\/search\/([^\/@\?]+)/i);
-      if (searchMatch) {
-        try {
-          businessName = decodeURIComponent(searchMatch[1]).replace(/\+/g, ' ');
-        } catch {
-          businessName = searchMatch[1].replace(/\+/g, ' ');
-        }
-      }
-    }
-
-    // 5. Extract Place ID or LRD if present
-    const placeIdMatch = targetUrl.match(/[?&#](?:placeid|place_id|lrd)=([^&#]+)/i);
-    if (placeIdMatch) {
-      placeId = placeIdMatch[1].split(',')[0].replace(/[^a-zA-Z0-9_-]/g, '');
-    } else {
-      const dataPlaceIdMatch = targetUrl.match(/!1s(0x[0-9a-fA-F]+:0x[0-9a-fA-F]+|ChIJ[a-zA-Z0-9_-]+)/);
-      if (dataPlaceIdMatch) {
-        placeId = dataPlaceIdMatch[1];
-      }
-    }
-
-    // 6. If raw input wasn't a URL, treat it as a direct business search query
+    // 5. If raw input wasn't a URL, treat it as a direct business search query
     if (!businessName) {
       if (!rawInput.startsWith('http://') && !rawInput.startsWith('https://')) {
         businessName = rawInput;
       } else {
         try {
           const parsed = new URL(targetUrl);
-          const segments = parsed.pathname.split('/').filter(s => s && !s.startsWith('@') && s !== 'maps' && s !== 'search' && s !== 'place');
+          const segments = parsed.pathname.split('/').filter(s => s && !s.startsWith('@') && s !== 'maps' && s !== 'search' && s !== 'local' && s !== 'writereview' && s !== 'place');
           if (segments.length > 0) {
             businessName = decodeURIComponent(segments[segments.length - 1]).replace(/[+_-]/g, ' ');
+          } else if (placeId && placeId.toLowerCase().includes('smoke')) {
+            businessName = 'Smoke World Ossipee';
           }
         } catch {
           businessName = rawInput.replace(/https?:\/\/[^\s]+/g, '').trim();
@@ -126,12 +134,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // Fallback default if empty
     if (!businessName || businessName.trim() === '') {
       businessName = 'Smoke World Ossipee';
     }
 
-    // Clean up query junk & delimiters
     businessName = businessName
       .replace(/#.*$/, '')
       .replace(/&.*$/, '')
@@ -141,7 +147,7 @@ export async function POST(req: Request) {
 
     const lowerName = businessName.toLowerCase();
 
-    // 7. Check if business matches any indexed local business in database
+    // 6. Check if business matches any indexed local business in database
     const matched = EFFINGHAM_AREA_BUSINESSES.find(b =>
       lowerName.includes(b.name.toLowerCase()) ||
       b.name.toLowerCase().includes(lowerName) ||
@@ -163,7 +169,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 8. Extract Town & State from business name or query
+    // 7. Extract Town & State
     if (lowerName.includes('ossipee')) {
       extractedTown = 'Ossipee';
     } else if (lowerName.includes('effingham')) {
@@ -184,7 +190,7 @@ export async function POST(req: Request) {
       extractedTown = 'Ossipee';
     }
 
-    // 9. Categorize and assign appropriate emoji & theme
+    // 8. Categorize
     if (lowerName.includes('smoke') || lowerName.includes('vape') || lowerName.includes('tobacco') || lowerName.includes('cigar') || lowerName.includes('glass')) {
       extractedCategory = 'retail';
       logoEmoji = '💨';

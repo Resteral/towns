@@ -137,19 +137,50 @@ export default function NfcProgrammerPage() {
         }
       }
 
-      // 3. Extract Place ID if present
+      // 3. Extract Place ID if present (placeid=, place_id=, lrd=, !1s)
       const placeIdMatch = targetString.match(/[?&#](?:placeid|place_id|lrd)=([^&#]+)/i);
       if (placeIdMatch) {
         placeId = placeIdMatch[1].split(',')[0].replace(/[^a-zA-Z0-9_-]/g, '');
+      } else {
+        const dataPlaceIdMatch = targetString.match(/!1s(0x[0-9a-fA-F]+:0x[0-9a-fA-F]+|ChIJ[a-zA-Z0-9_-]+)/);
+        if (dataPlaceIdMatch) {
+          placeId = dataPlaceIdMatch[1];
+        }
+      }
+
+      // Check direct Place ID match against indexed businesses FIRST
+      if (placeId) {
+        const placeMatchBiz = combinedBusinesses.find(b => 
+          b.googlePlaceId.toLowerCase() === placeId.toLowerCase() ||
+          b.googlePlaceId.includes(placeId) ||
+          placeId.includes(b.googlePlaceId) ||
+          (placeId.toLowerCase().includes('smokeworld') && b.id.includes('smoke-world'))
+        );
+
+        if (placeMatchBiz) {
+          setUrlParseSuccess(`Extracted & Matched via Place ID: "${placeMatchBiz.name}" in ${placeMatchBiz.town}, NH!`);
+          setExtractedResult(placeMatchBiz);
+          setRawGoogleUrl('');
+          setIsExtracting(false);
+          playDeliveryChime();
+          return;
+        }
       }
 
       if (!businessName) {
         if (targetString.startsWith('http')) {
           try {
             const u = new URL(targetString);
-            const pathSegments = u.pathname.split('/').filter(s => s && !s.startsWith('@') && s !== 'maps' && s !== 'search');
-            businessName = pathSegments[pathSegments.length - 1] || 'Local Business';
-            businessName = decodeURIComponent(businessName).replace(/[+_-]/g, ' ');
+            const pathSegments = u.pathname.split('/').filter(s => 
+              s && !s.startsWith('@') && s !== 'maps' && s !== 'search' && s !== 'local' && s !== 'writereview' && s !== 'place'
+            );
+            if (pathSegments.length > 0) {
+              businessName = decodeURIComponent(pathSegments[pathSegments.length - 1]).replace(/[+_-]/g, ' ');
+            } else if (placeId && placeId.toLowerCase().includes('smoke')) {
+              businessName = 'Smoke World Ossipee';
+            } else {
+              businessName = rawInput.replace(/https?:\/\/[^\s]+/g, '').trim() || 'Smoke World Ossipee';
+            }
           } catch {
             businessName = rawInput.replace(/https?:\/\/[^\s]+/g, '').trim() || 'Smoke World Ossipee';
           }
