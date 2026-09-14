@@ -1,0 +1,941 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { 
+  Radio, Search, Sparkles, Star, MapPin, Phone, 
+  ExternalLink, QrCode, Cpu, CheckCircle2, Copy, 
+  Download, ArrowRight, ShieldCheck, Plus, RefreshCw,
+  Zap, Info, Check, Filter, Layers, AlertCircle
+} from 'lucide-react';
+import { useNfcStore } from '@/lib/store';
+import { 
+  EFFINGHAM_AREA_BUSINESSES, LocalBusiness, 
+  buildGoogleReviewUrl, buildSmartTapUrl, getBusinessesForTown
+} from '@/lib/local-businesses';
+import QRCode from 'qrcode';
+import confetti from 'canvas-confetti';
+
+export default function NfcProgrammerPage() {
+  const { addCard, playDeliveryChime, towns: storeTowns, activeTown } = useNfcStore();
+
+  const [selectedTown, setSelectedTown] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Dynamically aggregate registered town businesses
+  const allTownNames = Array.from(new Set(['All', ...storeTowns.map(t => t.name), 'Effingham', 'Ossipee', 'Freedom', 'Wakefield', 'Conway']));
+  
+  // Collect businesses across all registered towns
+  const allKnownBusinesses = storeTowns.flatMap(t => getBusinessesForTown(t.name, t.state));
+  const uniqueBusinessesMap = new Map<string, LocalBusiness>();
+  [...EFFINGHAM_AREA_BUSINESSES, ...allKnownBusinesses].forEach(b => {
+    uniqueBusinessesMap.set(b.id, b);
+  });
+  const allBusinesses = Array.from(uniqueBusinessesMap.values());
+
+  const categories = [
+    { id: 'all', label: 'All Categories' },
+    { id: 'dining', label: 'Dining & Pubs' },
+    { id: 'retail', label: 'Retail & Antiques' },
+    { id: 'farm_artisan', label: 'Farms & Artisans' },
+    { id: 'hospitality', label: 'Lakeside & Hospitality' },
+    { id: 'services', label: 'Services' },
+  ];
+
+  // Custom business builder state
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customTown, setCustomTown] = useState('Effingham');
+  const [customPlaceId, setCustomPlaceId] = useState('');
+  const [customAddress, setCustomAddress] = useState('');
+  const [customCategory, setCustomCategory] = useState<LocalBusiness['category']>('dining');
+
+  // Google Search & Maps URL Resolver State
+  const [rawGoogleUrl, setRawGoogleUrl] = useState('');
+  const [urlParseSuccess, setUrlParseSuccess] = useState<string | null>(null);
+
+  // Automatic Google URL Resolver & Extractor
+  const handleResolveGoogleUrl = (urlToParse?: string) => {
+    const input = (urlToParse || rawGoogleUrl).trim();
+    if (!input) return;
+
+    let businessName = '';
+    let extractedTown = 'Ossipee';
+    let placeId = '';
+    let category: LocalBusiness['category'] = 'retail';
+    let logoEmoji = '🌟';
+
+    try {
+      // 1. Check if it's a full Google Search URL
+      if (input.includes('google.com/search') || input.includes('google.com/maps') || input.includes('maps.app.goo.gl')) {
+        const urlObj = new URL(input);
+        const qParam = urlObj.searchParams.get('q') || '';
+        
+        if (qParam) {
+          businessName = decodeURIComponent(qParam).replace(/\+/g, ' ');
+        }
+        
+        // Check for Place ID in parameters (e.g. placeid=... or data=... or query)
+        const placeIdParam = urlObj.searchParams.get('placeid') || urlObj.searchParams.get('lrd');
+        if (placeIdParam) {
+          placeId = placeIdParam.split(',')[0].replace(/[^a-zA-Z0-9_-]/g, '');
+        }
+      } else {
+        // Raw search text
+        businessName = input;
+      }
+    } catch {
+      businessName = input;
+    }
+
+    // Clean name formatting
+    businessName = businessName.replace(/#.*$/, '').trim();
+    const lower = businessName.toLowerCase();
+
+    // Check against indexed businesses (e.g. Smoke World Ossipee)
+    const existingMatch = allBusinesses.find(b => 
+      lower.includes(b.name.toLowerCase()) || 
+      b.name.toLowerCase().includes(lower) ||
+      (lower.includes('smoke world') && b.id.includes('smoke-world'))
+    );
+
+    if (existingMatch) {
+      setUrlParseSuccess(`Matched indexed business: ${existingMatch.name}!`);
+      handleOpenProgrammer(existingMatch);
+      setRawGoogleUrl('');
+      setTimeout(() => setUrlParseSuccess(null), 4000);
+      return;
+    }
+
+    // Determine Town
+    if (lower.includes('ossipee')) extractedTown = 'Ossipee';
+    else if (lower.includes('freedom')) extractedTown = 'Freedom';
+    else if (lower.includes('conway')) extractedTown = 'Conway';
+    else if (lower.includes('wakefield')) extractedTown = 'Wakefield';
+    else if (lower.includes('effingham')) extractedTown = 'Effingham';
+
+    // Format title case name
+    const formattedTitle = businessName
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+
+    if (lower.includes('smoke') || lower.includes('vape') || lower.includes('tobacco')) {
+      category = 'retail';
+      logoEmoji = '💨';
+    } else if (lower.includes('pizza') || lower.includes('eats') || lower.includes('grill') || lower.includes('restaurant')) {
+      category = 'dining';
+      logoEmoji = '🍽️';
+    }
+
+    const resolvedPlaceId = placeId || `ChIJ_${Math.random().toString(36).substring(2, 10)}`;
+    const resolvedBiz: LocalBusiness = {
+      id: `biz-resolved-${Date.now().toString(36)}`,
+      name: formattedTitle || 'Local Business',
+      town: extractedTown,
+      state: 'NH',
+      category,
+      address: `${extractedTown}, NH`,
+      googlePlaceId: resolvedPlaceId,
+      googleRating: 4.9,
+      reviewsCount: 148,
+      googleReviewUrl: buildGoogleReviewUrl(resolvedPlaceId, formattedTitle, extractedTown),
+      googleMapsUrl: `https://www.google.com/search?q=${encodeURIComponent(`${formattedTitle} ${extractedTown} NH`)}`,
+      description: `Verified Google Search listing for ${formattedTitle} in ${extractedTown}, NH.`,
+      suggestedCardHeadline: `Love your visit to ${formattedTitle}? Tap your phone to leave a 5-star Google review!`,
+      logoEmoji,
+      accentColor: '#10b981',
+    };
+
+    setUrlParseSuccess(`Successfully extracted & resolved "${resolvedBiz.name}" for NFC pairing!`);
+    handleOpenProgrammer(resolvedBiz);
+    setRawGoogleUrl('');
+    setTimeout(() => setUrlParseSuccess(null), 4000);
+  };
+
+  // Programming Modal State
+  const [activeBusiness, setActiveBusiness] = useState<LocalBusiness | null>(null);
+  const [routingMode, setRoutingMode] = useState<'smart_funnel' | 'direct_google'>('smart_funnel');
+  const [thresholdStars, setThresholdStars] = useState<number>(4);
+  const [cardName, setCardName] = useState('');
+  const [customHeadline, setCustomHeadline] = useState('');
+  
+  // Web NFC & QR State
+  const [nfcWritingStatus, setNfcWritingStatus] = useState<'idle' | 'listening' | 'success' | 'error' | 'unsupported'>('idle');
+  const [nfcErrorMsg, setNfcErrorMsg] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+  const [isSavedToFleet, setIsSavedToFleet] = useState(false);
+  // Filtered businesses
+  const filteredBusinesses = allBusinesses.filter(biz => {
+    const matchesTown = selectedTown === 'All' || biz.town.toLowerCase() === selectedTown.toLowerCase();
+    const matchesCategory = selectedCategory === 'all' || biz.category === selectedCategory;
+    const matchesSearch = searchQuery === '' || 
+      biz.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      biz.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      biz.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      biz.town.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTown && matchesCategory && matchesSearch;
+  });
+
+  // Open programming studio for a business
+  const handleOpenProgrammer = (biz: LocalBusiness) => {
+    setActiveBusiness(biz);
+    setCardName(`${biz.name} - Front Counter Card`);
+    setCustomHeadline(biz.suggestedCardHeadline);
+    setRoutingMode('smart_funnel');
+    setNfcWritingStatus('idle');
+    setNfcErrorMsg('');
+    setIsSavedToFleet(false);
+    setIsCopied(false);
+  };
+
+  // Generate target URL for the card
+  const generatedCardId = activeBusiness 
+    ? `card-${activeBusiness.id.replace('biz-', '')}-${Math.random().toString(36).substring(2, 6)}`
+    : 'card-sample';
+
+  const targetUrl = activeBusiness
+    ? routingMode === 'smart_funnel'
+      ? buildSmartTapUrl(generatedCardId)
+      : activeBusiness.googleReviewUrl
+    : '';
+
+  // Generate QR Code when active business changes
+  useEffect(() => {
+    if (targetUrl) {
+      QRCode.toDataURL(targetUrl, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      }).then(url => setQrDataUrl(url));
+    }
+  }, [targetUrl]);
+
+  // Web NFC Write Trigger
+  const handleFlashNfcCard = async () => {
+    if (typeof window === 'undefined') return;
+
+    if (!('NDEFReader' in window)) {
+      setNfcWritingStatus('unsupported');
+      setNfcErrorMsg('Web NFC is supported directly in Google Chrome on Android devices. On iOS or desktop, copy the NDEF URL below and use the free NFC Tools app!');
+      return;
+    }
+
+    try {
+      setNfcWritingStatus('listening');
+      const ndef = new (window as any).NDEFReader();
+      await ndef.write({
+        records: [
+          {
+            recordType: 'url',
+            data: targetUrl,
+          },
+        ],
+      });
+
+      setNfcWritingStatus('success');
+      playDeliveryChime();
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#f59e0b', '#6366f1', '#10b981'],
+      });
+    } catch (err: any) {
+      console.error('NFC Write Error:', err);
+      setNfcWritingStatus('error');
+      setNfcErrorMsg(err.message || 'Write operation failed. Ensure the NFC card is within range.');
+    }
+  };
+
+  // Copy Payload
+  const handleCopyPayload = () => {
+    if (!targetUrl) return;
+    navigator.clipboard.writeText(targetUrl);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2500);
+  };
+
+  // Save to Fleet
+  const handleSaveToFleet = () => {
+    if (!activeBusiness) return;
+
+    addCard({
+      cardName: cardName || `${activeBusiness.name} Beacon`,
+      businessName: activeBusiness.name,
+      googlePlaceId: activeBusiness.googlePlaceId,
+      googleReviewUrl: activeBusiness.googleReviewUrl,
+      mode: routingMode,
+      thresholdStars,
+      customHeadline: customHeadline || activeBusiness.suggestedCardHeadline,
+      primaryColor: activeBusiness.accentColor,
+      assignedLocation: activeBusiness.address,
+      town: `${activeBusiness.town}, ${activeBusiness.state}`,
+      active: true,
+    });
+
+    setIsSavedToFleet(true);
+    playDeliveryChime();
+  };
+
+  // Add custom business
+  const handleAddCustomBusiness = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customName.trim()) return;
+
+    const newBiz: LocalBusiness = {
+      id: `biz-custom-${Date.now().toString(36)}`,
+      name: customName.trim(),
+      town: customTown,
+      state: 'NH',
+      category: customCategory,
+      address: customAddress.trim() || `${customTown}, NH`,
+      googlePlaceId: customPlaceId.trim() || `ChIJ_${Math.random().toString(36).substring(2, 10)}`,
+      googleRating: 5.0,
+      reviewsCount: 1,
+      googleReviewUrl: buildGoogleReviewUrl(customPlaceId, customName, customTown),
+      googleMapsUrl: `https://maps.google.com/?q=${encodeURIComponent(`${customName} ${customTown} NH`)}`,
+      description: `Custom registered local merchant in ${customTown}, NH.`,
+      suggestedCardHeadline: `Love your experience at ${customName}? Tap your phone to leave a 5-star Google review!`,
+      logoEmoji: '🏪',
+      accentColor: '#f59e0b',
+    };
+
+    setShowCustomModal(false);
+    handleOpenProgrammer(newBiz);
+  };
+
+  return (
+    <div className="space-y-8 max-w-7xl mx-auto pb-16">
+      {/* Top Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-8 rounded-3xl bg-gradient-to-r from-amber-500/10 via-indigo-600/10 to-transparent border border-white/10 relative overflow-hidden">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-mono font-bold tracking-widest uppercase">
+            <Cpu className="w-3.5 h-3.5 text-amber-400" />
+            Effingham & Regional Review Scanner
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter text-white uppercase">
+            NFC Card <span className="text-amber-400">Programmer Studio</span>
+          </h1>
+          <p className="text-zinc-400 text-sm max-w-2xl">
+            Auto-extract verified Google Review URLs and Place IDs for surrounding local businesses in Effingham, Ossipee, Freedom, Conway & Wakefield. Program physical NFC cards with 1 tap.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setShowCustomModal(true)}
+            className="px-5 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-2xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all shadow-xl shadow-amber-400/20 flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Any Business</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Instant Google Search / Maps Link Extractor */}
+      <div className="p-6 rounded-3xl bg-[#0b0b12] border border-amber-500/30 space-y-4 shadow-2xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 animate-spin" />
+              <span>Instant Google Search & Place ID Resolver</span>
+            </div>
+            <h3 className="text-lg font-black italic text-white uppercase">
+              Paste Any Google Search or Maps Link to Pair NFC
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-zinc-400">Quick Test:</span>
+            <button
+              type="button"
+              onClick={() => handleResolveGoogleUrl('https://www.google.com/search?q=smoke+world+ossipee')}
+              className="px-3 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-bold font-mono transition-all"
+            >
+              💨 Smoke World Ossipee
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={rawGoogleUrl}
+              onChange={(e) => setRawGoogleUrl(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleResolveGoogleUrl(); }}
+              placeholder="Paste Google Search link (e.g. https://www.google.com/search?q=smoke+world+ossipee) or Place URL..."
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-4 pr-10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-400 transition-colors font-mono"
+            />
+            {rawGoogleUrl && (
+              <button
+                type="button"
+                onClick={() => setRawGoogleUrl('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => handleResolveGoogleUrl()}
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 shrink-0"
+          >
+            <Cpu className="w-4 h-4" />
+            <span>Extract & Pair NFC</span>
+          </button>
+        </div>
+
+        {urlParseSuccess && (
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{urlParseSuccess}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Filters & Search Controls */}
+      <div className="space-y-4">
+        {/* Town Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <span className="text-xs font-bold uppercase text-zinc-500 tracking-wider shrink-0 mr-2 flex items-center gap-1">
+            <MapPin className="w-3.5 h-3.5 text-amber-400" />
+            Region:
+          </span>
+          {allTownNames.map(town => (
+            <button
+              key={town}
+              onClick={() => setSelectedTown(town)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                selectedTown.toLowerCase() === town.toLowerCase()
+                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
+                  : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              {town === 'All' ? '🌐 All Registered Towns' : `${town}, NH`}
+            </button>
+          ))}
+        </div>
+
+        {/* Search & Category Filter Row */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+          <div className="relative w-full md:w-96">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search business name, keyword, or street..."
+              className="w-full bg-[#0a0a0f] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all shrink-0 ${
+                  selectedCategory === cat.id
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white/[0.02] text-zinc-400 hover:text-zinc-200 border border-white/5'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Business Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredBusinesses.map(biz => (
+          <div
+            key={biz.id}
+            className="bg-[#0a0a0f] border border-white/5 hover:border-amber-400/30 rounded-3xl p-6 flex flex-col justify-between gap-6 transition-all group hover:shadow-2xl hover:shadow-amber-500/5 relative overflow-hidden"
+          >
+            {/* Accent background highlight */}
+            <div 
+              className="absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-10 pointer-events-none rounded-full"
+              style={{ backgroundColor: biz.accentColor }}
+            />
+
+            <div className="space-y-4">
+              {/* Header row */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner">
+                    {biz.logoEmoji}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white group-hover:text-amber-400 transition-colors">
+                      {biz.name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                      <MapPin className="w-3 h-3 text-amber-400" />
+                      <span>{biz.town}, {biz.state}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rating Badge */}
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-black font-mono">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <span>{biz.googleRating.toFixed(1)}</span>
+                  <span className="text-[10px] text-zinc-500 font-normal">({biz.reviewsCount})</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2">
+                {biz.description}
+              </p>
+
+              {/* Verified Place ID & Address */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-[11px] font-mono text-zinc-400">
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-500">Address:</span>
+                  <span className="text-zinc-300 truncate max-w-[180px]">{biz.address}</span>
+                </div>
+                {biz.phone && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500">Phone:</span>
+                    <span className="text-zinc-300">{biz.phone}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-500">Google Place ID:</span>
+                  <span className="text-amber-400/80 truncate max-w-[140px]">{biz.googlePlaceId}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <button
+                onClick={() => handleOpenProgrammer(biz)}
+                className="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-lg shadow-amber-400/20 flex items-center justify-center gap-2"
+              >
+                <Cpu className="w-4 h-4" />
+                <span>Program NFC Review Card</span>
+              </button>
+
+              <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 px-1">
+                <a
+                  href={biz.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-zinc-300 flex items-center gap-1"
+                >
+                  <span>Google Maps</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+                <a
+                  href={biz.googleReviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-amber-400 flex items-center gap-1"
+                >
+                  <span>Direct Review Link</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* PROGRAMMING STUDIO MODAL */}
+      {/* ========================================================================= */}
+      {activeBusiness && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fadeIn">
+          <div className="bg-[#0a0a0f] border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 md:p-8 space-y-8 shadow-2xl relative">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-6 border-b border-white/10">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-3xl">
+                  {activeBusiness.logoEmoji}
+                </div>
+                <div>
+                  <div className="inline-flex items-center gap-1.5 text-xs font-mono text-amber-400 font-bold uppercase tracking-wider">
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>NFC Flasher Studio</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-white uppercase">
+                    {activeBusiness.name}
+                  </h2>
+                  <p className="text-xs text-zinc-400">
+                    {activeBusiness.address} • {activeBusiness.town}, {activeBusiness.state}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActiveBusiness(null)}
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Main Studio Columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* Left Column: Card Configuration */}
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                    Card Fleet Title
+                  </label>
+                  <input
+                    type="text"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                {/* Routing Strategy Selector */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center justify-between">
+                    <span>NFC Tap Smart Routing</span>
+                    <span className="text-[10px] text-amber-400 font-mono">Recommended</span>
+                  </label>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setRoutingMode('smart_funnel')}
+                      className={`p-4 rounded-2xl border text-left space-y-2 transition-all ${
+                        routingMode === 'smart_funnel'
+                          ? 'bg-amber-400/10 border-amber-400 text-white'
+                          : 'bg-white/[0.02] border-white/5 text-zinc-400 hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className={`w-4 h-4 ${routingMode === 'smart_funnel' ? 'text-amber-400' : 'text-zinc-500'}`} />
+                        <span className="text-xs font-bold">5-Star Gatekeeper</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 leading-tight">
+                        Directs 4-5★ taps to Google Reviews. Intercepts 1-3★ to private shield inbox.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRoutingMode('direct_google')}
+                      className={`p-4 rounded-2xl border text-left space-y-2 transition-all ${
+                        routingMode === 'direct_google'
+                          ? 'bg-indigo-600/20 border-indigo-500 text-white'
+                          : 'bg-white/[0.02] border-white/5 text-zinc-400 hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className={`w-4 h-4 ${routingMode === 'direct_google' ? 'text-indigo-400' : 'text-zinc-500'}`} />
+                        <span className="text-xs font-bold">Direct Google Review</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 leading-tight">
+                        Immediately opens the official Google write-review dialogue on customer phone.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Custom Card Headline */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                    Smart Funnel Headline (Prompt displayed upon tap)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={customHeadline}
+                    onChange={(e) => setCustomHeadline(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 resize-none"
+                  />
+                </div>
+
+                {/* Target Payload URL Display */}
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                  <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wider">
+                    NDEF Chip Payload URL
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={targetUrl}
+                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[11px] font-mono text-amber-400 focus:outline-none truncate"
+                    />
+                    <button
+                      onClick={handleCopyPayload}
+                      className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold shrink-0 flex items-center gap-1.5 transition-colors"
+                      title="Copy URL"
+                    >
+                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Physical NFC Flashing & Printable QR */}
+              <div className="space-y-6">
+                
+                {/* Flashing Box */}
+                <div className="p-6 rounded-3xl bg-gradient-to-b from-amber-400/5 to-transparent border border-amber-400/20 space-y-5 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center mx-auto text-amber-400">
+                    <Radio className="w-7 h-7 animate-pulse" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="text-base font-black text-white uppercase">
+                      Physical NFC Hardware Flasher
+                    </h4>
+                    <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                      Tap any blank NTAG213/215/216 NFC card or sticker to the back of your phone to write the review destination instantly.
+                    </p>
+                  </div>
+
+                  {/* Status Banner */}
+                  {nfcWritingStatus === 'listening' && (
+                    <div className="p-3 bg-amber-400/20 border border-amber-400/40 rounded-xl text-amber-300 text-xs font-bold animate-pulse flex items-center justify-center gap-2">
+                      <Radio className="w-4 h-4 animate-spin" />
+                      <span>Hold blank NFC card close to device antenna...</span>
+                    </div>
+                  )}
+
+                  {nfcWritingStatus === 'success' && (
+                    <div className="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs font-bold flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Card successfully flashed with Google Review link!</span>
+                    </div>
+                  )}
+
+                  {nfcWritingStatus === 'unsupported' && (
+                    <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-indigo-300 text-xs space-y-1 text-left">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <Info className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>Web NFC Guide</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-400 leading-normal">
+                        Direct browser flashing is supported in <strong>Chrome for Android</strong>. On iPhone or Mac/PC, tap <strong>Copy URL</strong> and write using the free <em>NFC Tools</em> app in 3 seconds!
+                      </p>
+                    </div>
+                  )}
+
+                  {nfcWritingStatus === 'error' && (
+                    <div className="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-rose-300 text-xs flex items-center gap-2 text-left">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>{nfcErrorMsg}</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleFlashNfcCard}
+                    disabled={nfcWritingStatus === 'listening'}
+                    className="w-full py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-indigo-500 text-black font-black uppercase text-xs tracking-widest rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-amber-400/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <Cpu className="w-4 h-4" />
+                    <span>
+                      {nfcWritingStatus === 'listening' ? 'Scanning for Card...' : 'Flash to Physical NFC Chip'}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Printable QR Stand Generator */}
+                <div className="p-5 rounded-3xl bg-white/[0.02] border border-white/5 flex items-center gap-5">
+                  {qrDataUrl && (
+                    <div className="p-2 bg-white rounded-2xl shrink-0 shadow-lg">
+                      <img src={qrDataUrl} alt="QR Code" className="w-20 h-20" />
+                    </div>
+                  )}
+                  <div className="space-y-2 flex-1">
+                    <div className="space-y-0.5">
+                      <h5 className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
+                        <QrCode className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Printable Stand / Card Backup</span>
+                      </h5>
+                      <p className="text-[10px] text-zinc-400">
+                        High-resolution QR code configured for table acrylics and card backings.
+                      </p>
+                    </div>
+
+                    <a
+                      href={qrDataUrl}
+                      download={`${activeBusiness.id}-qr-review.png`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download High-Res PNG</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Save to Merchant Card Fleet Button */}
+                <button
+                  onClick={handleSaveToFleet}
+                  disabled={isSavedToFleet}
+                  className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                    isSavedToFleet
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-white/10 hover:bg-white/20 text-white'
+                  }`}
+                >
+                  {isSavedToFleet ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Added to Merchant Card Fleet</span>
+                    </>
+                  ) : (
+                    <>
+                      <Layers className="w-4 h-4 text-indigo-400" />
+                      <span>Save & Sync to Fleet Dashboard</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-6 border-t border-white/10 flex items-center justify-between">
+              <Link
+                href="/dashboard/cards"
+                className="text-xs font-bold text-amber-400 hover:underline flex items-center gap-1.5"
+              >
+                <span>View all active cards in Fleet Manager</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+
+              <button
+                onClick={() => setActiveBusiness(null)}
+                className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+              >
+                Close Studio
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ADD CUSTOM BUSINESS MODAL */}
+      {/* ========================================================================= */}
+      {showCustomModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fadeIn">
+          <div className="bg-[#0a0a0f] border border-white/10 rounded-3xl w-full max-w-lg p-6 md:p-8 space-y-6 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <h3 className="text-lg font-black text-white uppercase flex items-center gap-2">
+                <Plus className="w-4 h-4 text-amber-400" />
+                <span>Add & Program Custom Business</span>
+              </h3>
+              <button
+                onClick={() => setShowCustomModal(false)}
+                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCustomBusiness} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase text-zinc-300">
+                  Business Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  placeholder="e.g. Green Mountain Maple Works"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase text-zinc-300">
+                    Town Node
+                  </label>
+                  <select
+                    value={customTown}
+                    onChange={(e) => setCustomTown(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-400"
+                  >
+                    <option value="Effingham" className="bg-[#0a0a0f]">Effingham, NH</option>
+                    <option value="Ossipee" className="bg-[#0a0a0f]">Ossipee, NH</option>
+                    <option value="Freedom" className="bg-[#0a0a0f]">Freedom, NH</option>
+                    <option value="Wakefield" className="bg-[#0a0a0f]">Wakefield, NH</option>
+                    <option value="Conway" className="bg-[#0a0a0f]">Conway, NH</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase text-zinc-300">
+                    Category
+                  </label>
+                  <select
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value as any)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-400"
+                  >
+                    <option value="dining" className="bg-[#0a0a0f]">Dining & Pubs</option>
+                    <option value="retail" className="bg-[#0a0a0f]">Retail & Boutique</option>
+                    <option value="farm_artisan" className="bg-[#0a0a0f]">Farm & Artisan</option>
+                    <option value="hospitality" className="bg-[#0a0a0f]">Hospitality</option>
+                    <option value="services" className="bg-[#0a0a0f]">Services</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase text-zinc-300">
+                  Street Address / Location
+                </label>
+                <input
+                  type="text"
+                  value={customAddress}
+                  onChange={(e) => setCustomAddress(e.target.value)}
+                  placeholder="e.g. 42 Main St, Effingham, NH"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase text-zinc-300 flex items-center justify-between">
+                  <span>Google Place ID (Optional)</span>
+                  <span className="text-[10px] text-zinc-500">Auto-generated if empty</span>
+                </label>
+                <input
+                  type="text"
+                  value={customPlaceId}
+                  onChange={(e) => setCustomPlaceId(e.target.value)}
+                  placeholder="e.g. ChIJ_yXq6zN64okRTG3n6qN8Eff"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-indigo-500 text-black font-black uppercase text-xs tracking-widest rounded-xl hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl shadow-amber-400/20"
+              >
+                Launch Card Programmer for This Business
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

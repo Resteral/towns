@@ -1,0 +1,531 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useNfcStore } from '@/lib/store';
+import HeroTapSimulator from '@/components/HeroTapSimulator';
+import CardCustomizerModal from '@/components/CardCustomizerModal';
+import { ReviewProduct } from '@/lib/types';
+import { 
+  Radio, Sparkles, ShieldCheck, Zap, TrendingUp, Star, 
+  ArrowRight, CheckCircle2, ChevronRight, Cpu, Activity,
+  Sliders, ShoppingBag, Eye, Layers, Compass, Truck
+} from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+
+export default function HomePage() {
+  const { products } = useNfcStore();
+  const [selectedCustomProduct, setSelectedCustomProduct] = useState<ReviewProduct | null>(null);
+  
+  // ROI Calculator State
+  const [dailyCustomers, setDailyCustomers] = useState(120);
+  const [avgTicket, setAvgTicket] = useState(35);
+  
+  // Calculate projected ROI
+  const estimatedReviewsPerMonth = Math.round(dailyCustomers * 30 * 0.08); // 8% tap conversion
+  const newRevenueProjected = Math.round(estimatedReviewsPerMonth * 1.8 * avgTicket);
+
+  return (
+    <div className="relative min-h-screen pt-28 pb-32 overflow-hidden">
+      
+      {/* Background Cyber Ambient Lights */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none -z-10">
+        <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-amber-500/10 blur-[150px] rounded-full" />
+        <div className="absolute top-[20%] right-[5%] w-[450px] h-[450px] bg-indigo-600/10 blur-[150px] rounded-full" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-36">
+
+        {/* 1. HERO SECTION */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Text */}
+          <div className="lg:col-span-6 space-y-8 text-left">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-amber-400/10 border border-amber-400/20 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
+                Next-Gen Tap Review Hardware
+              </span>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-[0.95] text-white">
+              Turn 1 Tap Into <span className="text-amber-400">5-Star</span> Google Reviews.
+            </h1>
+
+            <p className="text-base text-zinc-400 font-medium leading-relaxed max-w-xl">
+              Equip your staff, tables, and counters with contactless smart NFC cards. Customers tap with their iPhone or Android—no app required—and land directly on your official Google Review page in 0.1 seconds.
+            </p>
+
+            <div className="flex flex-wrap gap-4 pt-2">
+              <Link
+                href="/marketplace"
+                className="px-8 py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+              >
+                <span>Browse Hardware Fleet</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/tap/card-oasis-main"
+                className="px-8 py-4 bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 hover:border-indigo-400/40 transition-all flex items-center gap-2"
+              >
+                <Radio className="w-4 h-4 text-indigo-400" />
+                <span>Test Live Tap Page</span>
+              </Link>
+            </div>
+
+            {/* Quick stats grid */}
+            <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/5">
+              <div>
+                <p className="text-3xl font-black italic text-white tracking-tight">12.8x</p>
+                <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">Review Velocity</p>
+              </div>
+              <div>
+                <p className="text-3xl font-black italic text-amber-400 tracking-tight">0.1s</p>
+                <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">Tap-to-Prompt</p>
+              </div>
+              <div>
+                <p className="text-3xl font-black italic text-emerald-400 tracking-tight">100%</p>
+                <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">App-Free Sync</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Interactive Phone & Card Simulator */}
+          <div className="lg:col-span-6">
+            <HeroTapSimulator />
+          </div>
+        </section>
+
+        {/* 2. LIVE RADAR / OASIS PULSE */}
+        <section className="bg-gradient-to-b from-white/[0.03] to-white/[0.01] border border-white/10 rounded-[3rem] p-8 md:p-12 relative overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-indigo-400">
+                <Activity className="w-4 h-4 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Quantum Node Radar</span>
+              </div>
+              <h2 className="text-3xl font-black italic uppercase tracking-tight text-white">
+                Live Tap & Review Lattice
+              </h2>
+            </div>
+            <Link
+              href="/dashboard"
+              className="text-xs font-bold text-amber-400 hover:text-white uppercase tracking-widest flex items-center gap-1.5 transition-colors"
+            >
+              Open Merchant Radar →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-black/40 border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-amber-400/40 transition-all">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-3xl">☕</span>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-400 text-[8px] font-mono font-bold uppercase border border-emerald-400/20">
+                  ● 98% 5-Star Flow
+                </span>
+              </div>
+              <h3 className="text-xl font-black italic text-white uppercase">Oasis Coffee Hub</h3>
+              <p className="text-xs text-zinc-400">Effingham Main Gateway</p>
+              <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
+                <div>
+                  <span className="text-2xl font-black italic text-amber-400">428</span>
+                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Taps Logged</span>
+                </div>
+                <span className="text-[9px] font-mono text-emerald-400 font-bold">+46 Reviews this week</span>
+              </div>
+            </div>
+
+            <div className="bg-black/40 border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-indigo-400/40 transition-all">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-3xl">🏎️</span>
+                <span className="px-2.5 py-1 rounded-full bg-indigo-400/10 text-indigo-400 text-[8px] font-mono font-bold uppercase border border-indigo-400/20">
+                  ● Fast Transit
+                </span>
+              </div>
+              <h3 className="text-xl font-black italic text-white uppercase">Apex Automotive</h3>
+              <p className="text-xs text-zinc-400">Conway Performance Bay</p>
+              <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
+                <div>
+                  <span className="text-2xl font-black italic text-indigo-400">165</span>
+                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Taps Logged</span>
+                </div>
+                <span className="text-[9px] font-mono text-indigo-300 font-bold">+29 Reviews this week</span>
+              </div>
+            </div>
+
+            <div className="bg-black/40 border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-amber-400/40 transition-all">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-3xl">🍕</span>
+                <span className="px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-400 text-[8px] font-mono font-bold uppercase border border-amber-400/20">
+                  ● Peak Table Tap
+                </span>
+              </div>
+              <h3 className="text-xl font-black italic text-white uppercase">Rustic Stone Hearth</h3>
+              <p className="text-xs text-zinc-400">Ossipee Mountain Hub</p>
+              <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
+                <div>
+                  <span className="text-2xl font-black italic text-amber-400">312</span>
+                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Taps Logged</span>
+                </div>
+                <span className="text-[9px] font-mono text-emerald-400 font-bold">+38 Reviews this week</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 2.5 OASIS EATS & DOORDASH RESTAURANT SHOWCASE */}
+        <section className="bg-gradient-to-r from-amber-500/10 via-[#0b0b12] to-indigo-600/10 border border-amber-500/20 rounded-[3rem] p-8 md:p-12 relative overflow-hidden shadow-2xl">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 border-b border-white/5 pb-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                <Truck className="w-3.5 h-3.5 animate-pulse" />
+                <span>DoorDash & UberEats Decentralized Network</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tight text-white">
+                Oasis <span className="text-amber-400">Eats</span> Local Delivery
+              </h2>
+              <p className="text-xs text-zinc-400 max-w-lg">
+                Order directly from Effingham & Carroll County’s top restaurants, bakeries, and smokehouses with live GPS radar tracking.
+              </p>
+            </div>
+            <Link
+              href="/eats"
+              className="px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+            >
+              <span>Explore All Menus (DoorDash Hub)</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link
+              href="/eats"
+              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
+            >
+              <div className="h-32 rounded-xl overflow-hidden relative">
+                <img
+                  src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&auto=format&fit=crop&q=80"
+                  alt="PNB Eats Sub"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
+                  20-30 min
+                </span>
+              </div>
+              <div>
+                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
+                  PNB Eats Roadside Grill
+                </h4>
+                <p className="text-[11px] text-zinc-400 line-clamp-1">Steak & Cheese Subs, 16" Pizzas, Wings</p>
+                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
+                  <span>Effingham, NH</span>
+                  <span className="text-zinc-400">4.8 ★ (184)</span>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/eats"
+              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
+            >
+              <div className="h-32 rounded-xl overflow-hidden relative">
+                <img
+                  src="https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80"
+                  alt="Pizza Barn BBQ"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
+                  25-35 min
+                </span>
+              </div>
+              <div>
+                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
+                  Pizza Barn & Smokehouse
+                </h4>
+                <p className="text-[11px] text-zinc-400 line-clamp-1">Applewood Pulled Pork, Buffalo Pizza</p>
+                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
+                  <span>Ossipee, NH</span>
+                  <span className="text-zinc-400">4.9 ★ (312)</span>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/eats"
+              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
+            >
+              <div className="h-32 rounded-xl overflow-hidden relative">
+                <img
+                  src="https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=600&auto=format&fit=crop&q=80"
+                  alt="Oasis Cold Brew"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
+                  15-20 min
+                </span>
+              </div>
+              <div>
+                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
+                  Oasis Roastery & Bakehouse
+                </h4>
+                <p className="text-[11px] text-zinc-400 line-clamp-1">Nitro Cold Brew Growlers, Sourdough</p>
+                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
+                  <span>Effingham, NH</span>
+                  <span className="text-zinc-400">5.0 ★ (428)</span>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/eats"
+              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
+            >
+              <div className="h-32 rounded-xl overflow-hidden relative">
+                <img
+                  src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80"
+                  alt="Freedom Village Scones"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
+                  15-25 min
+                </span>
+              </div>
+              <div>
+                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
+                  Freedom Village Store
+                </h4>
+                <p className="text-[11px] text-zinc-400 line-clamp-1">Blueberry Scones, Maple Syrup, Pantry</p>
+                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
+                  <span>Freedom, NH</span>
+                  <span className="text-zinc-400">4.9 ★ (168)</span>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </section>
+
+        {/* 3. FEATURED HARDWARE CATALOG */}
+        <section className="space-y-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div className="space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
+                Premium NFC Hardware Fleet
+              </span>
+              <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
+                Engineered for High-Traffic Tap Speed
+              </h2>
+            </div>
+            <Link
+              href="/marketplace"
+              className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-white hover:bg-white/10 transition-all flex items-center gap-2"
+            >
+              <span>View Full Marketplace</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.slice(0, 3).map((product) => (
+              <div
+                key={product.id}
+                className="bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-6 flex flex-col justify-between hover:border-amber-400/40 hover:bg-white/[0.04] transition-all duration-300 group"
+              >
+                <div className="space-y-4">
+                  {/* Image with badge */}
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-zinc-900">
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                    />
+                    {product.badge && (
+                      <span className="absolute top-3 left-3 px-3 py-1 bg-amber-400 text-black font-black text-[9px] uppercase tracking-widest rounded-full shadow-lg">
+                        {product.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-amber-400 text-xs">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                      ))}
+                      <span className="text-zinc-400 font-mono ml-1">({product.reviewsCount})</span>
+                    </div>
+                    <h3 className="text-xl font-black italic text-white tracking-tight">{product.name}</h3>
+                    <p className="text-xs text-zinc-400 line-clamp-2">{product.subtitle}</p>
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between">
+                  <div>
+                    <span className="text-2xl font-black italic text-amber-400">{formatCurrency(product.price)}</span>
+                    {product.originalPrice && (
+                      <span className="text-xs text-zinc-500 line-through ml-2">{formatCurrency(product.originalPrice)}</span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedCustomProduct(product)}
+                    className="px-4 py-2.5 bg-white/10 hover:bg-amber-400 hover:text-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"
+                  >
+                    <Sliders className="w-3.5 h-3.5" />
+                    <span>Customize</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4. SMART GATEKEEPER / RATING SHIELD ARCHITECTURE */}
+        <section className="bg-[#0b0b10] border border-white/10 rounded-[3rem] p-8 md:p-16 relative overflow-hidden">
+          <div className="max-w-3xl space-y-4 mb-12">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">
+              Smart Review Routing Technology
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
+              Maximize 5-Star Reviews. <br />
+              <span className="text-indigo-400">Shield Negative Feedback Privately.</span>
+            </h2>
+            <p className="text-zinc-400 text-sm leading-relaxed">
+              Traditional paper QR codes send unhappy customers directly to Google where they can damage your 5.0 star reputation. OasisTap uses an intelligent dual-channel routing protocol:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-3xl p-8 space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Star className="w-6 h-6 fill-current" />
+              </div>
+              <h3 className="text-2xl font-black italic text-emerald-300">4 & 5-Star Ratings: Instant Google Push</h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Ecstatic customers are immediately forwarded straight into your official Google Maps review window with 5 stars pre-selected, boosting your local SEO ranking.
+              </p>
+              <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 font-bold pt-2">
+                <CheckCircle2 className="w-4 h-4" /> 100% Verified Google Review Lift
+              </div>
+            </div>
+
+            <div className="bg-indigo-950/20 border border-indigo-500/30 rounded-3xl p-8 space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-black italic text-indigo-300">1 to 3-Star Ratings: Private Manager Ticket</h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Dissatisfied guests are directed to a private, confidential feedback form sent straight to the owner/store manager before any negative public comment is posted.
+              </p>
+              <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 font-bold pt-2">
+                <ShieldCheck className="w-4 h-4" /> Protects Public Google Rating Score
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. ROI REVENUE CALCULATOR */}
+        <section className="bg-white/[0.02] border border-white/10 rounded-[3rem] p-8 md:p-14 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-6 space-y-6">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
+              Interactive Revenue Estimator
+            </span>
+            <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase text-white">
+              Calculate Your 5-Star Google Review Lift
+            </h2>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              According to Harvard Business Review, a 1-star increase on Google Maps drives a 5-9% immediate jump in revenue for local brick-and-mortar businesses.
+            </p>
+
+            <div className="space-y-6 pt-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-zinc-300">Daily In-Person Customers:</span>
+                  <span className="text-amber-400 font-mono">{dailyCustomers} patrons / day</span>
+                </div>
+                <input
+                  type="range"
+                  min="20"
+                  max="1000"
+                  step="10"
+                  value={dailyCustomers}
+                  onChange={(e) => setDailyCustomers(Number(e.target.value))}
+                  className="w-full accent-amber-400 bg-zinc-800 rounded-lg cursor-pointer h-2"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-zinc-300">Average Customer Ticket ($):</span>
+                  <span className="text-amber-400 font-mono">${avgTicket}</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="300"
+                  step="5"
+                  value={avgTicket}
+                  onChange={(e) => setAvgTicket(Number(e.target.value))}
+                  className="w-full accent-amber-400 bg-zinc-800 rounded-lg cursor-pointer h-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 bg-[#0e0e13] border border-amber-400/20 rounded-3xl p-8 space-y-6 shadow-2xl text-center">
+            <div className="space-y-1">
+              <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Estimated Monthly Impact</p>
+              <p className="text-5xl md:text-6xl font-black italic text-amber-400 tracking-tight">
+                +{estimatedReviewsPerMonth}
+              </p>
+              <p className="text-xs font-bold uppercase tracking-wider text-white">New Verified Google Reviews / Mo</p>
+            </div>
+
+            <div className="p-4 bg-amber-400/10 border border-amber-400/20 rounded-2xl">
+              <p className="text-[9px] font-mono uppercase text-amber-400">Projected Extra Monthly Revenue</p>
+              <p className="text-3xl font-black italic text-emerald-400 tracking-tight">
+                +{formatCurrency(newRevenueProjected)} / mo
+              </p>
+            </div>
+
+            <Link
+              href="/marketplace"
+              className="block w-full py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-xl hover:scale-105 transition-all shadow-lg"
+            >
+              Order NFC Hardware Fleet
+            </Link>
+          </div>
+        </section>
+
+        {/* 6. CALL TO ACTION */}
+        <section className="text-center py-16 space-y-6 max-w-2xl mx-auto">
+          <div className="w-16 h-16 rounded-3xl bg-amber-400 text-black flex items-center justify-center mx-auto text-2xl font-black shadow-xl shadow-amber-500/20">
+            <Radio className="w-8 h-8 text-black" />
+          </div>
+          <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-white">
+            Ready to Dominate Your Local Map Ranking?
+          </h2>
+          <p className="text-sm text-zinc-400">
+            Free shipping, laser engraving, and lifetime cloud dynamic destination routing included with every card.
+          </p>
+          <div className="pt-4 flex justify-center gap-4">
+            <Link
+              href="/marketplace"
+              className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20"
+            >
+              Get Your NFC Cards Now
+            </Link>
+          </div>
+        </section>
+
+      </div>
+
+      {/* Card Customizer Modal */}
+      {selectedCustomProduct && (
+        <CardCustomizerModal
+          product={selectedCustomProduct}
+          isOpen={!!selectedCustomProduct}
+          onClose={() => setSelectedCustomProduct(null)}
+        />
+      )}
+    </div>
+  );
+}
