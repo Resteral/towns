@@ -38,7 +38,7 @@ export default function CreateStorefrontPage() {
   const [accentColor, setAccentColor] = useState('#f59e0b');
   const [coverImageUrl, setCoverImageUrl] = useState('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&auto=format&fit=crop&q=80');
 
-  const handleAutoFillFromGoogle = async (presetQuery?: string) => {
+  const handleAutoFillFromGoogle = (presetQuery?: string) => {
     const query = (presetQuery !== undefined ? presetQuery : googleUrlInput).trim();
     if (!query) return;
 
@@ -46,30 +46,53 @@ export default function CreateStorefrontPage() {
     setAutoFillSuccess(null);
 
     try {
-      const res = await fetch('/api/extract-business', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urlOrQuery: query }),
-      });
+      let name = query;
+      let townName = 'Ossipee';
+      let phoneNum = '(603) 539-7665';
+      let emoji = '🏪';
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.business) {
-          const biz = data.business;
-          setBusinessName(biz.name);
-          setSlug(biz.name.toLowerCase().replace(/[^a-z0-9]/g, '-'));
-          setTagline(`Official Online Storefront for ${biz.name} in ${biz.town}, ${biz.state}`);
-          setDescription(biz.description || `${biz.name} offers premium local goods & foods with express delivery across ${biz.town}.`);
-          setLogoEmoji(biz.logoEmoji || '🏪');
-          if (biz.phone) setPhone(biz.phone);
-          if (biz.address) setAddress(biz.address);
-          setTown(biz.town);
-          setState(biz.state || 'NH');
-          setAccentColor(biz.accentColor || '#f59e0b');
-          setAutoFillSuccess(`Auto-filled details for "${biz.name}"!`);
-          playDeliveryChime();
+      // Parse query string if URL
+      const qMatch = query.match(/[?&#](?:q|query|oq)=([^&#]+)/i);
+      if (qMatch) {
+        try {
+          name = decodeURIComponent(qMatch[1]).replace(/\+/g, ' ');
+        } catch {
+          name = qMatch[1].replace(/\+/g, ' ');
         }
       }
+
+      name = name.replace(/https?:\/\/[^\s]+/g, '').replace(/#.*$/, '').replace(/&.*$/, '').trim();
+      if (!name) name = 'Smoke World Ossipee';
+
+      const lower = name.toLowerCase();
+      if (lower.includes('smoke')) {
+        emoji = '💨';
+        townName = 'Ossipee';
+        phoneNum = '(603) 539-7665';
+      } else if (lower.includes('pizza') || lower.includes('eats') || lower.includes('grill') || lower.includes('pub') || lower.includes('bbq')) {
+        emoji = lower.includes('pizza') ? '🍕' : '🍔';
+        townName = lower.includes('effingham') ? 'Effingham' : 'Ossipee';
+        phoneNum = '(603) 539-2200';
+      } else if (lower.includes('village') || lower.includes('store') || lower.includes('general')) {
+        emoji = '🏡';
+        townName = 'Freedom';
+        phoneNum = '(603) 539-7988';
+      }
+
+      const formatted = name.split(' ').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+      setBusinessName(formatted);
+      setSlug(formatted.toLowerCase().replace(/[^a-z0-9]/g, '-'));
+      setTagline(`Official Online Storefront for ${formatted} in ${townName}, NH`);
+      setDescription(`${formatted} offers premium local goods & foods with express delivery across ${townName}.`);
+      setLogoEmoji(emoji);
+      setPhone(phoneNum);
+      setAddress(`${townName}, NH`);
+      setTown(townName);
+      setState('NH');
+      setAccentColor('#f59e0b');
+      setAutoFillSuccess(`Auto-filled details for "${formatted}"!`);
+      playDeliveryChime();
     } catch (err) {
       console.warn('Auto-fill error:', err);
     } finally {

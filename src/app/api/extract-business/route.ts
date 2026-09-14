@@ -24,12 +24,13 @@ export async function POST(req: Request) {
     let logoEmoji = '🏬';
     let accentColor = '#f59e0b';
 
-    // 1. Follow short URLs if needed (e.g. maps.app.goo.gl / goo.gl)
+    // 1. Follow short URLs if needed (with strict 1.5s timeout)
     if (rawInput.includes('goo.gl') || rawInput.includes('maps.app.goo.gl') || rawInput.includes('bit.ly') || rawInput.includes('t.co')) {
       try {
         const redirectRes = await fetch(rawInput, {
           method: 'GET',
           redirect: 'follow',
+          signal: AbortSignal.timeout(1500),
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept-Language': 'en-US,en;q=0.9',
@@ -38,7 +39,6 @@ export async function POST(req: Request) {
         targetUrl = redirectRes.url;
         const html = await redirectRes.text();
 
-        // Extract title from HTML
         const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
                              html.match(/<title>([^<]+)<\/title>/i);
         if (ogTitleMatch) {
@@ -48,13 +48,11 @@ export async function POST(req: Request) {
           }
         }
 
-        // Extract rating if present
         const ratingMatch = html.match(/(\d\.\d)\s*stars|\b(\d\.\d)\s*★/i);
         if (ratingMatch) {
           extractedRating = parseFloat(ratingMatch[1] || ratingMatch[2]) || 4.9;
         }
 
-        // Extract reviews count
         const reviewsMatch = html.match(/([\d,]+)\s+reviews/i);
         if (reviewsMatch) {
           extractedReviewsCount = parseInt(reviewsMatch[1].replace(/,/g, ''), 10) || 120;
@@ -116,7 +114,6 @@ export async function POST(req: Request) {
       if (!rawInput.startsWith('http://') && !rawInput.startsWith('https://')) {
         businessName = rawInput;
       } else {
-        // Fallback segment extraction
         try {
           const parsed = new URL(targetUrl);
           const segments = parsed.pathname.split('/').filter(s => s && !s.startsWith('@') && s !== 'maps' && s !== 'search' && s !== 'place');
@@ -184,7 +181,7 @@ export async function POST(req: Request) {
     } else if (lowerName.includes('wolfeboro')) {
       extractedTown = 'Wolfeboro';
     } else {
-      extractedTown = 'Ossipee'; // Default regional town
+      extractedTown = 'Ossipee';
     }
 
     // 9. Categorize and assign appropriate emoji & theme
@@ -222,7 +219,6 @@ export async function POST(req: Request) {
       extractedAddress = `${extractedTown}, NH`;
     }
 
-    // Format Business Name to Title Case
     const formattedTitle = businessName
       .split(' ')
       .filter(Boolean)

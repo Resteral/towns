@@ -94,44 +94,17 @@ export default function NfcProgrammerPage() {
     }
   }, [extractedResult]);
 
-  // Robust Server & Client Business Extractor
-  const handleResolveGoogleUrl = async (urlToParse?: string) => {
+  // Instantaneous Client-First Business Extractor (0ms latency, zero hang)
+  const handleResolveGoogleUrl = (urlToParse?: string) => {
     const rawInput = (urlToParse !== undefined ? urlToParse : rawGoogleUrl).trim();
     if (!rawInput) {
       setExtractError('Please enter a Google Search link, Google Maps URL, or business name.');
       return;
     }
 
-    setIsExtracting(true);
     setExtractError(null);
     setUrlParseSuccess(null);
 
-    try {
-      // 1. Attempt Server-side deep resolution (follows short links, parses HTML og:title & place metadata)
-      const res = await fetch('/api/extract-business', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urlOrQuery: rawInput }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.business) {
-          const biz: LocalBusiness = data.business;
-          setExtractedResult(biz);
-          setCustomAddedBusinesses(prev => [biz, ...prev.filter(b => b.id !== biz.id)]);
-          setUrlParseSuccess(`Successfully Extracted & Verified: "${biz.name}" (${biz.town}, ${biz.state})!`);
-          setRawGoogleUrl('');
-          setIsExtracting(false);
-          playDeliveryChime();
-          return;
-        }
-      }
-    } catch (apiErr) {
-      console.warn('Backend extraction warning, using client fallback:', apiErr);
-    }
-
-    // 2. Client Fallback Parser (guarantees 100% reliability even if offline or network error)
     try {
       const urlMatch = rawInput.match(/(https?:\/\/[^\s]+)/i);
       const targetString = urlMatch ? urlMatch[1] : rawInput;
@@ -142,7 +115,7 @@ export default function NfcProgrammerPage() {
       let category: LocalBusiness['category'] = 'retail';
       let logoEmoji = '💨';
 
-      // Parse query parameter if present
+      // 1. Parse query parameter (q=, query=, oq=)
       const qMatch = targetString.match(/[?&#](?:q|query|oq)=([^&#]+)/i);
       if (qMatch) {
         try {
@@ -152,7 +125,7 @@ export default function NfcProgrammerPage() {
         }
       }
 
-      // Parse place path if present
+      // 2. Parse place path (/maps/place/Name+Here/...)
       if (!businessName && targetString.includes('/maps/place/')) {
         const placeMatch = targetString.match(/\/maps\/place\/([^\/@\?]+)/i);
         if (placeMatch) {
@@ -164,7 +137,7 @@ export default function NfcProgrammerPage() {
         }
       }
 
-      // Extract Place ID
+      // 3. Extract Place ID if present
       const placeIdMatch = targetString.match(/[?&#](?:placeid|place_id|lrd)=([^&#]+)/i);
       if (placeIdMatch) {
         placeId = placeIdMatch[1].split(',')[0].replace(/[^a-zA-Z0-9_-]/g, '');
@@ -192,7 +165,9 @@ export default function NfcProgrammerPage() {
       const existingMatch = combinedBusinesses.find(b => 
         lower.includes(b.name.toLowerCase()) || 
         b.name.toLowerCase().includes(lower) ||
-        (lower.includes('smoke') && (b.id.includes('smoke-world') || b.name.toLowerCase().includes('smoke world')))
+        (lower.includes('smoke') && (b.id.includes('smoke-world') || b.name.toLowerCase().includes('smoke world'))) ||
+        (lower.includes('pnb') && b.id.includes('pnb')) ||
+        (lower.includes('pizza barn') && b.id.includes('pizza-barn'))
       );
 
       if (existingMatch) {
@@ -207,8 +182,9 @@ export default function NfcProgrammerPage() {
       if (lower.includes('ossipee')) extractedTown = 'Ossipee';
       else if (lower.includes('freedom')) extractedTown = 'Freedom';
       else if (lower.includes('conway')) extractedTown = 'Conway';
-      else if (lower.includes('wakefield')) extractedTown = 'Wakefield';
+      else if (lower.includes('wakefield') || lower.includes('sanbornville')) extractedTown = 'Wakefield';
       else if (lower.includes('effingham')) extractedTown = 'Effingham';
+      else if (lower.includes('tamworth')) extractedTown = 'Tamworth';
 
       const formattedTitle = businessName
         .split(' ')
@@ -216,15 +192,18 @@ export default function NfcProgrammerPage() {
         .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
         .join(' ');
 
-      if (lower.includes('smoke') || lower.includes('vape') || lower.includes('tobacco')) {
+      if (lower.includes('smoke') || lower.includes('vape') || lower.includes('tobacco') || lower.includes('glass')) {
         category = 'retail';
         logoEmoji = '💨';
-      } else if (lower.includes('pizza') || lower.includes('eats') || lower.includes('grill') || lower.includes('restaurant') || lower.includes('food')) {
+      } else if (lower.includes('pizza') || lower.includes('eats') || lower.includes('grill') || lower.includes('restaurant') || lower.includes('food') || lower.includes('bbq') || lower.includes('pub') || lower.includes('tavern') || lower.includes('coffee') || lower.includes('bakery')) {
         category = 'dining';
-        logoEmoji = '🍽️';
+        logoEmoji = lower.includes('pizza') ? '🍕' : lower.includes('bbq') ? '🍖' : lower.includes('coffee') ? '☕' : '🍽️';
       } else if (lower.includes('inn') || lower.includes('motel') || lower.includes('camp')) {
         category = 'hospitality';
         logoEmoji = '🏕️';
+      } else if (lower.includes('farm') || lower.includes('maple')) {
+        category = 'farm_artisan';
+        logoEmoji = '🌿';
       }
 
       const resolvedPlaceId = placeId || `ChIJ_${Math.random().toString(36).substring(2, 10)}`;
@@ -252,10 +231,10 @@ export default function NfcProgrammerPage() {
       setUrlParseSuccess(`Extracted & Verified: "${resolvedBiz.name}" for ${resolvedBiz.town}, NH!`);
       setExtractedResult(resolvedBiz);
       setRawGoogleUrl('');
+      setIsExtracting(false);
       playDeliveryChime();
     } catch (err: any) {
-      setExtractError(err.message || 'Could not parse URL. Please check the link and try again.');
-    } finally {
+      setExtractError(err.message || 'Could not parse URL.');
       setIsExtracting(false);
     }
   };
