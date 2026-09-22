@@ -60,7 +60,11 @@ import {
   Save,
   Search,
   Eye,
-  CreditCard
+  CreditCard,
+  SlidersHorizontal,
+  Key,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 export type NfcActionType = 
@@ -511,9 +515,10 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
 export default function NfcTagReaderCustomizer() {
   const { cards, addCard, updateCard, deleteCard, playDeliveryChime, products, addToCart, currentUser } = useNfcStore();
 
-  // Active Main Tab: Fleet/Edit vs Customizer vs Batch vs Capabilities vs Reader vs Export
-  const [activeTab, setActiveTab] = useState<'fleet' | 'customizer' | 'batch' | 'capabilities' | 'reader' | 'export'>('fleet');
+  // Active Main Tab: Quick 1-Tap Programmer vs Fleet vs Customizer vs Batch vs Capabilities vs Reader vs Export
+  const [activeTab, setActiveTab] = useState<'quick' | 'fleet' | 'customizer' | 'batch' | 'capabilities' | 'reader' | 'export'>('quick');
   const [capabilitiesFilter, setCapabilitiesFilter] = useState<'all' | 'growth' | 'contact' | 'courier' | 'cashless' | 'trades' | 'automation' | 'community'>('all');
+  const [showIosGuide, setShowIosGuide] = useState(false);
 
   // --- CARD EDITING & FLEET STATE ---
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
@@ -1198,6 +1203,82 @@ export default function NfcTagReaderCustomizer() {
     setTimeout(() => setWriteSuccessMsg(null), 3000);
   };
 
+  // Quick Preset Selector for simplified 1-tap fast programmer
+  const handleSelectQuickPreset = (presetKey: string) => {
+    if (presetKey === 'google_review') {
+      setActionType('google_review');
+      setSelectedEmoji('⭐');
+      setSelectedColor('#0f172a');
+      setBusinessName(currentUser?.name ? `${currentUser.name}'s Business` : 'Smoke World Ossipee');
+      setHeadline('Love your visit? Tap phone for instant 5-star Google review!');
+      setGoogleReviewUrl('https://search.google.com/local/writereview?placeid=ChIJb6eBq9f94okRGb_SmokeWorldOss');
+    } else if (presetKey === 'vcard') {
+      setActionType('vcard');
+      setSelectedEmoji('👤');
+      setSelectedColor('#064e3b');
+      setBusinessName(currentUser?.name ? `${currentUser.name} (Contact)` : 'Sean Martin');
+      setHeadline('Tap phone to save full digital vCard & contact details!');
+      setVCardData({
+        name: currentUser?.name || 'Sean Martin',
+        title: 'Lead Courier & Vanguard Operator',
+        phone: currentUser?.phone || '(508) 507-0305',
+        email: currentUser?.email || 'seanhse97@gmail.com',
+        town: currentUser?.town ? `${currentUser.town}, NH` : 'Effingham, NH'
+      });
+    } else if (presetKey === 'courier') {
+      setActionType('driver_dispatch');
+      setSelectedEmoji('🛻');
+      setSelectedColor('#1e1b4b');
+      setBusinessName('Sean Martin 4x4 Emergency Lifeline');
+      setHeadline('Tap phone for 24/7 towing, emergency pulls & courier run dispatch!');
+      setSmsData({
+        phone: '(508) 507-0305',
+        message: 'Hi Sean! I need immediate 4x4 recovery or emergency courier delivery.'
+      });
+    } else if (presetKey === 'admin') {
+      setActionType('url');
+      setSelectedEmoji('🔑');
+      setSelectedColor('#312e81');
+      setBusinessName('Storefront Admin Login Key');
+      setHeadline('Tap to instantly log in and manage your Townraise business storefront.');
+      setCustomUrl(`https://townraise.org/tap/admin-key-${Date.now().toString(36)}?magicToken=tr_adm_${Date.now().toString(36)}&role=merchant`);
+    } else if (presetKey === 'menu') {
+      setActionType('menu');
+      setSelectedEmoji('🍔');
+      setSelectedColor('#78350f');
+      setBusinessName('PNB Eats & Local Dining');
+      setHeadline('Tap phone to view live menu & order directly from your table!');
+      setCustomUrl('https://townraise.org/site/pnb-eats');
+    } else if (presetKey === 'wifi') {
+      setActionType('wifi');
+      setSelectedEmoji('📡');
+      setSelectedColor('#0f766e');
+      setBusinessName('Guest High-Speed Wi-Fi');
+      setHeadline('Tap phone to automatically connect to private guest Wi-Fi network!');
+      setWifiData({
+        ssid: 'CarrollCounty-Guest-WiFi',
+        password: 'LakesRegion2026!',
+        encryption: 'WPA2'
+      });
+    } else if (presetKey === 'loyalty') {
+      setActionType('loyalty_pass');
+      setSelectedEmoji('🎁');
+      setSelectedColor('#831843');
+      setBusinessName('Oasis VIP Rewards Pass');
+      setHeadline('Tap phone to claim +50 Welcome Reward Points & local discounts!');
+      setCustomUrl('https://townraise.org/rewards?checkin=Oasis+VIP');
+    } else if (presetKey === 'url') {
+      setActionType('url');
+      setSelectedEmoji('🔗');
+      setSelectedColor('#18181b');
+      setBusinessName('Smart NFC Link Beacon');
+      setHeadline('Tap phone to visit official website!');
+      setCustomUrl('https://townraise.org');
+    }
+    playDeliveryChime();
+    confetti({ particleCount: 35, spread: 50 });
+  };
+
   // Copy NDEF Payload text
   const handleCopyPayload = () => {
     navigator.clipboard.writeText(getComputedPayloadUrl());
@@ -1271,6 +1352,21 @@ export default function NfcTagReaderCustomizer() {
           {/* Tab Switcher */}
           <div className="flex flex-wrap items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-white/10 w-full lg:w-auto">
             <button
+              onClick={() => setActiveTab('quick')}
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'quick'
+                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 scale-105'
+                  : 'text-amber-400/90 hover:text-amber-300 hover:bg-white/5'
+              }`}
+            >
+              <Zap className="w-4 h-4 fill-current" />
+              <span>⚡ 1-Tap Fast Flash</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-black/40 text-amber-300">
+                Simple
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('fleet')}
               className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'fleet'
@@ -1279,7 +1375,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <CreditCard className="w-4 h-4" />
-              <span>0. My Fleet & Edit Cards</span>
+              <span>My Fleet</span>
               {cards && cards.length > 0 && (
                 <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
                   activeTab === 'fleet' ? 'bg-black text-amber-400' : 'bg-white/10 text-zinc-300'
@@ -1298,7 +1394,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Palette className="w-4 h-4" />
-              <span>1. Design & Edit Canvas</span>
+              <span>Full Studio</span>
               {editingCardId && (
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
               )}
@@ -1312,8 +1408,8 @@ export default function NfcTagReaderCustomizer() {
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Zap className="w-4 h-4" />
-              <span>2. Batch 100 Flasher</span>
+              <Layers className="w-4 h-4" />
+              <span>Batch 100</span>
             </button>
 
             <button
@@ -1325,7 +1421,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>3. All 15 Capabilities</span>
+              <span>15 Modes</span>
             </button>
 
             <button
@@ -1337,7 +1433,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Scan className="w-4 h-4" />
-              <span>4. Reader</span>
+              <span>Reader</span>
             </button>
 
             <button
@@ -1349,7 +1445,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Cpu className="w-4 h-4" />
-              <span>5. NDEF Export</span>
+              <span>NDEF</span>
             </button>
           </div>
         </div>
@@ -1366,6 +1462,510 @@ export default function NfcTagReaderCustomizer() {
             <span>Manage Beacon Fleet ({batchCards.filter(c => c.status === 'completed').length} active)</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB: 1-TAP FAST FLASHER (SIMPLIFIED NFC PROGRAMMER)     */}
+      {/* ======================================================== */}
+      {activeTab === 'quick' && (
+        <div className="space-y-8 animate-in fade-in duration-300">
+          
+          {/* Antenna Status & Device Capability Banner */}
+          <div className="p-4 rounded-3xl bg-[#0c0d14] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${hasWebNfcSupport ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></div>
+              <div>
+                <span className="text-xs font-black text-white uppercase tracking-tight flex items-center gap-1.5">
+                  {hasWebNfcSupport ? (
+                    <>
+                      <Radio className="w-4 h-4 text-emerald-400" />
+                      <span>Web NFC Antenna Ready • Direct 1-Touch Hardware Burning</span>
+                    </>
+                  ) : (
+                    <>
+                      <Smartphone className="w-4 h-4 text-amber-400" />
+                      <span>Universal Dual-Mode • Instant QR, Dynamic Tap Funnel & NFC Tools Helper</span>
+                    </>
+                  )}
+                </span>
+                <p className="text-[10px] font-mono text-zinc-400">
+                  {hasWebNfcSupport 
+                    ? 'Chrome on Android detected. Simply tap any blank 13.56 MHz NTAG213/215 tag against your device.'
+                    : 'Works with any phone! Hold camera over QR code, copy link for NFC Tools app, or order pre-burned physical tags.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowIosGuide(!showIosGuide)}
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+                <span>{showIosGuide ? 'Hide iPhone / App Guide' : 'iPhone / NFC Tools Guide'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Collapsible iPhone / NFC Tools 2-Step Guide */}
+          {showIosGuide && (
+            <div className="p-6 rounded-3xl bg-indigo-950/20 border border-indigo-500/30 space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-black text-white uppercase flex items-center gap-2">
+                  <span>📱 How to Program NFC Cards on iPhone / iOS in 2 Taps</span>
+                </h4>
+                <button onClick={() => setShowIosGuide(false)} className="text-zinc-400 hover:text-white text-xs font-mono">✕ Close</button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono text-zinc-300">
+                <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
+                  <span className="text-amber-400 font-bold block text-sm">Step 1. Copy URL</span>
+                  <p className="text-zinc-400">Click <b>"Copy URL"</b> below to put this card's dynamic tap payload link onto your clipboard.</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
+                  <span className="text-amber-400 font-bold block text-sm">Step 2. Open NFC Tools</span>
+                  <p className="text-zinc-400">Open the free <b>NFC Tools</b> app (App Store). Tap <b>Write → Add a record → URL / URI</b> and paste the link.</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
+                  <span className="text-amber-400 font-bold block text-sm">Step 3. Touch Card</span>
+                  <p className="text-zinc-400">Tap <b>Write / [Bytes]</b> and touch your blank card to the top edge of your iPhone. Card is instantly programmed!</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 1: SELECT PURPOSE (8 INSTANT PRESETS) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-mono uppercase tracking-wider text-amber-400 font-bold flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-amber-400 text-black flex items-center justify-center text-[11px] font-black">1</span>
+                <span>Step 1: Choose Card Purpose (1-Click Preset):</span>
+              </label>
+              <span className="text-[10px] font-mono text-zinc-400">Instant Pre-Configuration</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { id: 'google_review', label: 'Google 5-Star Reviews', icon: '⭐', desc: 'Boost local Google rating' },
+                { id: 'vcard', label: 'Digital Business Card', icon: '👤', desc: '1-tap save contact to phone' },
+                { id: 'courier', label: 'Sean Martin 4x4 Hotline', icon: '🛻', desc: '24/7 towing & courier dispatch' },
+                { id: 'admin', label: 'Admin Login Pass', icon: '🔑', desc: '1-tap login to manage site' },
+                { id: 'menu', label: 'Dine-In Menu & Order', icon: '🍔', desc: 'Contactless food & drink menu' },
+                { id: 'wifi', label: 'Guest Wi-Fi Auto-Connect', icon: '📡', desc: 'Zero-typing password connect' },
+                { id: 'loyalty', label: 'Oasis Loyalty Pass (+50 pts)', icon: '🎁', desc: 'Community welcome reward' },
+                { id: 'url', label: 'Any Website Link', icon: '🔗', desc: 'Direct URL destination' },
+              ].map(preset => {
+                const isSelected = 
+                  (preset.id === 'google_review' && actionType === 'google_review') ||
+                  (preset.id === 'vcard' && actionType === 'vcard') ||
+                  (preset.id === 'courier' && actionType === 'driver_dispatch') ||
+                  (preset.id === 'menu' && actionType === 'menu') ||
+                  (preset.id === 'wifi' && actionType === 'wifi') ||
+                  (preset.id === 'loyalty' && actionType === 'loyalty_pass') ||
+                  (preset.id === 'admin' && selectedEmoji === '🔑') ||
+                  (preset.id === 'url' && actionType === 'url' && selectedEmoji !== '🔑');
+
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleSelectQuickPreset(preset.id)}
+                    className={`p-4 rounded-3xl border text-left transition-all relative overflow-hidden group ${
+                      isSelected
+                        ? 'bg-amber-400/15 border-amber-400 shadow-xl shadow-amber-500/10 scale-[1.02]'
+                        : 'bg-[#0e0f14] border-white/10 hover:border-white/30 hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-2xl group-hover:scale-110 transition-transform">{preset.icon}</span>
+                      {isSelected && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                      )}
+                    </div>
+                    <h4 className="text-xs font-black text-white leading-snug">{preset.label}</h4>
+                    <p className="text-[10px] text-zinc-400 font-mono mt-0.5">{preset.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* STEP 2 & 3: QUICK INPUTS + LIVE CARD & GIANT FLASH BURNER */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left 6 Cols: Super Clean Streamlined Inputs */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="p-6 md:p-8 rounded-3xl bg-[#0e0f14] border border-white/10 space-y-5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-mono uppercase tracking-wider text-amber-400 font-bold flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-400 text-black flex items-center justify-center text-[11px] font-black">2</span>
+                    <span>Step 2: Quick Card Details:</span>
+                  </label>
+                  <span className="text-[10px] font-mono text-zinc-400">Zero Clutter</span>
+                </div>
+
+                {/* Business / Card Title */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-white flex items-center justify-between">
+                    <span>Card / Business Title</span>
+                    <span className="text-[10px] font-mono text-zinc-400">Shown on card</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={businessName}
+                    onChange={e => setBusinessName(e.target.value)}
+                    placeholder="e.g. Smoke World Ossipee, Sean Martin 4x4, Oasis Roastery..."
+                    className="w-full px-4 py-3 bg-black/60 border border-white/15 rounded-2xl text-white text-xs placeholder:text-zinc-500 focus:outline-none focus:border-amber-400 font-mono"
+                  />
+                </div>
+
+                {/* Form Factor Quick Selector */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-white flex items-center justify-between">
+                    <span>NFC Hardware Form Factor</span>
+                    <span className="text-[10px] font-mono text-zinc-400">13.56 MHz Standard</span>
+                  </label>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                    {[
+                      { id: 'card', label: 'PVC Card', icon: '💳' },
+                      { id: 'stand', label: 'Stand', icon: '🏛️' },
+                      { id: 'sticker', label: 'Disc Sticker', icon: '🏷️' },
+                      { id: 'wood_puck', label: 'Wood Plaque', icon: '🪵' },
+                      { id: 'keychain', label: 'Key Fob', icon: '🛡️' },
+                    ].map(f => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setFormFactor(f.id as NfcFormFactorType)}
+                        className={`p-2 rounded-2xl border text-center transition-all ${
+                          formFactor === f.id
+                            ? 'bg-amber-400 text-black font-bold border-amber-300'
+                            : 'bg-white/5 text-zinc-300 border-white/10 hover:bg-white/10'
+                        }`}
+                      >
+                        <span className="text-base block">{f.icon}</span>
+                        <span className="text-[10px] font-mono truncate block">{f.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Conditional Fields based on actionType */}
+                {actionType === 'google_review' && (
+                  <div className="space-y-3 p-4 rounded-2xl bg-amber-400/5 border border-amber-400/20">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-white flex items-center justify-between">
+                        <span>Google Place ID or Google Review Link</span>
+                        <span className="text-[10px] font-mono text-amber-400 font-bold">5-Star Booster</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={googleReviewUrl}
+                        onChange={e => setGoogleReviewUrl(e.target.value)}
+                        placeholder="https://search.google.com/local/writereview?placeid=..."
+                        className="w-full px-4 py-2.5 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                      />
+                    </div>
+                    <p className="text-[10px] font-mono text-zinc-400">
+                      💡 Tapping this programmed tag automatically opens the 5-star review modal directly on iOS & Android phones!
+                    </p>
+                  </div>
+                )}
+
+                {actionType === 'vcard' && (
+                  <div className="space-y-3 p-4 rounded-2xl bg-emerald-400/5 border border-emerald-400/20">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Contact Full Name</span>
+                        <input
+                          type="text"
+                          value={vCardData.name}
+                          onChange={e => setVCardData({ ...vCardData, name: e.target.value })}
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Phone Number</span>
+                        <input
+                          type="text"
+                          value={vCardData.phone}
+                          onChange={e => setVCardData({ ...vCardData, phone: e.target.value })}
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Email Address</span>
+                        <input
+                          type="email"
+                          value={vCardData.email}
+                          onChange={e => setVCardData({ ...vCardData, email: e.target.value })}
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Title / Company</span>
+                        <input
+                          type="text"
+                          value={vCardData.title}
+                          onChange={e => setVCardData({ ...vCardData, title: e.target.value })}
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {actionType === 'driver_dispatch' && (
+                  <div className="space-y-3 p-4 rounded-2xl bg-blue-400/5 border border-blue-400/20">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-white flex items-center justify-between">
+                        <span>Emergency Hotline / Towing Phone Number</span>
+                        <span className="text-[10px] font-mono text-blue-400 font-bold">24/7 Hotline</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={smsData.phone}
+                        onChange={e => setSmsData({ ...smsData, phone: e.target.value })}
+                        placeholder="(508) 507-0305"
+                        className="w-full px-4 py-2.5 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {actionType === 'wifi' && (
+                  <div className="space-y-3 p-4 rounded-2xl bg-cyan-400/5 border border-cyan-400/20">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Wi-Fi Network Name (SSID)</span>
+                        <input
+                          type="text"
+                          value={wifiData.ssid}
+                          onChange={e => setWifiData({ ...wifiData, ssid: e.target.value })}
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Wi-Fi Password</span>
+                        <input
+                          type="text"
+                          value={wifiData.password}
+                          onChange={e => setWifiData({ ...wifiData, password: e.target.value })}
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {(actionType === 'url' || actionType === 'loyalty_pass' || actionType === 'menu') && (
+                  <div className="space-y-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-white flex items-center justify-between">
+                        <span>Target Web Destination Link</span>
+                        <span className="text-[10px] font-mono text-zinc-400">Universal Dynamic Funnel</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={customUrl}
+                        onChange={e => setCustomUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="w-full px-4 py-2.5 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Prompt Headline */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-white flex items-center justify-between">
+                    <span>Card Instruction Prompt</span>
+                    <span className="text-[10px] font-mono text-zinc-400">Printed or displayed</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={headline}
+                    onChange={e => setHeadline(e.target.value)}
+                    placeholder="e.g. Tap phone with back of device for instant perks!"
+                    className="w-full px-4 py-2.5 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            {/* Right 6 Cols: Visual Card Preview & Giant 1-Touch Burner */}
+            <div className="lg:col-span-6 space-y-4 sticky top-28">
+              
+              {/* Visual Card Canvas Preview */}
+              <div className="p-6 md:p-8 rounded-3xl bg-[#0b0b10] border border-white/10 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Real-Time Output Preview</span>
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/5 text-zinc-400 border border-white/10 text-[10px] uppercase font-bold">
+                    {formFactor.toUpperCase()} • 13.56 MHz
+                  </span>
+                </div>
+
+                {/* CARD PREVIEW */}
+                <div 
+                  className="relative mx-auto w-full max-w-md aspect-[1.586/1] rounded-[2rem] p-6 shadow-2xl border flex flex-col justify-between overflow-hidden transition-all duration-500 group select-none text-left"
+                  style={{
+                    backgroundColor: selectedColor,
+                    borderColor: 'rgba(255,255,255,0.18)',
+                    boxShadow: `0 25px 60px -15px ${selectedColor}90`
+                  }}
+                >
+                  <div className="relative z-10 flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl shadow-inner">
+                        {selectedEmoji}
+                      </div>
+                      <div>
+                        <h4 className="font-black italic text-white text-base tracking-tight leading-tight line-clamp-1">{businessName}</h4>
+                        <p className="text-[9px] font-mono uppercase text-white/60 tracking-wider">
+                          {actionType === 'google_review' ? 'Google 5-Star NFC Beacon' : 
+                           actionType === 'driver_dispatch' ? 'Express Courier NFC' : 
+                           actionType === 'vcard' ? 'Digital vCard NFC' : 
+                           actionType === 'wifi' ? 'Guest Wi-Fi Auto-Connect' : 
+                           actionType === 'loyalty_pass' ? 'Oasis Loyalty Pass' : 
+                           'Smart Contactless Tag'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-9 h-9 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-lg">
+                      <Radio className="w-5 h-5 text-amber-400 animate-pulse" />
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 my-auto space-y-1">
+                    {actionType === 'google_review' && (
+                      <div className="flex items-center gap-1 text-amber-400">
+                        {[...Array(5)].map((_, i) => (<span key={i} className="text-sm">★</span>))}
+                        <span className="text-[10px] font-mono text-white/80 font-bold ml-1">5.0 RATING</span>
+                      </div>
+                    )}
+                    {actionType === 'vcard' && (
+                      <p className="text-xs font-mono text-zinc-300">
+                        👤 {vCardData.name} • {vCardData.phone}
+                      </p>
+                    )}
+                    <p className="text-sm font-black italic text-white tracking-wide leading-snug">
+                      {headline}
+                    </p>
+                  </div>
+
+                  <div className="relative z-10 flex justify-between items-end pt-3 border-t border-white/10">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-white">
+                        OASIS<span className="text-amber-400">TAP</span>
+                      </span>
+                      <p className="text-[8px] font-mono text-white/40">STANDARDIZED NFC 13.56MHz • NTAG213</p>
+                    </div>
+                    {generatedQrDataUrl && (
+                      <div className="w-12 h-12 bg-white rounded-xl p-1 flex items-center justify-center shadow-lg">
+                        <img src={generatedQrDataUrl} alt="QR" className="w-full h-full object-contain" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* STEP 3: GIANT 1-TOUCH FLASH BURNER BUTTON */}
+                <div className="space-y-3 pt-2">
+                  <button
+                    onClick={async () => {
+                      if (!('NDEFReader' in window)) {
+                        navigator.clipboard.writeText(getComputedPayloadUrl());
+                        handleSaveToFleet();
+                        setShowIosGuide(true);
+                        playDeliveryChime();
+                        confetti({ particleCount: 40, spread: 60 });
+                        setWriteSuccessMsg('Copied Tap URL to clipboard & Saved to Fleet! (See iPhone guide below)');
+                        setTimeout(() => setWriteSuccessMsg(null), 4000);
+                        return;
+                      }
+
+                      try {
+                        setIsWritingNfc(true);
+                        const ndef = new (window as any).NDEFReader();
+                        const payload = getComputedPayloadUrl();
+                        await ndef.write({
+                          records: [{
+                            recordType: actionType === 'url' || actionType === 'google_review' || actionType === 'paypal_pay' ? 'url' : 'text',
+                            data: payload
+                          }]
+                        });
+                        setIsWritingNfc(false);
+                        handleSaveToFleet();
+                        playDeliveryChime();
+                        confetti({ particleCount: 80, spread: 80 });
+                        setWriteSuccessMsg(`🎉 Successfully programmed and flashed physical NFC tag for "${businessName}"!`);
+                        setTimeout(() => setWriteSuccessMsg(null), 5000);
+                      } catch (err: any) {
+                        setIsWritingNfc(false);
+                        alert(`NFC Writing error: ${err.message || err}. Ensure your NFC antenna is enabled.`);
+                      }
+                    }}
+                    disabled={isWritingNfc}
+                    className="w-full py-4 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-300 hover:from-amber-300 hover:to-orange-400 text-black font-black text-sm uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-3 transform hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    {isWritingNfc ? (
+                      <>
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        <span>📡 Touch Blank NFC Tag to Antenna Now...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-5 h-5 fill-black" />
+                        <span>⚡ Step 3: Touch Card to Phone to Program</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Quick Action Utility Buttons */}
+                  <div className="grid grid-cols-3 gap-2 text-xs font-mono">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(getComputedPayloadUrl());
+                        setIsCopied(true);
+                        setWriteSuccessMsg('Copied payload URL to clipboard!');
+                        setTimeout(() => {
+                          setIsCopied(false);
+                          setWriteSuccessMsg(null);
+                        }, 3000);
+                      }}
+                      className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl transition-all flex items-center justify-center gap-1.5"
+                    >
+                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+                      <span>{isCopied ? 'Copied!' : 'Copy URL'}</span>
+                    </button>
+
+                    <button
+                      onClick={handleSaveToFleet}
+                      className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Save className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Save to Fleet</span>
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('customizer')}
+                      className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-amber-400 hover:text-white rounded-xl transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                      <span>Full Studio</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
         </div>
       )}
 
