@@ -620,7 +620,7 @@ export default function AdminDashboardPage() {
     const matchedStore = storefronts.find(s => s.slug === newProdStoreSlug) || storefronts[0];
     const generatedMenuUrl = typeof window !== 'undefined' 
       ? `${window.location.origin}/site/${matchedStore.slug}`
-      : `https://oasistap.com/site/${matchedStore.slug}`;
+      : `https://townraise.org/site/${matchedStore.slug}`;
 
     const featuresList = newProdFeatures
       .split('\n')

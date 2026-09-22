@@ -514,7 +514,7 @@ export default function WorkAndTradesPage() {
 
                       {showcase.contactEmail && (
                         <a
-                          href={`mailto:${showcase.contactEmail}?subject=Quote Request from OasisTap - ${showcase.projectTitle}`}
+                          href={`mailto:${showcase.contactEmail}?subject=Quote Request from Townraise - ${showcase.projectTitle}`}
                           className="px-3.5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold transition-all flex items-center gap-1.5"
                           title="Send Email"
                         >

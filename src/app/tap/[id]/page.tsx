@@ -354,7 +354,7 @@ export default function TapRouterPage() {
 
         {/* Footer info */}
         <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[8px] font-mono text-zinc-600">
-          <span>OASISTAP PROTOCOL</span>
+          <span>TOWNRAISE PROTOCOL</span>
           <span>NODE ID: {card.id}</span>
         </div>
       </div>

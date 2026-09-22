@@ -698,7 +698,7 @@ export default function HomePage() {
               <span className="text-indigo-400">Shield Negative Feedback Privately.</span>
             </h2>
             <p className="text-zinc-400 text-sm leading-relaxed">
-              Traditional paper QR codes send unhappy customers directly to Google where they can damage your 5.0 star reputation. OasisTap uses an intelligent dual-channel routing protocol:
+              Traditional paper QR codes send unhappy customers directly to Google where they can damage your 5.0 star reputation. Townraise uses an intelligent dual-channel routing protocol:
             </p>
           </div>
 

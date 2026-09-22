@@ -423,7 +423,7 @@ export default function TownCommandPage() {
                       {currentTown.fullName} Local Business Network
                     </h2>
                     <p className="text-xs text-amber-400 font-mono font-bold">
-                      Powered by OasisTap Physical-to-Digital Infrastructure
+                      Powered by Townraise Physical-to-Digital Infrastructure
                     </p>
                   </div>
                 </div>

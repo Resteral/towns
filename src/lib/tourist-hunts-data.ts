@@ -32,7 +32,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Route 25 & Ossipee Lake Rd, Center Ossipee, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-OSS-01',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-1',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-1',
         photoUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
         sponsorName: 'Ossipee Lake Marina',
         sponsorOffer: 'Free iced tea with canoe rental'
@@ -48,7 +48,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Main St & Railroad Ave, Center Ossipee, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-OSS-02',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-2',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-2',
         photoUrl: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -62,7 +62,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Old Route 125 over Bearcamp River, West Ossipee, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-OSS-03',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-3',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-3',
         photoUrl: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -76,7 +76,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Route 16 Scenic Pull-Off, Ossipee, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-OSS-04',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-4',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-4',
         photoUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -86,11 +86,11 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         category: 'food_drink',
         description: 'World-famous roadside smoked BBQ joint, motorcycle stop, and Carroll County community bulletin station.',
         historicalNote: 'A staple meeting junction for over 40 years where north-south travelers pause for hickory-smoked meats and local news.',
-        clue: 'Tap the OasisTap NFC badge right at the front welcome counter next to the menu blackboard.',
+        clue: 'Tap the Townraise NFC badge right at the front welcome counter next to the menu blackboard.',
         address: 'Junction Route 16 & Route 25, West Ossipee, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-OSS-05',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-5',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-ossipee-pioneer&checkin=cp-ossipee-5',
         photoUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
         sponsorName: 'Yankee Smokehouse',
         sponsorOffer: 'Free side of cornbread with any BBQ platter'
@@ -128,7 +128,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Route 153 & Plantation Rd, Effingham, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-EFF-01',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-1',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-1',
         photoUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -142,7 +142,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'High Mountain Rd, Effingham, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-EFF-02',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-2',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-2',
         photoUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -156,7 +156,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Village Road, Freedom, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-EFF-03',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-3',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-3',
         photoUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -170,7 +170,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Province Lake Rd, Effingham, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-EFF-04',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-4',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-effingham-freedom-artisan&checkin=cp-eff-4',
         photoUrl: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80',
         sponsorName: 'Effingham Valley Maple',
         sponsorOffer: 'Free sample cup of maple syrup with any purchase'
@@ -208,7 +208,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '1 Lake St, Wolfeboro, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-WOLF-01',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-1',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-1',
         photoUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -222,7 +222,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Railroad Ave, Wolfeboro, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-WOLF-02',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-2',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-2',
         photoUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -236,7 +236,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '77 Center St, Wolfeboro, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-WOLF-03',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-3',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-3',
         photoUrl: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -250,7 +250,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Main St & Cate Park, Wolfeboro, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-WOLF-04',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-4',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-4',
         photoUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -264,7 +264,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '36 Mill St, Wolfeboro, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-WOLF-05',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-5',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-wolfeboro-resort&checkin=cp-wolf-5',
         photoUrl: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80',
         sponsorName: 'Lone Wolfe Brewing',
         sponsorOffer: '$2 off your first draft flight with trail check-in'
@@ -302,7 +302,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Passaconaway Rd & Swift River, Conway, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-CON-01',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-1',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-1',
         photoUrl: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -316,7 +316,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Cathedral Ledge Rd, North Conway, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-CON-02',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-2',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-2',
         photoUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -330,7 +330,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '38 Norcross Circle, North Conway, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-CON-03',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-3',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-3',
         photoUrl: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -344,7 +344,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'East Conway Rd Saco Launch, Conway, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-CON-04',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-4',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-4',
         photoUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -358,7 +358,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: 'Main St Dispatch Center, Conway, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-CON-05',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-5',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-conway-gateway&checkin=cp-con-5',
         photoUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
         sponsorName: 'Sean Martin 4x4 Express',
         sponsorOffer: 'Priority dispatch and $5 tip match'
@@ -396,7 +396,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '104 Main St, Tamworth, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-TAM-01',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-1',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-1',
         photoUrl: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=600&q=80',
       },
       {
@@ -410,7 +410,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '85 Main St, Tamworth, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-TAM-02',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-2',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-2',
         photoUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
         sponsorName: 'Tamworth Lyceum',
         sponsorOffer: 'Free pastry upgrade with any specialty coffee'
@@ -426,7 +426,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '15 Cleveland Hill Rd, Tamworth, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-TAM-03',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-3',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-3',
         photoUrl: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80',
         sponsorName: 'Tamworth Distilling',
         sponsorOffer: 'Complimentary botanical mocktail or spirit tasting token'
@@ -442,7 +442,7 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
         address: '58 Cleveland Hill Rd, Tamworth, NH',
         pointsReward: 25,
         nfcTagId: 'NFC-HUNT-TAM-04',
-        qrPayloadUrl: 'https://oasistap.local/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-4',
+        qrPayloadUrl: 'https://townraise.org/tourist-hunts?hunt=hunt-tamworth-arts&checkin=cp-tam-4',
         photoUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=600&q=80',
       }
     ]

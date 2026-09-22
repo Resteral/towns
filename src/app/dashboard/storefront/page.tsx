@@ -18,7 +18,7 @@ export default function MerchantStorefrontDashboardPage() {
 
   const handleOpenQrModal = async (sf: any) => {
     setActiveQrModalStorefront(sf);
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://oasistap.io';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://townraise.org';
     const siteUrl = `${origin}/site/${sf.slug}`;
     const url = await QRCode.toDataURL(siteUrl, {
       width: 380,
@@ -98,7 +98,7 @@ export default function MerchantStorefrontDashboardPage() {
 
               {/* Public Subdomain URL */}
               <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl flex items-center justify-between text-xs font-mono">
-                <span className="text-zinc-500 truncate">oasistap.io/site/{sf.slug}</span>
+                <span className="text-zinc-500 truncate">townraise.org/site/{sf.slug}</span>
                 <Link
                   href={`/site/${sf.slug}`}
                   target="_blank"

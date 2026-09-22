@@ -149,7 +149,7 @@ ${itemsText}
               },
             ],
             footer: {
-              text: `OasisTap Delivery Node • ${new Date(order.createdAt).toLocaleTimeString()}`,
+              text: `Townraise Delivery Node • ${new Date(order.createdAt).toLocaleTimeString()}`,
             },
           },
         ],

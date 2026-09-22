@@ -438,7 +438,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         {/* Footer info */}
         <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
-          <span>OasisTap Decentralized Auth</span>
+          <span>Townraise Decentralized Auth</span>
           <Link 
             href="/drivers" 
             onClick={onClose} 

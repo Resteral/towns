@@ -91,10 +91,10 @@ export default function SmsAutomationHubPage() {
     const rendered = selectedWorkflow.smsTemplate
       .replace(/{BusinessName}/g, selectedWorkflow.targetBusinessName)
       .replace(/{CustomerName}/g, testCustomerName)
-      .replace(/{ReviewLink}/g, 'https://oasistap.com/r/pnb-eats')
+      .replace(/{ReviewLink}/g, 'https://townraise.org/r/pnb-eats')
       .replace(/{KeypadCode}/g, '4892#')
-      .replace(/{ConciergeLink}/g, 'https://oasistap.com/guest/pine-cove')
-      .replace(/{OrderLink}/g, 'https://oasistap.com/menu/pnb-eats')
+      .replace(/{ConciergeLink}/g, 'https://townraise.org/guest/pine-cove')
+      .replace(/{OrderLink}/g, 'https://townraise.org/menu/pnb-eats')
       .replace(/{AppointmentTime}/g, 'Tomorrow at 10:30 AM')
       .replace(/{Offer}/g, '15% Off Your Next Meal');
 
@@ -483,9 +483,9 @@ export default function SmsAutomationHubPage() {
                   {selectedWorkflow ? selectedWorkflow.targetBusinessName.charAt(0) : 'O'}
                 </div>
                 <div className="text-xs font-bold text-white truncate max-w-[200px] mx-auto">
-                  {selectedWorkflow?.targetBusinessName || 'OasisTap Merchant'}
+                  {selectedWorkflow?.targetBusinessName || 'Townraise Merchant'}
                 </div>
-                <div className="text-[9px] text-white/40">Verified Local Business • Oasis SMS</div>
+                <div className="text-[9px] text-white/40">Verified Local Business • Townraise SMS</div>
               </div>
 
               {/* Message Thread Scroll Area */}
@@ -509,15 +509,15 @@ export default function SmsAutomationHubPage() {
                       ? editingTemplate
                           .replace(/{BusinessName}/g, selectedWorkflow.targetBusinessName)
                           .replace(/{CustomerName}/g, testCustomerName)
-                          .replace(/{ReviewLink}/g, 'https://oasistap.com/r/pnb-eats')
+                          .replace(/{ReviewLink}/g, 'https://townraise.org/r/pnb-eats')
                           .replace(/{KeypadCode}/g, '4892#')
-                          .replace(/{ConciergeLink}/g, 'https://oasistap.com/guest/pine-cove')
-                          .replace(/{OrderLink}/g, 'https://oasistap.com/menu/pnb-eats')
+                          .replace(/{ConciergeLink}/g, 'https://townraise.org/guest/pine-cove')
+                          .replace(/{OrderLink}/g, 'https://townraise.org/menu/pnb-eats')
                           .replace(/{AppointmentTime}/g, 'Tomorrow at 10:30 AM')
                           .replace(/{Offer}/g, '15% Off Your Next Meal')
-                      : 'Hello from OasisTap Automation!'}
+                      : 'Hello from Townraise Automation!'}
                   </div>
-                  <span className="text-[8px] text-white/40 pl-1">Delivered via Oasis 2-Way Gateway</span>
+                  <span className="text-[8px] text-white/40 pl-1">Delivered via Townraise 2-Way Gateway</span>
                 </div>
 
                 {/* Interactive Simulated Customer Reply */}

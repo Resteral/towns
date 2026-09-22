@@ -148,10 +148,10 @@ export default function GrowthKitPage() {
               <div className="p-4 bg-black/40 rounded-2xl border border-white/5 text-xs text-white/80 space-y-2">
                 <span className="text-[10px] text-emerald-400 font-bold uppercase block">Template A: Post-Delivery Thank You</span>
                 <p className="font-mono text-[11px] text-white/70 leading-relaxed">
-                  &quot;Hi from {selectedBusiness}! Hope you loved your order today. Tap our 1-click link to leave a 5-star Google review & get $5 off next time: https://oasistap.com/tap/{selectedBusiness.toLowerCase().replace(/[^a-z0-9]/g, '')}&quot;
+                  &quot;Hi from {selectedBusiness}! Hope you loved your order today. Tap our 1-click link to leave a 5-star Google review & get $5 off next time: https://townraise.org/tap/{selectedBusiness.toLowerCase().replace(/[^a-z0-9]/g, '')}&quot;
                 </p>
                 <button
-                  onClick={() => handleCopyText('sms-a', `Hi from ${selectedBusiness}! Hope you loved your order today. Tap our 1-click link to leave a 5-star Google review & get $5 off next time: https://oasistap.com/directory`)}
+                  onClick={() => handleCopyText('sms-a', `Hi from ${selectedBusiness}! Hope you loved your order today. Tap our 1-click link to leave a 5-star Google review & get $5 off next time: https://townraise.org/directory`)}
                   className="text-[10px] font-bold text-amber-300 flex items-center gap-1 hover:text-amber-200"
                 >
                   {copiedTemplate === 'sms-a' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -162,10 +162,10 @@ export default function GrowthKitPage() {
               <div className="p-4 bg-black/40 rounded-2xl border border-white/5 text-xs text-white/80 space-y-2">
                 <span className="text-[10px] text-indigo-400 font-bold uppercase block">Template B: Weekend Special VIP</span>
                 <p className="font-mono text-[11px] text-white/70 leading-relaxed">
-                  &quot;VIP Special from {selectedBusiness}: This weekend only, order takeout on OasisTap and receive free delivery + double loyalty points! https://oasistap.com/eats&quot;
+                  &quot;VIP Special from {selectedBusiness}: This weekend only, order takeout on Townraise and receive free delivery + double loyalty points! https://townraise.org/eats&quot;
                 </p>
                 <button
-                  onClick={() => handleCopyText('sms-b', `VIP Special from ${selectedBusiness}: This weekend only, order takeout on OasisTap and receive free delivery + double loyalty points! https://oasistap.com/eats`)}
+                  onClick={() => handleCopyText('sms-b', `VIP Special from ${selectedBusiness}: This weekend only, order takeout on Townraise and receive free delivery + double loyalty points! https://townraise.org/eats`)}
                   className="text-[10px] font-bold text-indigo-300 flex items-center gap-1 hover:text-indigo-200"
                 >
                   {copiedTemplate === 'sms-b' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -212,7 +212,7 @@ export default function GrowthKitPage() {
           </div>
 
           <button
-            onClick={() => handleCopyText('social-post', `Love our food at ${selectedBusiness}? ⭐⭐⭐⭐⭐ Tap our link to leave a Google review and get $5 off your next order: https://oasistap.com/directory #CarrollCountyEats`)}
+            onClick={() => handleCopyText('social-post', `Love our food at ${selectedBusiness}? ⭐⭐⭐⭐⭐ Tap our link to leave a Google review and get $5 off your next order: https://townraise.org/directory #CarrollCountyEats`)}
             className="w-full py-3 bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
           >
             {copiedTemplate === 'social-post' ? <CheckCircle2 className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}

@@ -3611,7 +3611,7 @@ export function useNfcStore() {
       ...spotData,
       id: spotId,
       nfcTagId,
-      qrPayloadUrl: `https://oasistap.local/store-hunting?circuit=${circuitId}&spot=${spotId}`,
+      qrPayloadUrl: `https://townraise.org/store-hunting?circuit=${circuitId}&spot=${spotId}`,
       pointsReward: 35
     };
 

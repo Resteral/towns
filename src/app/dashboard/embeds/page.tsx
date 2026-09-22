@@ -38,15 +38,15 @@ export default function EmbedsStudioPage() {
   const reviewCount = selectedStorefront?.reviewsCount || 128;
 
   // Generate embed code snippet
-  const embedCodeSnippet = `<!-- OasisTap Verified Local Trust Badge for ${businessName} -->
-<div id="oasistap-badge-container" 
+  const embedCodeSnippet = `<!-- Townraise Verified Local Trust Badge for ${businessName} -->
+<div id="townraise-badge-container" 
   data-merchant="${selectedStorefront?.id || 'sf-pnb-eats'}"
   data-theme="${themeMode}"
   data-widget="${widgetType}"
   data-accent="${accentColor}">
 </div>
-<script src="https://oasistap.com/embed/widget.js" async defer></script>
-<!-- /OasisTap Verified Badge -->`;
+<script src="https://townraise.org/embed/widget.js" async defer></script>
+<!-- /Townraise Verified Badge -->`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(embedCodeSnippet);
@@ -295,7 +295,7 @@ export default function EmbedsStudioPage() {
                     </div>
 
                     <div className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
-                      <span>Rate Us on OasisTap</span>
+                      <span>Rate Us on Townraise</span>
                       <ExternalLink className="w-3 h-3" />
                     </div>
                   </div>
@@ -323,7 +323,7 @@ export default function EmbedsStudioPage() {
                     </p>
                     <div className="text-[10px] font-bold flex items-center justify-between opacity-70">
                       <span>– Sarah M. (Ossipee, NH)</span>
-                      {showVerifiedShield && <span className="text-emerald-400 font-bold flex items-center gap-0.5"><ShieldCheck className="w-3 h-3" /> Oasis Certified</span>}
+                      {showVerifiedShield && <span className="text-emerald-400 font-bold flex items-center gap-0.5"><ShieldCheck className="w-3 h-3" /> Townraise Certified</span>}
                     </div>
                   </div>
                 )}
@@ -342,7 +342,7 @@ export default function EmbedsStudioPage() {
 
               {/* Footer Indicator */}
               <div className="text-center pt-3 text-[9px] text-white/30 font-mono">
-                Rendered with OasisTap JavaScript Embed Core v2.4
+                Rendered with Townraise JavaScript Embed Core v2.4
               </div>
             </div>
           </div>

@@ -281,7 +281,7 @@ export default function CreateStorefrontPage() {
             <span className="text-[10px] font-mono uppercase text-zinc-500">Your Public Website URL:</span>
             <div className="flex items-center justify-between bg-black/50 p-3 rounded-xl border border-white/5">
               <span className="text-xs font-mono text-amber-400 truncate">
-                https://oasistap.io/site/{createdSlug}
+                https://townraise.org/site/{createdSlug}
               </span>
               <Link
                 href={`/site/${createdSlug}`}
@@ -391,7 +391,7 @@ export default function CreateStorefrontPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase text-zinc-300">Website URL Slug *</label>
                   <div className="flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs">
-                    <span className="text-zinc-500 font-mono">oasistap.io/site/</span>
+                    <span className="text-zinc-500 font-mono">townraise.org/site/</span>
                     <input
                       type="text"
                       required

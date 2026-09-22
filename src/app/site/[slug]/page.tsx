@@ -636,7 +636,7 @@ export default function StandaloneBusinessSitePage({
             </div>
 
             <div className="pt-4 border-t border-white/5 text-center text-[10px] font-mono text-zinc-500">
-              Powered by OasisTap Decentralized Commerce Engine
+              Powered by Townraise Decentralized Commerce Engine
             </div>
 
           </div>

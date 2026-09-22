@@ -581,6 +581,6 @@ export function buildGoogleReviewUrl(placeId?: string, businessName?: string, to
  * Helper to build Smart Funnel URL for physical NFC cards
  */
 export function buildSmartTapUrl(cardId: string, origin?: string): string {
-  const base = origin || (typeof window !== 'undefined' ? window.location.origin : 'https://oasistap.io');
+  const base = origin || (typeof window !== 'undefined' ? window.location.origin : 'https://townraise.org');
   return `${base}/tap/${cardId}`;
 }

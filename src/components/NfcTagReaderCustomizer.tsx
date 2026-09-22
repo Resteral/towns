@@ -377,9 +377,9 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
       records: [
         {
           type: 'URI (NDEF Record #1)',
-          payload: 'https://oasistap.local/tap/card-oasis-smoke-world',
+          payload: 'https://townraise.org/tap/card-oasis-smoke-world',
           description: 'Smart Google Review Funnel for Smoke World Ossipee',
-          actionUrl: 'https://oasistap.local/tap/card-oasis-smoke-world'
+          actionUrl: 'https://townraise.org/tap/card-oasis-smoke-world'
         }
       ],
       timestamp: 'Just now (Simulated NFC Tap)'
@@ -419,9 +419,9 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
       records: [
         {
           type: 'URI (NDEF Record #1)',
-          payload: 'https://oasistap.local/site/pnb-eats?table=4',
+          payload: 'https://townraise.org/site/pnb-eats?table=4',
           description: 'PNB Eats Table #4 Dine-In Menu & Instant Ticket',
-          actionUrl: 'https://oasistap.local/site/pnb-eats?table=4'
+          actionUrl: 'https://townraise.org/site/pnb-eats?table=4'
         },
         {
           type: 'Text (NDEF Record #2)',
@@ -451,9 +451,9 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
         },
         {
           type: 'URI (NDEF Record #2)',
-          payload: 'https://oasistap.local/work?tab=gallery',
+          payload: 'https://townraise.org/work?tab=gallery',
           description: 'Interactive Before & After Project Portfolio',
-          actionUrl: 'https://oasistap.local/work?tab=gallery'
+          actionUrl: 'https://townraise.org/work?tab=gallery'
         }
       ],
       timestamp: 'Just now (Simulated NFC Tap)'
@@ -492,7 +492,7 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
       records: [
         {
           type: 'URI (Emergency Pet Record)',
-          payload: 'https://oasistap.local/contact?item=pet-tag-max',
+          payload: 'https://townraise.org/contact?item=pet-tag-max',
           description: 'Max (Golden Retriever) • Owner Phone: (508) 507-0305 • Reward Offered',
           actionUrl: 'tel:5085070305'
         }
@@ -531,10 +531,10 @@ export default function NfcTagReaderCustomizer() {
   const [businessName, setBusinessName] = useState(currentUser?.name ? `${currentUser.name}'s Oasis Community Pass` : 'Oasis Carroll County Regional Pass');
   const [headline, setHeadline] = useState('Tap phone for instant Carroll County perks & 1-tap courier dispatch!');
   const [googleReviewUrl, setGoogleReviewUrl] = useState('https://search.google.com/local/writereview?placeid=ChIJb6eBq9f94okRGb_SmokeWorldOss');
-  const [customUrl, setCustomUrl] = useState('https://oasistap.local');
+  const [customUrl, setCustomUrl] = useState('https://townraise.org');
   const [paypalUsername, setPaypalUsername] = useState('seanhse97');
   const [paypalEmail, setPaypalEmail] = useState('seanhse97@gmail.com');
-  const [socialUrl, setSocialUrl] = useState('https://instagram.com/oasistap');
+  const [socialUrl, setSocialUrl] = useState('https://instagram.com/townraise');
   const [vCardData, setVCardData] = useState({
     name: currentUser?.name || 'Sean Martin',
     title: 'Lead Courier & Vanguard Operator',
@@ -576,7 +576,7 @@ export default function NfcTagReaderCustomizer() {
   const [batchTargetCount, setBatchTargetCount] = useState<number>(100);
   const [batchPreset, setBatchPreset] = useState<'oasis_community' | 'courier_lifeline' | 'biz_review_sample' | 'event_door_pass' | 'tourist_landmark' | 'store_hunt_beacon' | 'custom_sequence'>('oasis_community');
   const [batchPrefix, setBatchPrefix] = useState('OASIS-PASS-');
-  const [batchCustomBaseUrl, setBatchCustomBaseUrl] = useState('https://oasistap.local/claim?pass=');
+  const [batchCustomBaseUrl, setBatchCustomBaseUrl] = useState('https://townraise.org/claim?pass=');
   const [isBatchConveyorActive, setIsBatchConveyorActive] = useState(false);
   const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
   const [isAutoTurboFlashing, setIsAutoTurboFlashing] = useState(false);
@@ -592,22 +592,22 @@ export default function NfcTagReaderCustomizer() {
       let typeLabel = '';
 
       if (preset === 'oasis_community') {
-        payload = `https://oasistap.local/claim?pass=${serial}&welcome=50`;
+        payload = `https://townraise.org/claim?pass=${serial}&welcome=50`;
         typeLabel = 'Oasis Rewards for Applying Pass (+50 Pts)';
       } else if (preset === 'courier_lifeline') {
-        payload = `https://oasistap.local/courier?card=${serial}&directPhone=5085070305&paypal=seanhse97`;
+        payload = `https://townraise.org/courier?card=${serial}&directPhone=5085070305&paypal=seanhse97`;
         typeLabel = 'Sean Martin 4x4 Hotline & Lifeline';
       } else if (preset === 'biz_review_sample') {
-        payload = `https://oasistap.local/tap/trial-${serial}`;
+        payload = `https://townraise.org/tap/trial-${serial}`;
         typeLabel = 'Merchant 5-Star Review Sample';
       } else if (preset === 'event_door_pass') {
-        payload = `https://oasistap.local/events?ticket=${serial}`;
+        payload = `https://townraise.org/events?ticket=${serial}`;
         typeLabel = 'Carroll County Event VIP Pass';
       } else if (preset === 'tourist_landmark') {
-        payload = `https://oasistap.local/tourist-hunts?checkin=${serial}`;
+        payload = `https://townraise.org/tourist-hunts?checkin=${serial}`;
         typeLabel = 'Tourist Attraction Landmark Tag';
       } else if (preset === 'store_hunt_beacon') {
-        payload = `https://oasistap.local/store-hunting?spot=${serial}`;
+        payload = `https://townraise.org/store-hunting?spot=${serial}`;
         typeLabel = 'In-Store Mystery Perk NFC Beacon';
       } else {
         payload = `${baseUrl}${serial}`;
@@ -635,22 +635,22 @@ export default function NfcTagReaderCustomizer() {
   const handlePresetChange = (newPreset: typeof batchPreset) => {
     setBatchPreset(newPreset);
     let pfx = 'OASIS-PASS-';
-    let base = 'https://oasistap.local/claim?pass=';
+    let base = 'https://townraise.org/claim?pass=';
     if (newPreset === 'courier_lifeline') {
       pfx = 'SEAN-4X4-';
-      base = 'https://oasistap.local/courier?card=';
+      base = 'https://townraise.org/courier?card=';
     } else if (newPreset === 'biz_review_sample') {
       pfx = 'REVIEW-';
-      base = 'https://oasistap.local/tap/trial-';
+      base = 'https://townraise.org/tap/trial-';
     } else if (newPreset === 'event_door_pass') {
       pfx = 'VIP-DOOR-';
-      base = 'https://oasistap.local/events?ticket=';
+      base = 'https://townraise.org/events?ticket=';
     } else if (newPreset === 'tourist_landmark') {
       pfx = 'LANDMARK-NH-';
-      base = 'https://oasistap.local/tourist-hunts?checkin=';
+      base = 'https://townraise.org/tourist-hunts?checkin=';
     } else if (newPreset === 'store_hunt_beacon') {
       pfx = 'STORE-HUNT-';
-      base = 'https://oasistap.local/store-hunting?spot=';
+      base = 'https://townraise.org/store-hunting?spot=';
     }
     setBatchPrefix(pfx);
     setBatchCustomBaseUrl(base);
@@ -792,7 +792,7 @@ export default function NfcTagReaderCustomizer() {
       case 'google_review':
         return googleReviewUrl || 'https://search.google.com/local/writereview';
       case 'menu':
-        return `https://oasistap.local/site/pnb-eats`;
+        return `https://townraise.org/site/pnb-eats`;
       case 'driver_dispatch':
         return `tel:${smsData.phone.replace(/[^0-9]/g, '')}`;
       case 'vcard':
@@ -800,13 +800,13 @@ export default function NfcTagReaderCustomizer() {
       case 'paypal_pay':
         return `https://paypal.me/${paypalUsername || 'seanhse97'}`;
       case 'social_hub':
-        return socialUrl || 'https://instagram.com/oasistap';
+        return socialUrl || 'https://instagram.com/townraise';
       case 'loyalty_pass':
-        return `https://oasistap.local/rewards?checkin=${encodeURIComponent(businessName)}`;
+        return `https://townraise.org/rewards?checkin=${encodeURIComponent(businessName)}`;
       case 'event_ticket':
-        return `https://oasistap.local/events`;
+        return `https://townraise.org/events`;
       case 'work_quote':
-        return `https://oasistap.local/work?tab=gallery`;
+        return `https://townraise.org/work?tab=gallery`;
       case 'wifi':
         return `WIFI:S:${wifiData.ssid};T:${wifiData.encryption};P:${wifiData.password};;`;
       case 'sms':
@@ -816,10 +816,10 @@ export default function NfcTagReaderCustomizer() {
       case 'shortcuts':
         return `shortcuts://run-shortcut?name=${encodeURIComponent(shortcutName)}`;
       case 'town_node':
-        return `https://oasistap.local/towns?town=${encodeURIComponent(selectedTownNode)}`;
+        return `https://townraise.org/towns?town=${encodeURIComponent(selectedTownNode)}`;
       case 'url':
       default:
-        return customUrl || 'https://oasistap.local';
+        return customUrl || 'https://townraise.org';
     }
   };
 
@@ -1199,7 +1199,7 @@ export default function NfcTagReaderCustomizer() {
                       desc: 'Brings anyone who taps to the dedicated rewards application page to unlock +50 welcome points, $5 credit & local perks.',
                       icon: '🎁',
                       badge: 'Instant Rewards for Applying',
-                      sampleUrl: 'https://oasistap.local/claim?pass=OASIS-PASS-001'
+                      sampleUrl: 'https://townraise.org/claim?pass=OASIS-PASS-001'
                     },
                     {
                       id: 'courier_lifeline',
@@ -1207,7 +1207,7 @@ export default function NfcTagReaderCustomizer() {
                       desc: 'Give to local drivers & motorists for 1-tap 24/7 towing (508-507-0305) & PayPal tipping.',
                       icon: '🛻',
                       badge: 'Emergency Recovery',
-                      sampleUrl: 'https://oasistap.local/courier?card=SEAN-4X4-001'
+                      sampleUrl: 'https://townraise.org/courier?card=SEAN-4X4-001'
                     },
                     {
                       id: 'biz_review_sample',
@@ -1215,7 +1215,7 @@ export default function NfcTagReaderCustomizer() {
                       desc: 'Give free samples to shop owners in Effingham, Ossipee, Freedom & Conway.',
                       icon: '⭐',
                       badge: 'Merchant Onboarding',
-                      sampleUrl: 'https://oasistap.local/tap/trial-REVIEW-001'
+                      sampleUrl: 'https://townraise.org/tap/trial-REVIEW-001'
                     },
                     {
                       id: 'event_door_pass',
@@ -1223,7 +1223,7 @@ export default function NfcTagReaderCustomizer() {
                       desc: 'Fast-track door pass for concert nights, craft fairs & brewery tastings.',
                       icon: '🎟️',
                       badge: 'Event Check-In',
-                      sampleUrl: 'https://oasistap.local/events?ticket=VIP-001'
+                      sampleUrl: 'https://townraise.org/events?ticket=VIP-001'
                     },
                     {
                       id: 'tourist_landmark',
@@ -1231,7 +1231,7 @@ export default function NfcTagReaderCustomizer() {
                       desc: 'Flash waterproof NFC stickers for covered bridges, historic depots, scenic trailheads & local breweries.',
                       icon: '🧭',
                       badge: 'Tourist Hunt Checkpoint',
-                      sampleUrl: 'https://oasistap.local/tourist-hunts?checkin=LANDMARK-NH-001'
+                      sampleUrl: 'https://townraise.org/tourist-hunts?checkin=LANDMARK-NH-001'
                     },
                     {
                       id: 'store_hunt_beacon',
@@ -1239,7 +1239,7 @@ export default function NfcTagReaderCustomizer() {
                       desc: 'Program checkout counter NFC stands to reveal secret in-store discounts, free tastings & store stamps.',
                       icon: '🛍️',
                       badge: 'Store Hunting Beacon',
-                      sampleUrl: 'https://oasistap.local/store-hunting?spot=STORE-HUNT-001'
+                      sampleUrl: 'https://townraise.org/store-hunting?spot=STORE-HUNT-001'
                     },
                   ].map(preset => (
                     <button
@@ -2468,7 +2468,7 @@ export default function NfcTagReaderCustomizer() {
                 </button>
               </div>
 
-              {/* Method 2: Save to OasisTap Fleet */}
+              {/* Method 2: Save to Townraise Fleet */}
               <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400">

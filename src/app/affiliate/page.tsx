@@ -37,7 +37,7 @@ export default function AffiliatePage() {
   const [calcReferrals, setCalcReferrals] = useState(6);
 
   const handleCopy = (code: string) => {
-    navigator.clipboard.writeText(`https://oasistap.com/directory?ref=${code}`);
+    navigator.clipboard.writeText(`https://townraise.org/directory?ref=${code}`);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
   };
@@ -281,7 +281,7 @@ export default function AffiliatePage() {
                   <span className="text-[10px] font-mono text-white/40 uppercase block mb-1">Your Referral Code</span>
                   <span className="text-3xl font-black font-mono text-amber-400">{registeredAffiliate.code}</span>
                   <p className="text-[11px] text-white/60 mt-2">
-                    Share Link: <span className="text-indigo-300 font-mono">https://oasistap.com/directory?ref={registeredAffiliate.code}</span>
+                    Share Link: <span className="text-indigo-300 font-mono">https://townraise.org/directory?ref={registeredAffiliate.code}</span>
                   </p>
                 </div>
 

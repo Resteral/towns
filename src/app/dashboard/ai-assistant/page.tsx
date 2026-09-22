@@ -185,7 +185,7 @@ Wild-caught local lake trout dipped in crisp local IPA batter, served with golde
     {
       id: 'msg-2',
       sender: 'ai_agent',
-      text: `Hello! Yes absolutely! 🌲 ${currentStore?.businessName || 'OasisTap'} couriers deliver hot meals, pizzas, and kiln-dried hardwood firewood bundles directly to public boat launches, lakeside firepits, and private docks in Carroll County. Our average delivery time is ~25-35 minutes!`,
+      text: `Hello! Yes absolutely! 🌲 ${currentStore?.businessName || 'Townraise'} couriers deliver hot meals, pizzas, and kiln-dried hardwood firewood bundles directly to public boat launches, lakeside firepits, and private docks in Carroll County. Our average delivery time is ~25-35 minutes!`,
       timestamp: '10:02 AM'
     }
   ]);
@@ -221,7 +221,7 @@ Wild-caught local lake trout dipped in crisp local IPA batter, served with golde
       } else if (lower.includes('best') || lower.includes('recommend') || lower.includes('popular')) {
         responseText = `Our top customer favorites at ${currentStore.businessName} are The Big Mountain Steak & Cheese Sub ($17.49) and our Wood-Fired Smoked Pulled Pork Pizza ($21.99)!`;
       } else {
-        responseText = `Thanks for reaching out to ${currentStore.businessName}! You can browse our full live digital menu, place a delivery or dine-in order, or tap to reserve right here on OasisTap. How else can I help your party today? 😊`;
+        responseText = `Thanks for reaching out to ${currentStore.businessName}! You can browse our full live digital menu, place a delivery or dine-in order, or tap to reserve right here on Townraise. How else can I help your party today? 😊`;
       }
 
       setChatMessages(prev => [
