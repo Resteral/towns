@@ -1,6 +1,7 @@
 import { 
   ReviewProduct, NfcCardConfig, TapLog, PrivateFeedback, 
-  SellerProfile, ShoutoutPost, TownNode, BeforeAfterShowcase, WorkRequest 
+  SellerProfile, ShoutoutPost, TownNode, BeforeAfterShowcase, WorkRequest,
+  NfcMenuProduct, NfcHardwareOrder
 } from './types';
 
 export const INITIAL_TOWNS: TownNode[] = [
@@ -638,5 +639,248 @@ export const INITIAL_WORK_REQUESTS: WorkRequest[] = [
     createdAt: new Date(Date.now() - 48 * 3600000).toISOString(),
   }
 ];
+
+export const INITIAL_NFC_MENU_PRODUCTS: NfcMenuProduct[] = [
+  {
+    id: 'nfc-menu-acrylic-stand',
+    title: 'Dual-Sided Acrylic Tap-to-Order Table Stand (Pre-Encoded)',
+    subtitle: 'Commercial High-Gain NTAG215 Table Stand with Direct Menu Link',
+    description: 'Commercial restaurant table stand pre-programmed with your live online digital menu. Customers tap their iPhone or Android phone to instantly open your food and drinks ordering page.',
+    targetRestaurantSlug: 'pnb-eats',
+    targetRestaurantName: 'PNB Eats Roadside Grill',
+    menuUrl: 'https://oasistap.com/site/pnb-eats',
+    tableNumber: 'Table #1',
+    formFactor: 'acrylic_table_stand',
+    chipType: 'NTAG215',
+    price: 24.99,
+    originalPrice: 39.99,
+    inventoryCount: 38,
+    unitsSold: 54,
+    badge: '★ Best for Diners & Cafes',
+    coverImageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
+    accentColor: '#f59e0b',
+    isPublished: true,
+    features: [
+      'Pre-encoded with live digital menu URL',
+      'High-Density NTAG215 NFC Microchip (504 bytes)',
+      'Laser-sharp scratchproof table QR code backing',
+      'Commercial UV-resistant clear acrylic',
+      'No app download needed for diners'
+    ],
+    dimensions: '4" x 6" Free-Standing Base',
+    material: 'Shatterproof Acrylic',
+    includesStandTent: true,
+    createdAt: '2026-08-01T10:00:00Z'
+  },
+  {
+    id: 'nfc-menu-table-disc',
+    title: 'Commercial Self-Adhesive PVC Table Tap Disc (35mm)',
+    subtitle: 'Ultra-Slim Waterproof 3M Sticky Disc with Embedded NTAG213',
+    description: 'Flush-mount disc engineered to stick directly to dining tables, high-top bar surfaces, or outdoor patio picnic tables. Pre-programmed with digital menu for tap-to-order.',
+    targetRestaurantSlug: 'pizza-barn-smokehouse',
+    targetRestaurantName: 'Pizza Barn & Smokehouse',
+    menuUrl: 'https://oasistap.com/site/pizza-barn-smokehouse',
+    formFactor: 'pvc_table_disc',
+    chipType: 'NTAG213',
+    price: 12.50,
+    originalPrice: 18.00,
+    inventoryCount: 120,
+    unitsSold: 88,
+    badge: 'Patio & Bar Favorite',
+    coverImageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    accentColor: '#ef4444',
+    isPublished: true,
+    features: [
+      'Industrial 3M self-adhesive backing',
+      'IP68 waterproof & alcohol-cleaner resistant',
+      'Sub-1mm ultra-slim low profile',
+      'Pre-flashed with live menu destination'
+    ],
+    dimensions: '35mm Diameter (1.37")',
+    material: 'Matte PVC + 3M VHB',
+    createdAt: '2026-08-10T12:00:00Z'
+  },
+  {
+    id: 'nfc-menu-wood-tent',
+    title: 'Rustic Artisan Hardwood NFC Table Tent',
+    subtitle: 'Handcrafted New England Sugar Maple with Concealed NFC Chip',
+    description: 'Custom laser-engraved wood table tent with hidden NFC antenna and carved QR emblem. Built for craft taprooms, taverns, and farm-to-table eateries.',
+    targetRestaurantSlug: 'hobbs-tavern-brewing',
+    targetRestaurantName: 'Hobbs Tavern & Brewing Co.',
+    menuUrl: 'https://oasistap.com/site/hobbs-tavern-brewing',
+    formFactor: 'wood_table_tent',
+    chipType: 'NTAG216',
+    price: 29.99,
+    originalPrice: 45.00,
+    inventoryCount: 22,
+    unitsSold: 34,
+    badge: 'Artisan Hardwood',
+    coverImageUrl: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=80',
+    accentColor: '#f59e0b',
+    isPublished: true,
+    features: [
+      '100% Solid New Hampshire Hardwood',
+      'Laser-engraved restaurant logo & table number',
+      'High-memory NTAG216 NFC chip (888 bytes)',
+      'Hand-rubbed natural beeswax finish'
+    ],
+    dimensions: '3.5" x 5" Double-Sided A-Frame',
+    material: 'Solid Maple & Walnut',
+    includesStandTent: true,
+    createdAt: '2026-08-15T14:00:00Z'
+  },
+  {
+    id: 'nfc-menu-server-badge',
+    title: 'Waitstaff & Bartender Instant Tap Wearable Badge',
+    subtitle: 'Magnetic Clip Wearable Smart Badge for Servers & Bartenders',
+    description: 'Staff wearable smart card allowing waitstaff and bartenders to offer diners a 1-second phone tap on their uniform to pull up menus or tip.',
+    targetRestaurantSlug: 'jakes-seafood-grill',
+    targetRestaurantName: "Jake's Seafood & Grill",
+    menuUrl: 'https://oasistap.com/site/jakes-seafood-grill',
+    formFactor: 'waitstaff_badge',
+    chipType: 'NTAG213',
+    price: 19.99,
+    originalPrice: 29.99,
+    inventoryCount: 45,
+    unitsSold: 62,
+    badge: 'Staff Essential',
+    coverImageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    accentColor: '#06b6d4',
+    isPublished: true,
+    features: [
+      'Heavy-duty dual neodymium magnet clothing clip',
+      'Instant tap on server lapel/apron',
+      'Connects to digital menu + staff tip jar',
+      'Durable scratch-resistant gloss laminate'
+    ],
+    dimensions: '3.375" x 2.125" Standard CR80 Badge',
+    material: 'Polycarbonate Composite',
+    createdAt: '2026-08-20T16:00:00Z'
+  },
+  {
+    id: 'nfc-menu-drive-thru',
+    title: 'All-Weather Curbside & Drive-Thru High-Gain NFC Post Tag',
+    subtitle: 'Heavy-Duty IP68 Outdoor Tag with 50mm Long-Range Antenna',
+    description: 'Heavy-duty weatherproof tag mounted at Hannaford To Go curbside pickup bays and drive-thru lanes for instant mobile order check-in.',
+    targetRestaurantSlug: 'hannaford-to-go',
+    targetRestaurantName: 'Hannaford Supermarket & Hannaford To Go',
+    menuUrl: 'https://oasistap.com/site/hannaford-to-go',
+    formFactor: 'outdoor_drive_thru',
+    chipType: 'NTAG215',
+    price: 34.99,
+    originalPrice: 49.99,
+    inventoryCount: 18,
+    unitsSold: 26,
+    badge: 'Weatherproof IP68',
+    coverImageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
+    accentColor: '#16a34a',
+    isPublished: true,
+    features: [
+      'Rated for -30°F to +140°F New England weather',
+      'High-gain 50mm antenna reads through vehicle glass',
+      'Vandal-resistant ABS casing with screw holes',
+      'Pre-programmed with curbside arrival portal'
+    ],
+    dimensions: '60mm x 60mm Tough Casing',
+    material: 'Ruggedized Industrial ABS',
+    createdAt: '2026-08-25T11:00:00Z'
+  },
+  {
+    id: 'nfc-menu-keychain-tag',
+    title: 'VIP Regular Patron Fast-Reorder NFC Keychain',
+    subtitle: 'Leatherette & Brushed Alloy Smart FOB with Instant Food Re-Order',
+    description: 'Pocket-sized luxury keychain tag given to regular patrons and seasonal cabin owners. Tap anytime from their couch to instantly open restaurant delivery checkout.',
+    targetRestaurantSlug: 'freedom-village-store',
+    targetRestaurantName: 'Freedom Village Store & Cafe',
+    menuUrl: 'https://oasistap.com/site/freedom-village-store',
+    formFactor: 'keychain_tag',
+    chipType: 'NTAG213',
+    price: 9.99,
+    originalPrice: 15.00,
+    inventoryCount: 75,
+    unitsSold: 110,
+    badge: 'VIP Re-Order',
+    coverImageUrl: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80',
+    accentColor: '#10b981',
+    isPublished: true,
+    features: [
+      'Brushed zinc alloy ring with stitched leatherette',
+      'Instant tap to re-order favorite morning coffee & scones',
+      'Built-in VIP customer loyalty discount',
+      'Water-resistant & drop-proof'
+    ],
+    dimensions: '45mm x 30mm FOB',
+    material: 'Zinc Alloy & Vegan Leatherette',
+    createdAt: '2026-08-30T09:00:00Z'
+  }
+];
+
+export const INITIAL_NFC_HARDWARE_ORDERS: NfcHardwareOrder[] = [
+  {
+    id: 'hord-101',
+    orderNumber: 'NFC-8041',
+    buyerName: 'Gary Collins (Owner)',
+    buyerPhone: '(603) 539-7440',
+    buyerEmail: 'gary@pnbeats.com',
+    buyerBusinessName: 'PNB Eats Roadside Grill',
+    deliveryAddress: 'NH-25, Effingham, NH 03882',
+    productId: 'nfc-menu-acrylic-stand',
+    productTitle: 'Dual-Sided Acrylic Tap-to-Order Table Stand (Pre-Encoded)',
+    formFactor: 'acrylic_table_stand',
+    targetRestaurantName: 'PNB Eats Roadside Grill',
+    quantity: 8,
+    unitPrice: 24.99,
+    totalAmount: 199.92,
+    status: 'delivered',
+    programmedUrl: 'https://oasistap.com/site/pnb-eats',
+    tableAssignments: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Table 6', 'Bar A', 'Bar B'],
+    chipType: 'NTAG215',
+    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    paidStatus: 'paid'
+  },
+  {
+    id: 'hord-102',
+    orderNumber: 'NFC-8042',
+    buyerName: 'Dan Sullivan',
+    buyerPhone: '(603) 539-2244',
+    buyerBusinessName: 'Pizza Barn & Smokehouse',
+    deliveryAddress: 'Route 16, Center Ossipee, NH 03814',
+    productId: 'nfc-menu-table-disc',
+    productTitle: 'Commercial Self-Adhesive PVC Table Tap Disc (35mm)',
+    formFactor: 'pvc_table_disc',
+    targetRestaurantName: 'Pizza Barn & Smokehouse',
+    quantity: 12,
+    unitPrice: 12.50,
+    totalAmount: 150.00,
+    status: 'programmed_qa',
+    programmedUrl: 'https://oasistap.com/site/pizza-barn-smokehouse',
+    tableAssignments: ['Patio 1', 'Patio 2', 'Patio 3', 'Patio 4', 'Dining 1', 'Dining 2'],
+    chipType: 'NTAG213',
+    createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+    paidStatus: 'paid'
+  },
+  {
+    id: 'hord-103',
+    orderNumber: 'NFC-8043',
+    buyerName: 'Mike Hobbs',
+    buyerPhone: '(603) 539-2000',
+    buyerBusinessName: 'Hobbs Tavern & Brewing Co.',
+    deliveryAddress: '2415 White Mountain Hwy, West Ossipee, NH 03890',
+    productId: 'nfc-menu-wood-tent',
+    productTitle: 'Rustic Artisan Hardwood NFC Table Tent',
+    formFactor: 'wood_table_tent',
+    targetRestaurantName: 'Hobbs Tavern & Brewing Co.',
+    quantity: 6,
+    unitPrice: 29.99,
+    totalAmount: 179.94,
+    status: 'pending_flash',
+    programmedUrl: 'https://oasistap.com/site/hobbs-tavern-brewing',
+    tableAssignments: ['Taproom 1', 'Taproom 2', 'Taproom 3', 'Taproom 4', 'Beer Garden 1', 'Beer Garden 2'],
+    chipType: 'NTAG216',
+    createdAt: new Date().toISOString(),
+    paidStatus: 'pay_on_delivery'
+  }
+];
+
 
 

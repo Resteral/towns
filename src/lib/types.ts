@@ -403,3 +403,63 @@ export interface ContractorQuote {
   earliestStartDate?: string;
   createdAt: string;
 }
+
+export type NfcFormFactor = 
+  | 'acrylic_table_stand' 
+  | 'wood_table_tent' 
+  | 'pvc_table_disc' 
+  | 'waitstaff_badge' 
+  | 'keychain_tag' 
+  | 'outdoor_drive_thru'
+  | 'bar_counter_mat'
+  | 'custom';
+
+export interface NfcMenuProduct {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  targetRestaurantSlug: string;
+  targetRestaurantName: string;
+  menuUrl: string;
+  tableNumber?: string;
+  formFactor: NfcFormFactor;
+  chipType: 'NTAG213' | 'NTAG215' | 'NTAG216';
+  price: number;
+  originalPrice?: number;
+  inventoryCount: number;
+  unitsSold: number;
+  badge?: string;
+  coverImageUrl: string;
+  accentColor: string;
+  isPublished: boolean;
+  features: string[];
+  dimensions?: string;
+  material?: string;
+  includesStandTent?: boolean;
+  createdAt: string;
+}
+
+export interface NfcHardwareOrder {
+  id: string;
+  orderNumber: string;
+  buyerName: string;
+  buyerPhone: string;
+  buyerEmail?: string;
+  buyerBusinessName?: string;
+  deliveryAddress: string;
+  productId: string;
+  productTitle: string;
+  formFactor: NfcFormFactor;
+  targetRestaurantName: string;
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+  status: 'pending_flash' | 'programmed_qa' | 'in_transit' | 'delivered';
+  programmedUrl: string;
+  tableAssignments?: string[];
+  chipType: 'NTAG213' | 'NTAG215' | 'NTAG216';
+  createdAt: string;
+  paidStatus: 'paid' | 'pay_on_delivery';
+}
+

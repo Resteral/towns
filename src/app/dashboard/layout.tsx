@@ -20,6 +20,7 @@ export default function DashboardLayout({
 
   const navItems = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/dashboard/admin', label: 'Admin & NFC Menu Sales', icon: Crown, badge: '👑 Master' },
     { href: '/dashboard/storefront', label: 'Websites & Menus', icon: Store },
     { href: '/dashboard/town-command', label: 'Town Vanguard Command', icon: Compass },
     { href: '/dashboard/programmer', label: 'NFC Card Programmer', icon: Cpu },

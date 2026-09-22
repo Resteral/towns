@@ -6,12 +6,14 @@ import {
   CartItem, DeliveryOrder, NotificationSettings, DeliveryItem,
   SellerProfile, ShoutoutPost, TownNode, UserMembership, MembershipTier,
   MerchantStorefront, StorefrontProduct, DriverTelemetry, ProofOfDelivery, DriverShiftSummary,
-  BeforeAfterShowcase, WorkRequest, ContractorQuote
+  BeforeAfterShowcase, WorkRequest, ContractorQuote,
+  NfcMenuProduct, NfcHardwareOrder, NfcFormFactor
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
   INITIAL_FEEDBACKS, INITIAL_SELLERS, INITIAL_SHOUTOUTS, INITIAL_TOWNS,
-  INITIAL_BEFORE_AFTER_SHOWCASES, INITIAL_WORK_REQUESTS
+  INITIAL_BEFORE_AFTER_SHOWCASES, INITIAL_WORK_REQUESTS,
+  INITIAL_NFC_MENU_PRODUCTS, INITIAL_NFC_HARDWARE_ORDERS
 } from './mock-data';
 
 const STORAGE_KEYS = {
@@ -32,6 +34,8 @@ const STORAGE_KEYS = {
   DRIVER_SHIFT: 'pulpulse_driver_shift_v1',
   BEFORE_AFTER_SHOWCASES: 'pulpulse_showcases_v1',
   WORK_REQUESTS: 'pulpulse_work_requests_v1',
+  NFC_MENU_PRODUCTS: 'pulpulse_nfc_menu_products_v1',
+  NFC_HARDWARE_ORDERS: 'pulpulse_nfc_hardware_orders_v1',
 };
 
 const DEFAULT_DRIVER_SHIFT: DriverShiftSummary = {
@@ -1792,6 +1796,8 @@ export function useNfcStore() {
   const [driverShift, setDriverShift] = useState<DriverShiftSummary>(DEFAULT_DRIVER_SHIFT);
   const [beforeAfterShowcases, setBeforeAfterShowcases] = useState<BeforeAfterShowcase[]>(INITIAL_BEFORE_AFTER_SHOWCASES);
   const [workRequests, setWorkRequests] = useState<WorkRequest[]>(INITIAL_WORK_REQUESTS);
+  const [nfcMenuProducts, setNfcMenuProducts] = useState<NfcMenuProduct[]>(INITIAL_NFC_MENU_PRODUCTS);
+  const [nfcHardwareOrders, setNfcHardwareOrders] = useState<NfcHardwareOrder[]>(INITIAL_NFC_HARDWARE_ORDERS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -1879,6 +1885,26 @@ export function useNfcStore() {
       }
 
       const storedRequests = localStorage.getItem(STORAGE_KEYS.WORK_REQUESTS);
+            const storedNfcProducts = localStorage.getItem(STORAGE_KEYS.NFC_MENU_PRODUCTS);
+      if (storedNfcProducts) {
+        const parsed: NfcMenuProduct[] = JSON.parse(storedNfcProducts);
+        const existingIds = new Set(parsed.map(p => p.id));
+        const merged = [...parsed, ...INITIAL_NFC_MENU_PRODUCTS.filter(p => !existingIds.has(p.id))];
+        setNfcMenuProducts(merged);
+      } else {
+        setNfcMenuProducts(INITIAL_NFC_MENU_PRODUCTS);
+      }
+
+      const storedHardwareOrders = localStorage.getItem(STORAGE_KEYS.NFC_HARDWARE_ORDERS);
+      if (storedHardwareOrders) {
+        const parsed: NfcHardwareOrder[] = JSON.parse(storedHardwareOrders);
+        const existingIds = new Set(parsed.map(o => o.id));
+        const merged = [...parsed, ...INITIAL_NFC_HARDWARE_ORDERS.filter(o => !existingIds.has(o.id))];
+        setNfcHardwareOrders(merged);
+      } else {
+        setNfcHardwareOrders(INITIAL_NFC_HARDWARE_ORDERS);
+      }
+
       if (storedRequests) {
         const parsed: WorkRequest[] = JSON.parse(storedRequests);
         const existingIds = new Set(parsed.map(r => r.id));
@@ -2635,6 +2661,121 @@ export function useNfcStore() {
     });
   };
 
+  
+  // --- ADMIN NFC MENU HARDWARE METHODS ---
+  const addNfcMenuProduct = (productData: Omit<NfcMenuProduct, 'id' | 'createdAt' | 'unitsSold'>) => {
+    const newProd: NfcMenuProduct = {
+      ...productData,
+      id: `nfc-menu-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      unitsSold: 0,
+      createdAt: new Date().toISOString()
+    };
+    setNfcMenuProducts(prev => {
+      const next = [newProd, ...prev];
+      localStorage.setItem(STORAGE_KEYS.NFC_MENU_PRODUCTS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+    return newProd;
+  };
+
+  const updateNfcMenuProduct = (id: string, updates: Partial<NfcMenuProduct>) => {
+    setNfcMenuProducts(prev => {
+      const next = prev.map(p => p.id === id ? { ...p, ...updates } : p);
+      localStorage.setItem(STORAGE_KEYS.NFC_MENU_PRODUCTS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const deleteNfcMenuProduct = (id: string) => {
+    setNfcMenuProducts(prev => {
+      const next = prev.filter(p => p.id !== id);
+      localStorage.setItem(STORAGE_KEYS.NFC_MENU_PRODUCTS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleNfcMenuProductPublish = (id: string) => {
+    setNfcMenuProducts(prev => {
+      const next = prev.map(p => p.id === id ? { ...p, isPublished: !p.isPublished } : p);
+      localStorage.setItem(STORAGE_KEYS.NFC_MENU_PRODUCTS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const addNfcHardwareOrder = (orderData: Omit<NfcHardwareOrder, 'id' | 'createdAt'>) => {
+    const newOrd: NfcHardwareOrder = {
+      ...orderData,
+      id: `hord-${Date.now().toString(36)}`,
+      createdAt: new Date().toISOString()
+    };
+    setNfcHardwareOrders(prev => {
+      const next = [newOrd, ...prev];
+      localStorage.setItem(STORAGE_KEYS.NFC_HARDWARE_ORDERS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+    return newOrd;
+  };
+
+  const updateNfcHardwareOrderStatus = (id: string, status: NfcHardwareOrder['status']) => {
+    setNfcHardwareOrders(prev => {
+      const next = prev.map(o => o.id === id ? { ...o, status } : o);
+      localStorage.setItem(STORAGE_KEYS.NFC_HARDWARE_ORDERS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
+  const toggleStorefrontProductStock = (storefrontId: string, productId: string) => {
+    setStorefronts(prev => {
+      const next = prev.map(sf => {
+        if (sf.id === storefrontId) {
+          return {
+            ...sf,
+            products: sf.products.map(p => p.id === productId ? { ...p, inStock: !p.inStock } : p)
+          };
+        }
+        return sf;
+      });
+      localStorage.setItem(STORAGE_KEYS.STOREFRONTS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const updateStorefrontProductPrice = (storefrontId: string, productId: string, newPrice: number) => {
+    setStorefronts(prev => {
+      const next = prev.map(sf => {
+        if (sf.id === storefrontId) {
+          return {
+            ...sf,
+            products: sf.products.map(p => p.id === productId ? { ...p, price: Number(newPrice) } : p)
+          };
+        }
+        return sf;
+      });
+      localStorage.setItem(STORAGE_KEYS.STOREFRONTS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const addStorefrontProduct = (storefrontId: string, product: StorefrontProduct) => {
+    setStorefronts(prev => {
+      const next = prev.map(sf => {
+        if (sf.id === storefrontId) {
+          return {
+            ...sf,
+            products: [product, ...sf.products]
+          };
+        }
+        return sf;
+      });
+      localStorage.setItem(STORAGE_KEYS.STOREFRONTS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
   const incrementWorkRequestQuotes = (id: string) => {
     setWorkRequests(prev => {
       const next: WorkRequest[] = prev.map(r => r.id === id ? { ...r, quotesCount: (r.quotesCount || 0) + 1, status: 'quotes_received' as const } : r);
@@ -2665,6 +2806,8 @@ export function useNfcStore() {
     driverShift,
     beforeAfterShowcases,
     workRequests,
+    nfcMenuProducts,
+    nfcHardwareOrders,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -2702,5 +2845,14 @@ export function useNfcStore() {
     addWorkRequest,
     updateWorkRequestStatus,
     incrementWorkRequestQuotes,
+    addNfcMenuProduct,
+    updateNfcMenuProduct,
+    deleteNfcMenuProduct,
+    toggleNfcMenuProductPublish,
+    addNfcHardwareOrder,
+    updateNfcHardwareOrderStatus,
+    toggleStorefrontProductStock,
+    updateStorefrontProductPrice,
+    addStorefrontProduct,
   };
 }
