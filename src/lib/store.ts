@@ -3090,6 +3090,72 @@ export function useNfcStore() {
     return newListing;
   };
 
+  const bulkImportDirectoryListings = (listings: Omit<DirectoryListing, 'id' | 'slug' | 'viewsCount' | 'tapsCount'>[]) => {
+    const formatted: DirectoryListing[] = listings.map((l, index) => {
+      const baseSlug = l.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `listing-${index}`;
+      return {
+        ...l,
+        id: `dir-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}-${index}`,
+        slug: `${baseSlug}-${Math.random().toString(36).slice(2, 5)}`,
+        viewsCount: 1,
+        tapsCount: 0,
+      };
+    });
+
+    setDirectoryListings(prev => {
+      const next = [...formatted, ...prev];
+      localStorage.setItem(STORAGE_KEYS.DIRECTORY_LISTINGS, JSON.stringify(next));
+      return next;
+    });
+
+    playDeliveryChime();
+    return formatted;
+  };
+
+  const bulkImportStorefrontProducts = (storefrontId: string, productsList: Omit<StorefrontProduct, 'id'>[]) => {
+    const newProducts: StorefrontProduct[] = productsList.map((p, index) => ({
+      ...p,
+      id: `prod-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}-${index}`,
+    }));
+
+    setStorefronts(prev => {
+      const next = prev.map(sf => {
+        if (sf.id === storefrontId) {
+          return {
+            ...sf,
+            products: [...newProducts, ...sf.products],
+          };
+        }
+        return sf;
+      });
+      localStorage.setItem(STORAGE_KEYS.STOREFRONTS, JSON.stringify(next));
+      return next;
+    });
+
+    playDeliveryChime();
+    return newProducts;
+  };
+
+  const bulkImportMarketplaceProducts = (productsList: Omit<ReviewProduct, 'id' | 'slug'>[]) => {
+    const newProducts: ReviewProduct[] = productsList.map((p, index) => {
+      const baseSlug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `item-${index}`;
+      return {
+        ...p,
+        id: `market-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}-${index}`,
+        slug: `${baseSlug}-${Math.random().toString(36).slice(2, 5)}`,
+      };
+    });
+
+    setProducts(prev => {
+      const next = [...newProducts, ...prev];
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(next));
+      return next;
+    });
+
+    playDeliveryChime();
+    return newProducts;
+  };
+
   const registerAffiliate = (ambassador: Omit<AffiliateAmbassador, 'id' | 'code' | 'referralsCount' | 'earnedBountyTotal' | 'pendingPayout' | 'joinedDate' | 'status'>) => {
     const code = `${ambassador.name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5)}${Math.floor(10 + Math.random() * 90)}`;
     const newAffiliate: AffiliateAmbassador = {
@@ -3730,6 +3796,9 @@ export function useNfcStore() {
     triggerAutomationBotManual,
     claimDirectoryListing,
     addDirectoryListing,
+    bulkImportDirectoryListings,
+    bulkImportStorefrontProducts,
+    bulkImportMarketplaceProducts,
     registerAffiliate,
     redeemLoyaltyReward,
     awardLoyaltyPoints,

@@ -466,6 +466,22 @@ export default function Navbar() {
                       <div className="text-[10px] text-zinc-400">Tabletop acrylic stands, smart metal cards & tap keyfobs</div>
                     </div>
                   </Link>
+
+                  <Link
+                    href="/csv-importer"
+                    className="p-2.5 rounded-xl hover:bg-white/5 flex items-start gap-3 transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors flex items-center gap-2">
+                        <span>CSV Bulk Extractor & Importer</span>
+                        <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold">New</span>
+                      </div>
+                      <div className="text-[10px] text-zinc-400">Import restaurants, menus & artisan inventory in bulk</div>
+                    </div>
+                  </Link>
                 </div>
               )}
             </div>
@@ -694,6 +710,14 @@ export default function Navbar() {
 
             {/* Business Onboarding CTAs */}
             <div className="pt-3 border-t border-white/10 space-y-2">
+              <Link
+                href="/csv-importer"
+                className="w-full py-2.5 bg-gradient-to-r from-emerald-500/20 to-amber-500/20 border border-emerald-500/40 text-emerald-300 font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>Bulk CSV Extractor & Importer</span>
+              </Link>
+
               <Link
                 href="/create-storefront"
                 className="w-full py-2.5 bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg"

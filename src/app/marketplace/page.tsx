@@ -112,7 +112,14 @@ export default function MarketplacePage() {
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/csv-importer"
+              className="px-4 py-2.5 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"
+            >
+              <span>📄 Bulk CSV Importer</span>
+            </Link>
+
             <Link
               href="/sell"
               className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"

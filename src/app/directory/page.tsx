@@ -155,12 +155,20 @@ export default function DirectoryPage() {
               <p className="text-xs text-white/60">Claim your free profile today & receive a free programmed NFC Smart Review Card.</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-md flex-shrink-0"
-          >
-            + Add / Claim Listing
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link
+              href="/csv-importer"
+              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold uppercase text-xs tracking-wider rounded-xl transition-all border border-white/15 flex items-center gap-1.5"
+            >
+              <span>📄 Bulk CSV Import</span>
+            </Link>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-md flex-shrink-0"
+            >
+              + Add / Claim Listing
+            </button>
+          </div>
         </div>
       </div>
 

@@ -45,7 +45,14 @@ export default function MerchantStorefrontDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link
+            href="/csv-importer"
+            className="px-4 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-2xl text-xs font-bold uppercase tracking-wider hover:scale-105 transition-all flex items-center gap-2"
+          >
+            <span>📄 Bulk CSV Importer</span>
+          </Link>
+
           <Link
             href="/create-storefront"
             className="px-5 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-2xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all shadow-xl shadow-amber-400/20 flex items-center gap-2"
