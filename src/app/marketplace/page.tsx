@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { ReviewProduct } from '@/lib/types';
 import CardCustomizerModal from '@/components/CardCustomizerModal';
+import LiveShoutoutStreamerBar from '@/components/LiveShoutoutStreamerBar';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { 
   Sparkles, Star, Sliders, ShoppingBag, ShieldCheck, 
   Radio, CheckCircle2, Search, Filter, Cpu, Layers, 
-  Users, MessageSquare, ArrowRight, Truck, MapPin, Plus 
+  Users, MessageSquare, ArrowRight, Truck, MapPin, Plus, Play, Video
 } from 'lucide-react';
 
 export default function MarketplacePage() {
@@ -51,10 +52,15 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="relative min-h-screen pt-28 pb-32">
+    <div className="relative min-h-screen pt-20 pb-32">
       {/* Background cyber lighting */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/5 blur-[160px] pointer-events-none -z-10" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[160px] pointer-events-none -z-10" />
+
+      {/* Live Streamer Broadcast Marquee */}
+      <div className="mb-6">
+        <LiveShoutoutStreamerBar />
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-16">
         
@@ -283,26 +289,51 @@ export default function MarketplacePage() {
                 </div>
 
                 <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
-                  {shoutouts.slice(0, 4).map((s) => (
-                    <div
-                      key={s.id}
-                      className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl space-y-2 hover:border-indigo-400/30 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{s.authorAvatar}</span>
-                          <div>
-                            <p className="text-xs font-bold text-white">{s.authorName}</p>
-                            <p className="text-[9px] font-mono text-zinc-500">{formatDate(s.timestamp)}</p>
+                  {shoutouts.slice(0, 4).map((s) => {
+                    const isStream = s.isLiveStream || s.tag === 'stream';
+                    return (
+                      <div
+                        key={s.id}
+                        className={`p-4 rounded-2xl space-y-2 transition-colors border ${
+                          isStream 
+                            ? 'bg-red-950/20 border-red-500/30 hover:border-red-500/60' 
+                            : 'bg-white/[0.02] border-white/5 hover:border-indigo-400/30'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{s.authorAvatar}</span>
+                            <div>
+                              <p className="text-xs font-bold text-white">{s.authorName}</p>
+                              <p className="text-[9px] font-mono text-zinc-500">{formatDate(s.timestamp)}</p>
+                            </div>
                           </div>
+                          <span className={`text-[8px] font-mono px-2 py-0.5 rounded uppercase font-bold ${
+                            isStream 
+                              ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse' 
+                              : 'bg-white/5 text-amber-400'
+                          }`}>
+                            {isStream ? '🔴 Live Stream' : `#${s.tag}`}
+                          </span>
                         </div>
-                        <span className="text-[8px] font-mono px-2 py-0.5 bg-white/5 rounded text-amber-400">
-                          #{s.tag}
-                        </span>
+                        {isStream && s.streamTitle && (
+                          <p className="text-[11px] font-bold text-amber-300 line-clamp-1">
+                            {s.streamTitle}
+                          </p>
+                        )}
+                        <p className="text-xs text-zinc-300 leading-snug line-clamp-3">{s.content}</p>
+                        {isStream && (
+                          <Link
+                            href="/community"
+                            className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-red-400 hover:text-red-300 uppercase pt-1"
+                          >
+                            <Play className="w-2.5 h-2.5 fill-red-400" />
+                            <span>Watch Stream Wire →</span>
+                          </Link>
+                        )}
                       </div>
-                      <p className="text-xs text-zinc-300 leading-snug line-clamp-3">{s.content}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Onboard node promo card */}

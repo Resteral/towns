@@ -475,6 +475,29 @@ export const INITIAL_SELLERS: SellerProfile[] = [
 
 export const INITIAL_SHOUTOUTS: ShoutoutPost[] = [
   {
+    id: 'shout-stream-1',
+    authorName: 'Sean Martin • Townraise Vanguard',
+    authorHandle: '@sean_vanguard',
+    authorAvatar: '👑',
+    authorBadge: 'Lead Operator & Broadcaster',
+    content: '🔴 LIVE: Broadcasting Carroll County Oasis node dispatches, live delivery routes, and local merchant drops across Effingham, Ossipee, Freedom, and North Conway.',
+    tag: 'stream',
+    reactions: {
+      voltage: 68,
+      fire: 89,
+      heart: 54,
+    },
+    timestamp: new Date().toISOString(),
+    sellerId: 'seller-sean',
+    town: 'Effingham, NH',
+    isLiveStream: true,
+    streamPlatform: 'youtube',
+    streamTitle: 'Sean Martin • Townraise Vanguard Live Dispatch & Node Operations',
+    streamUrl: 'https://www.youtube.com/watch?v=jfKfPfyJRdk',
+    streamViewerCount: 42,
+    streamStartedAt: new Date(Date.now() - 1800000).toISOString(),
+  },
+  {
     id: 'shout-1',
     authorName: 'Sean Martin • Townraise Vanguard',
     authorHandle: '@sean_vanguard',

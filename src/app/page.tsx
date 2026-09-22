@@ -7,6 +7,7 @@ import { useNfcStore } from '@/lib/store';
 import HeroTapSimulator from '@/components/HeroTapSimulator';
 import CardCustomizerModal from '@/components/CardCustomizerModal';
 import LocalConditionsHUD from '@/components/LocalConditionsHUD';
+import LiveShoutoutStreamerBar from '@/components/LiveShoutoutStreamerBar';
 import { ReviewProduct } from '@/lib/types';
 import { 
   Radio, Sparkles, ShieldCheck, Zap, TrendingUp, Star, 
@@ -65,8 +66,13 @@ export default function HomePage() {
     <div className="relative min-h-screen pt-20 pb-32 overflow-hidden">
       
       {/* Hyper-Local Mountain & Lake Conditions HUD */}
-      <div className="mb-6">
+      <div className="mb-4">
         <LocalConditionsHUD />
+      </div>
+
+      {/* Real-Time Live Shoutouts & Streamer Wire */}
+      <div className="mb-6">
+        <LiveShoutoutStreamerBar />
       </div>
       
       {/* Background Cyber Ambient Lights */}

@@ -66,7 +66,7 @@ export interface ShoutoutPost {
   authorAvatar: string;
   authorBadge?: string;
   content: string;
-  tag: 'drop' | 'review' | 'news' | 'deal' | 'courier';
+  tag: 'drop' | 'review' | 'news' | 'deal' | 'courier' | 'stream';
   reactions: {
     voltage: number;
     fire: number;
@@ -78,6 +78,14 @@ export interface ShoutoutPost {
   sellerId?: string;
   productLink?: string;
   town?: string;
+
+  // Live Streamer Broadcaster Capabilities
+  isLiveStream?: boolean;
+  streamPlatform?: 'youtube' | 'twitch' | 'kick' | 'custom' | 'audio';
+  streamUrl?: string;
+  streamTitle?: string;
+  streamViewerCount?: number;
+  streamStartedAt?: string;
 }
 
 export type NfcCardProfileType = 
