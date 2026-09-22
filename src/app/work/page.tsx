@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { TradeCategory, BeforeAfterShowcase, WorkRequest } from '@/lib/types';
 import BeforeAfterSlider from '@/components/BeforeAfterSlider';
 import ImageUpload from '@/components/ImageUpload';
+import AuthModal from '@/components/AuthModal';
 import { 
   Wrench, Sparkles, Heart, Phone, Mail, ExternalLink, 
   MapPin, Clock, DollarSign, PlusCircle, CheckCircle2, 
   Search, Filter, ShieldCheck, Flame, MessageSquare, 
-  ArrowRight, ThumbsUp, Send, Briefcase, Star, AlertCircle, RefreshCw
+  ArrowRight, ThumbsUp, Send, Briefcase, Star, AlertCircle, RefreshCw, UserCheck
 } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<TradeCategory, { label: string; icon: string }> = {
@@ -36,9 +37,11 @@ export default function WorkAndTradesPage() {
     addWorkRequest,
     incrementWorkRequestQuotes,
     activeTown,
-    towns
+    towns,
+    currentUser
   } = useNfcStore();
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'gallery' | 'jobs' | 'post_job' | 'advertise'>('gallery');
   const [selectedCategory, setSelectedCategory] = useState<TradeCategory | 'all'>('all');
   const [selectedTown, setSelectedTown] = useState<string>('all');
@@ -46,8 +49,8 @@ export default function WorkAndTradesPage() {
 
   // Contractor Quote Modal State for Job Board
   const [activeQuoteModalRequest, setActiveQuoteModalRequest] = useState<WorkRequest | null>(null);
-  const [quoteContractorName, setQuoteContractorName] = useState('');
-  const [quoteContractorPhone, setQuoteContractorPhone] = useState('(603) ');
+  const [quoteContractorName, setQuoteContractorName] = useState(currentUser?.name || '');
+  const [quoteContractorPhone, setQuoteContractorPhone] = useState(currentUser?.phone || '(603) ');
   const [quotePrice, setQuotePrice] = useState('');
   const [quoteMessage, setQuoteMessage] = useState('');
   const [quoteSubmittedSuccess, setQuoteSubmittedSuccess] = useState(false);
@@ -56,32 +59,49 @@ export default function WorkAndTradesPage() {
   const [newJobTitle, setNewJobTitle] = useState('');
   const [newJobCategory, setNewJobCategory] = useState<TradeCategory>('landscaping');
   const [newJobDescription, setNewJobDescription] = useState('');
-  const [newJobTown, setNewJobTown] = useState(activeTown?.name || 'Effingham');
+  const [newJobTown, setNewJobTown] = useState(currentUser?.town || activeTown?.name || 'Effingham');
   const [newJobBudget, setNewJobBudget] = useState('$200 - $500');
   const [newJobUrgency, setNewJobUrgency] = useState<'emergency_today' | 'within_few_days' | 'flexible_this_month'>('within_few_days');
-  const [newJobName, setNewJobName] = useState('');
-  const [newJobPhone, setNewJobPhone] = useState('(603) ');
+  const [newJobName, setNewJobName] = useState(currentUser?.name || '');
+  const [newJobPhone, setNewJobPhone] = useState(currentUser?.phone || '(603) ');
   const [newJobAddress, setNewJobAddress] = useState('');
   const [newJobBeforeImage, setNewJobBeforeImage] = useState('');
   const [jobPostSuccess, setJobPostSuccess] = useState(false);
 
   // Contractor Post Before/After Showcase Form State
-  const [advBusinessName, setAdvBusinessName] = useState('');
+  const [advBusinessName, setAdvBusinessName] = useState(currentUser?.name ? `${currentUser.name}'s Trade Services` : '');
   const [advCategory, setAdvCategory] = useState<TradeCategory>('carpentry');
   const [advProjectTitle, setAdvProjectTitle] = useState('');
   const [advDescription, setAdvDescription] = useState('');
-  const [advTown, setAdvTown] = useState(activeTown?.name || 'Effingham');
+  const [advTown, setAdvTown] = useState(currentUser?.town || activeTown?.name || 'Effingham');
   const [advBeforeImage, setAdvBeforeImage] = useState('');
   const [advAfterImage, setAdvAfterImage] = useState('');
   const [advBeforeCaption, setAdvBeforeCaption] = useState('Old / Damaged Condition');
   const [advAfterCaption, setAdvAfterCaption] = useState('Finished Transformation');
   const [advCostEstimate, setAdvCostEstimate] = useState('$1,500 - $3,500');
   const [advTimeToComplete, setAdvTimeToComplete] = useState('2-3 Days');
-  const [advPhone, setAdvPhone] = useState('(603) ');
-  const [advEmail, setAdvEmail] = useState('');
+  const [advPhone, setAdvPhone] = useState(currentUser?.phone || '(603) ');
+  const [advEmail, setAdvEmail] = useState(currentUser?.email || '');
   const [advWebsite, setAdvWebsite] = useState('');
   const [advSpecialOffer, setAdvSpecialOffer] = useState('★ 10% Off for Local Carroll County Residents!');
   const [advPostSuccess, setAdvPostSuccess] = useState(false);
+
+  // Sync state when currentUser switches
+  useEffect(() => {
+    if (currentUser) {
+      setNewJobName(currentUser.name);
+      setNewJobPhone(currentUser.phone);
+      if (currentUser.town) setNewJobTown(currentUser.town);
+
+      setQuoteContractorName(currentUser.name);
+      setQuoteContractorPhone(currentUser.phone);
+
+      setAdvBusinessName(currentUser.role === 'contractor' || currentUser.role === 'merchant' ? `${currentUser.name} Trades` : currentUser.name);
+      setAdvPhone(currentUser.phone);
+      if (currentUser.email) setAdvEmail(currentUser.email);
+      if (currentUser.town) setAdvTown(currentUser.town);
+    }
+  }, [currentUser]);
 
   // Filtered Showcases
   const filteredShowcases = useMemo(() => {
@@ -682,6 +702,39 @@ export default function WorkAndTradesPage() {
               </p>
             </div>
 
+            {/* Poster Account Identity Banner */}
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-xl shadow-inner">
+                  {currentUser?.avatar || '👤'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">
+                      Posting as: <strong className="text-indigo-400">{currentUser ? currentUser.name : 'Guest Homeowner'}</strong>
+                    </span>
+                    {currentUser && (
+                      <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[9px] font-mono font-bold uppercase">
+                        {currentUser.role}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-white/50 font-mono">
+                    {currentUser ? `📍 Phone: ${currentUser.phone} • Node: ${currentUser.town}, NH` : 'Sign in to auto-fill your contact details and track received quotes.'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-indigo-400 hover:text-indigo-300 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <span>{currentUser ? 'Switch Account' : 'Log In / Register'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             {jobPostSuccess ? (
               <div className="p-8 text-center bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-3 animate-in fade-in zoom-in-95">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
@@ -844,6 +897,39 @@ export default function WorkAndTradesPage() {
               <p className="text-xs text-white/60">
                 Showcase your best craftsmanship with an interactive before/after slider. Attract high-intent Carroll County customers ready to hire.
               </p>
+            </div>
+
+            {/* Contractor Account Identity Banner */}
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-xl shadow-inner">
+                  {currentUser?.avatar || '🛠️'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">
+                      Listing as Contractor: <strong className="text-emerald-400">{currentUser ? currentUser.name : 'Guest Business'}</strong>
+                    </span>
+                    {currentUser && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-bold uppercase">
+                        {currentUser.role}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-white/50 font-mono">
+                    {currentUser ? `📍 Phone: ${currentUser.phone} • Email: ${currentUser.email || 'None'} • Town: ${currentUser.town}, NH` : 'Sign in to auto-fill business credentials and receive direct homeowner leads.'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-emerald-400 hover:text-emerald-300 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <span>{currentUser ? 'Switch Account' : 'Log In / Register'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {advPostSuccess ? (
@@ -1097,6 +1183,22 @@ export default function WorkAndTradesPage() {
               </div>
             ) : (
               <form onSubmit={handleSendQuote} className="space-y-4">
+                <div className="p-3 bg-white/[0.04] border border-white/10 rounded-2xl flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{currentUser?.avatar || '👷'}</span>
+                    <span className="text-xs text-white">
+                      Quoting as: <strong className="text-indigo-300">{currentUser ? currentUser.name : 'Guest Contractor'}</strong>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsAuthModalOpen(true)}
+                    className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 underline"
+                  >
+                    Switch Account
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-white/70">Your Name / Company *</label>
@@ -1156,6 +1258,12 @@ export default function WorkAndTradesPage() {
           </div>
         </div>
       )}
+
+      {/* Unified Auth & Account Switcher Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
 
     </div>
   );

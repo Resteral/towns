@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Calendar, 
@@ -20,14 +20,17 @@ import {
   Utensils, 
   Waves,
   RefreshCw,
-  Bot
+  Bot,
+  UserCheck
 } from 'lucide-react';
 import { useNfcStore } from '@/lib/store';
 import { TownEvent } from '@/lib/types';
 import confetti from 'canvas-confetti';
+import AuthModal from '@/components/AuthModal';
 
 export default function EventsPage() {
-  const { events, rsvpToEvent, addTownEvent, towns, playDeliveryChime } = useNfcStore();
+  const { events, rsvpToEvent, addTownEvent, towns, playDeliveryChime, currentUser } = useNfcStore();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [rsvpNotice, setRsvpNotice] = useState<string | null>(null);
@@ -35,8 +38,8 @@ export default function EventsPage() {
 
   // Add Event Form State
   const [title, setTitle] = useState('');
-  const [organizer, setOrganizer] = useState('');
-  const [town, setTown] = useState('Effingham, NH');
+  const [organizer, setOrganizer] = useState(currentUser?.name || '');
+  const [town, setTown] = useState(currentUser?.town ? `${currentUser.town}, NH` : 'Effingham, NH');
   const [venueAddress, setVenueAddress] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -44,6 +47,13 @@ export default function EventsPage() {
   const [categoryLabel, setCategoryLabel] = useState('Live Music');
   const [description, setDescription] = useState('');
   const [priceText, setPriceText] = useState('Free Admission');
+
+  useEffect(() => {
+    if (currentUser) {
+      setOrganizer(currentUser.name);
+      if (currentUser.town) setTown(`${currentUser.town}, NH`);
+    }
+  }, [currentUser]);
 
   const categories = [
     { label: 'All Happenings', value: 'all', icon: Calendar },
@@ -354,6 +364,38 @@ export default function EventsPage() {
               </button>
             </div>
 
+            {/* Account Banner */}
+            <div className="p-3 bg-white/[0.04] border border-white/10 rounded-2xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center text-sm font-bold">
+                  {currentUser?.avatar || '🎉'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-white font-bold text-[11px]">
+                      Posting as: <strong className="text-pink-300">{currentUser ? currentUser.name : 'Guest Host'}</strong>
+                    </span>
+                    {currentUser && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[8px] font-mono font-bold uppercase">
+                        {currentUser.role}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-white/40">
+                    {currentUser ? `${currentUser.town}, NH` : 'Sign in to auto-fill host info & earn organizer points'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="text-[10px] font-bold text-pink-400 hover:text-pink-300 underline shrink-0"
+              >
+                Switch Account
+              </button>
+            </div>
+
             <form onSubmit={handleAddEventSubmit} className="space-y-4 text-xs">
               <div>
                 <label className="text-[10px] uppercase font-bold text-white/60 block mb-1">Event Title</label>
@@ -463,6 +505,12 @@ export default function EventsPage() {
           </div>
         </div>
       )}
+
+      {/* Unified Auth & Account Switcher Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
 
     </div>
   );

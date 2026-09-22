@@ -5,20 +5,23 @@ import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { ShoutoutPost } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
+import AuthModal from '@/components/AuthModal';
 import { 
   Radio, Sparkles, MessageSquare, Flame, Zap, Heart, 
-  Send, Plus, ShoppingBag, Truck, Star, ArrowRight, ShieldCheck, User 
+  Send, Plus, ShoppingBag, Truck, Star, ArrowRight, ShieldCheck, User, UserCheck, CheckCircle2 
 } from 'lucide-react';
 
 export default function CommunityFeedPage() {
-  const { shoutouts, sellers, addShoutout, reactToShoutout } = useNfcStore();
+  const { shoutouts, sellers, addShoutout, reactToShoutout, currentUser } = useNfcStore();
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
   // Post Form State
-  const [authorName, setAuthorName] = useState('');
+  const [authorName, setAuthorName] = useState(currentUser?.name || '');
   const [content, setContent] = useState('');
   const [selectedTag, setSelectedTag] = useState<ShoutoutPost['tag']>('news');
   const [isPosting, setIsPosting] = useState(false);
+  const [postSuccessNotice, setPostSuccessNotice] = useState(false);
 
   const tags = [
     { id: 'all', label: 'All Stream', icon: '✨' },
@@ -36,19 +39,26 @@ export default function CommunityFeedPage() {
 
   const handlePostShoutout = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authorName.trim() || !content.trim()) return;
+    const finalAuthor = authorName.trim() || currentUser?.name || 'Local Resident';
+    if (!content.trim()) return;
+
+    const finalAvatar = currentUser?.avatar || (selectedTag === 'drop' ? '🛍️' : selectedTag === 'review' ? '⭐' : selectedTag === 'courier' ? '🚐' : '✨');
+    const finalBadge = currentUser?.badge || (currentUser?.role === 'driver' ? 'Verified Courier Driver' : currentUser?.role === 'merchant' ? 'Shop Owner' : currentUser?.role === 'contractor' ? 'Master Contractor' : 'Community Member');
 
     addShoutout({
-      authorName,
-      authorHandle: `@${authorName.toLowerCase().replace(/\s+/g, '_')}`,
-      authorAvatar: selectedTag === 'drop' ? '🛍️' : selectedTag === 'review' ? '⭐' : selectedTag === 'courier' ? '🚐' : '✨',
-      authorBadge: selectedTag === 'drop' ? 'Vendor Drop' : 'Community Member',
+      authorName: finalAuthor,
+      authorHandle: `@${finalAuthor.toLowerCase().replace(/\s+/g, '_')}`,
+      authorAvatar: finalAvatar,
+      authorBadge: finalBadge,
       content,
       tag: selectedTag,
+      town: currentUser?.town || 'Effingham',
     });
 
     setContent('');
     setIsPosting(false);
+    setPostSuccessNotice(true);
+    setTimeout(() => setPostSuccessNotice(false), 3000);
   };
 
   return (
@@ -76,11 +86,21 @@ export default function CommunityFeedPage() {
 
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => setIsPosting(true)}
+              onClick={() => {
+                if (currentUser) setAuthorName(currentUser.name);
+                setIsPosting(true);
+              }}
               className="px-6 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>Broadcast Shoutout</span>
+            </button>
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all flex items-center gap-2"
+            >
+              <UserCheck className="w-4 h-4 text-amber-400" />
+              <span>{currentUser ? `Account: ${currentUser.name.split(' ')[0]}` : 'Sign In / Switch'}</span>
             </button>
             <Link
               href="/sell"
@@ -91,6 +111,46 @@ export default function CommunityFeedPage() {
             </Link>
           </div>
         </div>
+
+        {/* Active Poster Account Banner */}
+        <div className="p-4 md:p-5 rounded-3xl bg-[#0b0b12] border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-2xl shadow-inner">
+              {currentUser?.avatar || '👤'}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white">
+                  Posting as: <strong className="text-amber-400">{currentUser ? currentUser.name : 'Guest User'}</strong>
+                </span>
+                {currentUser && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9px] font-mono font-bold uppercase">
+                    {currentUser.role}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
+                {currentUser ? `📍 Verified Member from ${currentUser.town}, NH • ${currentUser.badge || 'Community Member'}` : 'Log in or pick a role to attach your verified identity & badge to your posts.'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-amber-400 hover:text-amber-300 rounded-xl transition-all flex items-center gap-1.5"
+          >
+            <span>{currentUser ? 'Switch Poster Account' : 'Log In to Post'}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Success Notice */}
+        {postSuccessNotice && (
+          <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold flex items-center gap-2.5 animate-in fade-in duration-200">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>Your shoutout was published to the Carroll County live wire!</span>
+          </div>
+        )}
 
         {/* Modal / Form: Broadcast a Shoutout */}
         {isPosting && (
@@ -115,9 +175,9 @@ export default function CommunityFeedPage() {
                   <input
                     type="text"
                     required
-                    value={authorName}
+                    value={authorName || (currentUser?.name || '')}
                     onChange={(e) => setAuthorName(e.target.value)}
-                    placeholder="e.g. Oasis Bakery or Dave M."
+                    placeholder="e.g. Sean Martin, PNB Eats, or Local Resident"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
@@ -150,13 +210,18 @@ export default function CommunityFeedPage() {
                 />
               </div>
 
-              <button
-                type="submit"
-                className="px-6 py-3 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center gap-2"
-              >
-                <Send className="w-4 h-4" />
-                <span>Publish Shoutout</span>
-              </button>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-[10px] font-mono text-zinc-400">
+                  Attached Identity: {currentUser ? `${currentUser.name} (${currentUser.badge})` : 'Guest'}
+                </span>
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Publish Shoutout</span>
+                </button>
+              </div>
             </form>
           </div>
         )}
@@ -319,6 +384,8 @@ export default function CommunityFeedPage() {
         </div>
 
       </div>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 }

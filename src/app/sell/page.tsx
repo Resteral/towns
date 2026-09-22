@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
+import AuthModal from '@/components/AuthModal';
 import { 
   ShoppingBag, Sparkles, Building2, Phone, MapPin, 
-  Tag, Image as ImageIcon, DollarSign, CheckCircle2, ArrowRight 
+  Tag, Image as ImageIcon, DollarSign, CheckCircle2, ArrowRight, UserCheck, ShieldCheck 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import ImageUpload from '@/components/ImageUpload';
@@ -21,7 +22,8 @@ const SAMPLE_IMAGE_PRESETS = [
 
 export default function SellPage() {
   const router = useRouter();
-  const { addCommunityProduct, addSeller, sellers } = useNfcStore();
+  const { addCommunityProduct, addSeller, sellers, currentUser } = useNfcStore();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Item form fields
   const [productName, setProductName] = useState('');
@@ -34,10 +36,19 @@ export default function SellPage() {
   const [imageUrl, setImageUrl] = useState(SAMPLE_IMAGE_PRESETS[0].url);
 
   // Seller info
-  const [sellerName, setSellerName] = useState(sellers[0]?.name || "Walt's Artisan Workshop");
-  const [sellerPhone, setSellerPhone] = useState('(603) 555-0144');
-  const [town, setTown] = useState('Effingham, NH');
+  const [sellerName, setSellerName] = useState(currentUser?.name || sellers[0]?.name || "Walt's Artisan Workshop");
+  const [sellerPhone, setSellerPhone] = useState(currentUser?.phone || '(603) 555-0144');
+  const [town, setTown] = useState(currentUser?.town ? `${currentUser.town}, NH` : 'Effingham, NH');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync with currentUser when changed
+  useEffect(() => {
+    if (currentUser) {
+      setSellerName(currentUser.name);
+      setSellerPhone(currentUser.phone);
+      setTown(`${currentUser.town}, NH`);
+    }
+  }, [currentUser]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +110,39 @@ export default function SellPage() {
           <p className="text-xs md:text-sm text-zinc-400">
             Broadcast your independent crafts, bakehouse treats, or services across the unified Oasis regional network.
           </p>
+        </div>
+
+        {/* Poster Account Identity Card */}
+        <div className="p-5 rounded-3xl bg-[#0e0e14] border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-2xl shadow-inner">
+              {currentUser?.avatar || '🏷️'}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white">
+                  Listing as: <strong className="text-amber-400">{currentUser ? currentUser.name : 'Guest Merchant'}</strong>
+                </span>
+                {currentUser && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9px] font-mono font-bold uppercase">
+                    {currentUser.role}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
+                {currentUser ? `📍 Phone for order relays: ${currentUser.phone} • Town: ${currentUser.town}, NH` : 'Sign in with your account to auto-fill your merchant name, phone, and town location.'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsAuthModalOpen(true)}
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-amber-400 hover:text-amber-300 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+          >
+            <span>{currentUser ? 'Switch Account' : 'Log In / Switch Role'}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* Listing Form */}
@@ -289,6 +333,8 @@ export default function SellPage() {
 
         </form>
       </div>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 }
