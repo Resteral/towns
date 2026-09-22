@@ -660,6 +660,59 @@ export interface LocalConditionsReport {
   lastUpdated: string;
 }
 
+export type SmsWorkflowCategory = 
+  | 'missed_call_textback' 
+  | 'review_booster' 
+  | 'table_ready' 
+  | 'airbnb_checkin' 
+  | 'vip_broadcast' 
+  | 'appointment_reminder' 
+  | 'contractor_lead';
+
+export interface SmsAutomationWorkflow {
+  id: string;
+  name: string;
+  category: SmsWorkflowCategory;
+  categoryLabel: string;
+  description: string;
+  triggerEvent: string;
+  smsTemplate: string;
+  isActive: boolean;
+  sentCount: number;
+  replyCount: number;
+  targetBusinessId?: string;
+  targetBusinessName: string;
+  delayMinutes: number;
+  iconEmoji: string;
+  monthlyValueToMerchant: number;
+}
+
+export interface SmsLogMessage {
+  id: string;
+  workflowId?: string;
+  workflowName: string;
+  recipientPhone: string;
+  recipientName: string;
+  businessName: string;
+  messageBody: string;
+  status: 'delivered' | 'queued' | 'replied' | 'failed';
+  timestamp: string;
+  direction: 'outbound' | 'inbound';
+  cost: number;
+}
+
+export interface SmsSubscriberContact {
+  id: string;
+  phone: string;
+  name: string;
+  town: string;
+  optInSource: 'nfc_tap' | 'online_checkout' | 'website_vip_club' | 'in_store';
+  subscribedDate: string;
+  isActive: boolean;
+  tags: string[];
+}
+
+
 
 
 

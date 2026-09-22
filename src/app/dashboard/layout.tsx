@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, CreditCard, BarChart3, Truck, 
   Phone, ShoppingBag, Radio, ShieldCheck, ArrowLeft, Cpu, Compass, Crown, Store, Megaphone,
-  Bot, ChefHat
+  Bot, ChefHat, MessageSquare
 } from 'lucide-react';
 import { useNfcStore } from '@/lib/store';
 
@@ -23,6 +23,7 @@ export default function DashboardLayout({
   const navItems = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { href: '/dashboard/admin', label: 'Admin & Automation Suite', icon: Crown, badge: '👑 Master' },
+    { href: '/dashboard/sms-hub', label: 'SMS Automation & VIP Hub', icon: MessageSquare, badge: '⚡ SMS' },
     { href: '/dashboard/ai-assistant', label: 'AI Menu & Review Assistant', icon: Bot, badge: '🧠 AI' },
     { href: '/dashboard/kitchen', label: 'Kitchen Display (KDS)', icon: ChefHat, badge: newTableOrdersCount > 0 ? `${newTableOrdersCount} table` : undefined },
     { href: '/dashboard/growth-kit', label: 'Growth Kit & Promos', icon: Megaphone, badge: '🚀 New' },

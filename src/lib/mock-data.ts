@@ -4,7 +4,8 @@ import {
   NfcMenuProduct, NfcHardwareOrder,
   ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory,
   DirectoryListing, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet,
-  TownEvent, DineInTableTicket, LocalConditionsReport
+  TownEvent, DineInTableTicket, LocalConditionsReport,
+  SmsAutomationWorkflow, SmsLogMessage, SmsSubscriberContact
 } from './types';
 
 export const INITIAL_TOWNS: TownNode[] = [
@@ -1647,5 +1648,219 @@ export const DEFAULT_LOCAL_CONDITIONS: LocalConditionsReport = {
   activeDriverCount: 1,
   lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 };
+
+export const INITIAL_SMS_WORKFLOWS: SmsAutomationWorkflow[] = [
+  {
+    id: 'sms-missed-call-textback',
+    name: 'Instant Missed Call Auto-Text Back',
+    category: 'missed_call_textback',
+    categoryLabel: 'Missed Call Recovery',
+    description: 'When a customer calls a contractor or busy kitchen and gets no answer, this bot immediately texts them in 10 seconds to capture the job lead before they call a competitor.',
+    triggerEvent: 'Inbound Phone Call Unanswered or Line Busy',
+    smsTemplate: 'Hi! Sorry we missed your call at {BusinessName}. We are currently on a job or helping diners. How can we help you today? Text us here for a fast quote or booking!',
+    isActive: true,
+    sentCount: 142,
+    replyCount: 98,
+    targetBusinessName: "Walt's Artisan Woodcraft & PNB Eats",
+    delayMinutes: 0,
+    iconEmoji: '📞',
+    monthlyValueToMerchant: 99.00
+  },
+  {
+    id: 'sms-review-booster',
+    name: 'Smart 5-Star Review Invite & Feedback Shield',
+    category: 'review_booster',
+    categoryLabel: 'Reputation Automation',
+    description: 'Automatically texts customer 15 minutes after food delivery, table check, or job completion with personalized Google review link.',
+    triggerEvent: 'Table NFC Tapped OR Takeout Order Completed',
+    smsTemplate: 'Hi {CustomerName}! Thanks for dining with {BusinessName} on Route 25. If you enjoyed your meal, could you take 30s to leave us a 5-star Google review? Tap here: {ReviewLink}',
+    isActive: true,
+    sentCount: 384,
+    replyCount: 146,
+    targetBusinessName: 'Pizza Barn & Smokehouse',
+    delayMinutes: 15,
+    iconEmoji: '⭐',
+    monthlyValueToMerchant: 129.00
+  },
+  {
+    id: 'sms-table-ready',
+    name: 'Digital Table Buzzer & Seating Text Bot',
+    category: 'table_ready',
+    categoryLabel: 'Restaurant Seating Ops',
+    description: 'Eliminates expensive plastic buzzer hardware. Texts diners when their indoor table or outdoor firepit booth is ready.',
+    triggerEvent: 'Host Clicks "Table Ready" in KDS / Station',
+    smsTemplate: '{CustomerName}, your table at {BusinessName} is ready! Please head to the host stand within 5 minutes. See you inside! 🍽️',
+    isActive: true,
+    sentCount: 219,
+    replyCount: 54,
+    targetBusinessName: 'PNB Eats Roadside Grill',
+    delayMinutes: 0,
+    iconEmoji: '🛎️',
+    monthlyValueToMerchant: 79.00
+  },
+  {
+    id: 'sms-airbnb-concierge',
+    name: 'Automated Guest Smart Key & Wi-Fi Concierge',
+    category: 'airbnb_checkin',
+    categoryLabel: 'Vacation Rental Concierge',
+    description: 'Sends automated check-in details, door keypad code, Wi-Fi NFC link, and food delivery guide 1 hour before 3:00 PM guest arrival.',
+    triggerEvent: 'Scheduled Check-In Day (2:00 PM Trigger)',
+    smsTemplate: 'Welcome to {BusinessName} on Ossipee Lake! 🌲 Your door code is {KeypadCode}. Connect to fiber Wi-Fi & order local food delivery straight to your dock here: {ConciergeLink}',
+    isActive: true,
+    sentCount: 68,
+    replyCount: 42,
+    targetBusinessName: 'Pine Cove Waterfront Chalet (Airbnb)',
+    delayMinutes: 0,
+    iconEmoji: '🏡',
+    monthlyValueToMerchant: 59.00
+  },
+  {
+    id: 'sms-vip-flash-deal',
+    name: 'VIP Weekend Flash Deals & Secret Code Blast',
+    category: 'vip_broadcast',
+    categoryLabel: 'SMS Revenue Generator',
+    description: 'Broadcasts instant weekend specials, double points offers, and limited discount codes to local Carroll County opt-in VIP subscribers.',
+    triggerEvent: 'Friday 4:00 PM Scheduled Broadcast or Owner Trigger',
+    smsTemplate: 'VIP Local Alert from {BusinessName}: 🍕 This Friday & Saturday, enjoy 20% off any 2 large pizzas with code CARROLL20 on online takeout! Order here: {OrderLink} (Reply STOP to opt-out)',
+    isActive: true,
+    sentCount: 840,
+    replyCount: 190,
+    targetBusinessName: 'Carroll County VIP Food Club',
+    delayMinutes: 0,
+    iconEmoji: '🔥',
+    monthlyValueToMerchant: 149.00
+  },
+  {
+    id: 'sms-contractor-lead-alert',
+    name: 'Contractor Emergency Lead Instant Dispatch',
+    category: 'contractor_lead',
+    categoryLabel: 'Trades Job Dispatcher',
+    description: 'Instantly relays homeowner quote requests from the Trades Board directly to the contractor’s private mobile phone with job photos.',
+    triggerEvent: 'Homeowner Posts Job Request on Trades Board',
+    smsTemplate: '🚨 NEW JOB LEAD: {HomeownerName} in {Town} needs {JobCategory} ({Budget}). Tap to view project photos and submit 1-click quote: {QuoteLink}',
+    isActive: true,
+    sentCount: 76,
+    replyCount: 68,
+    targetBusinessName: 'Carroll County Verified Builders',
+    delayMinutes: 0,
+    iconEmoji: '🛠️',
+    monthlyValueToMerchant: 199.00
+  },
+  {
+    id: 'sms-appointment-reminder',
+    name: 'NH Inspection & Service Appointment Reminder',
+    category: 'appointment_reminder',
+    categoryLabel: 'Auto & Service Reminders',
+    description: 'Reduces no-shows by 85% for local mechanics, state inspections, salons, and home service technicians.',
+    triggerEvent: '24 Hours Before Scheduled Booking',
+    smsTemplate: 'Reminder from {BusinessName}: Your service appointment is scheduled for tomorrow at {AppointmentTime}. Reply 1 to CONFIRM or 2 to RESCHEDULE.',
+    isActive: true,
+    sentCount: 154,
+    replyCount: 138,
+    targetBusinessName: 'North Country Auto & Marine',
+    delayMinutes: 0,
+    iconEmoji: '🚗',
+    monthlyValueToMerchant: 89.00
+  }
+];
+
+export const INITIAL_SMS_LOGS: SmsLogMessage[] = [
+  {
+    id: 'log-1',
+    workflowId: 'sms-missed-call-textback',
+    workflowName: 'Instant Missed Call Auto-Text Back',
+    recipientPhone: '(603) 555-4912',
+    recipientName: 'Jason Miller',
+    businessName: "Walt's Artisan Woodcraft",
+    messageBody: 'Hi! Sorry we missed your call at Walt\'s Artisan Woodcraft. We are currently on a job. How can we help you today? Text us here for a fast quote or booking!',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 14 * 60000).toISOString(),
+    direction: 'outbound',
+    cost: 0.0079
+  },
+  {
+    id: 'log-2',
+    workflowId: 'sms-missed-call-textback',
+    workflowName: 'Instant Missed Call Auto-Text Back',
+    recipientPhone: '(603) 555-4912',
+    recipientName: 'Jason Miller',
+    businessName: "Walt's Artisan Woodcraft",
+    messageBody: 'Hi Walt! Need a 24x16ft composite deck built on Ossipee Lake before October. Can you come by for an estimate this week?',
+    status: 'replied',
+    timestamp: new Date(Date.now() - 11 * 60000).toISOString(),
+    direction: 'inbound',
+    cost: 0.0000
+  },
+  {
+    id: 'log-3',
+    workflowId: 'sms-review-booster',
+    workflowName: 'Smart 5-Star Review Invite',
+    recipientPhone: '(603) 555-8812',
+    recipientName: 'Amanda Clark',
+    businessName: 'PNB Eats Roadside Grill',
+    messageBody: 'Hi Amanda! Thanks for dining with PNB Eats on Route 25. If you enjoyed your meal, could you take 30s to leave us a 5-star Google review? Tap here: https://oasistap.com/tap/pnb',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 45 * 60000).toISOString(),
+    direction: 'outbound',
+    cost: 0.0079
+  },
+  {
+    id: 'log-4',
+    workflowId: 'sms-table-ready',
+    workflowName: 'Digital Table Buzzer Text',
+    recipientPhone: '(603) 555-2199',
+    recipientName: 'Robert Vance',
+    businessName: 'Pizza Barn & Smokehouse',
+    messageBody: 'Robert, your table at Pizza Barn & Smokehouse is ready! Please head to the host stand within 5 minutes. See you inside! 🍽️',
+    status: 'delivered',
+    timestamp: new Date(Date.now() - 95 * 60000).toISOString(),
+    direction: 'outbound',
+    cost: 0.0079
+  }
+];
+
+export const INITIAL_SMS_SUBSCRIBERS: SmsSubscriberContact[] = [
+  {
+    id: 'sub-c1',
+    phone: '(603) 555-4912',
+    name: 'Jason Miller',
+    town: 'Effingham, NH',
+    optInSource: 'nfc_tap',
+    subscribedDate: '2026-08-14',
+    isActive: true,
+    tags: ['Diner VIP', 'Homeowner', 'Effingham']
+  },
+  {
+    id: 'sub-c2',
+    phone: '(603) 555-8812',
+    name: 'Amanda Clark',
+    town: 'Center Ossipee, NH',
+    optInSource: 'online_checkout',
+    subscribedDate: '2026-08-20',
+    isActive: true,
+    tags: ['Pizza Lover', 'Weekly Takeout', 'Ossipee']
+  },
+  {
+    id: 'sub-c3',
+    phone: '(603) 555-2199',
+    name: 'Robert Vance',
+    town: 'Freedom, NH',
+    optInSource: 'website_vip_club',
+    subscribedDate: '2026-09-02',
+    isActive: true,
+    tags: ['Lakefront Resident', 'Airbnb Host', 'Freedom']
+  },
+  {
+    id: 'sub-c4',
+    phone: '(603) 555-7301',
+    name: 'Elena Rostova',
+    town: 'Wolfeboro, NH',
+    optInSource: 'in_store',
+    subscribedDate: '2026-09-10',
+    isActive: true,
+    tags: ['VIP Diner', 'Wolfeboro']
+  }
+];
+
 
 

@@ -10,7 +10,8 @@ import {
   NfcMenuProduct, NfcHardwareOrder, NfcFormFactor,
   ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory,
   DirectoryListing, DirectoryCategory, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet,
-  TownEvent, DineInTableTicket, LocalConditionsReport
+  TownEvent, DineInTableTicket, LocalConditionsReport,
+  SmsAutomationWorkflow, SmsLogMessage, SmsSubscriberContact, SmsWorkflowCategory
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
@@ -19,7 +20,8 @@ import {
   INITIAL_NFC_MENU_PRODUCTS, INITIAL_NFC_HARDWARE_ORDERS,
   INITIAL_MANAGED_SERVICES, INITIAL_CLIENT_SUBSCRIPTIONS, INITIAL_AUTOMATION_BOTS,
   INITIAL_DIRECTORY_LISTINGS, INITIAL_AFFILIATES, INITIAL_LOYALTY_REWARDS, DEFAULT_USER_LOYALTY_WALLET,
-  INITIAL_EVENTS, INITIAL_TABLE_TICKETS, DEFAULT_LOCAL_CONDITIONS
+  INITIAL_EVENTS, INITIAL_TABLE_TICKETS, DEFAULT_LOCAL_CONDITIONS,
+  INITIAL_SMS_WORKFLOWS, INITIAL_SMS_LOGS, INITIAL_SMS_SUBSCRIBERS
 } from './mock-data';
 
 const STORAGE_KEYS = {
@@ -52,6 +54,9 @@ const STORAGE_KEYS = {
   EVENTS: 'pulpulse_events_v1',
   TABLE_TICKETS: 'pulpulse_table_tickets_v1',
   LOCAL_CONDITIONS: 'pulpulse_local_conditions_v1',
+  SMS_WORKFLOWS: 'pulpulse_sms_workflows_v1',
+  SMS_LOGS: 'pulpulse_sms_logs_v1',
+  SMS_SUBSCRIBERS: 'pulpulse_sms_subscribers_v1',
 };
 
 const DEFAULT_DRIVER_SHIFT: DriverShiftSummary = {
@@ -1824,6 +1829,9 @@ export function useNfcStore() {
   const [events, setEvents] = useState<TownEvent[]>(INITIAL_EVENTS);
   const [tableTickets, setTableTickets] = useState<DineInTableTicket[]>(INITIAL_TABLE_TICKETS);
   const [localConditions, setLocalConditions] = useState<LocalConditionsReport>(DEFAULT_LOCAL_CONDITIONS);
+  const [smsWorkflows, setSmsWorkflows] = useState<SmsAutomationWorkflow[]>(INITIAL_SMS_WORKFLOWS);
+  const [smsLogs, setSmsLogs] = useState<SmsLogMessage[]>(INITIAL_SMS_LOGS);
+  const [smsSubscribers, setSmsSubscribers] = useState<SmsSubscriberContact[]>(INITIAL_SMS_SUBSCRIBERS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -2006,6 +2014,33 @@ export function useNfcStore() {
         setLocalConditions(JSON.parse(storedConditions));
       } else {
         setLocalConditions(DEFAULT_LOCAL_CONDITIONS);
+      }
+
+      const storedSmsWorkflows = localStorage.getItem(STORAGE_KEYS.SMS_WORKFLOWS);
+      if (storedSmsWorkflows) {
+        const parsed: SmsAutomationWorkflow[] = JSON.parse(storedSmsWorkflows);
+        const existingIds = new Set(parsed.map(w => w.id));
+        setSmsWorkflows([...parsed, ...INITIAL_SMS_WORKFLOWS.filter(w => !existingIds.has(w.id))]);
+      } else {
+        setSmsWorkflows(INITIAL_SMS_WORKFLOWS);
+      }
+
+      const storedSmsLogs = localStorage.getItem(STORAGE_KEYS.SMS_LOGS);
+      if (storedSmsLogs) {
+        const parsed: SmsLogMessage[] = JSON.parse(storedSmsLogs);
+        const existingIds = new Set(parsed.map(l => l.id));
+        setSmsLogs([...parsed, ...INITIAL_SMS_LOGS.filter(l => !existingIds.has(l.id))]);
+      } else {
+        setSmsLogs(INITIAL_SMS_LOGS);
+      }
+
+      const storedSmsSubscribers = localStorage.getItem(STORAGE_KEYS.SMS_SUBSCRIBERS);
+      if (storedSmsSubscribers) {
+        const parsed: SmsSubscriberContact[] = JSON.parse(storedSmsSubscribers);
+        const existingIds = new Set(parsed.map(s => s.id));
+        setSmsSubscribers([...parsed, ...INITIAL_SMS_SUBSCRIBERS.filter(s => !existingIds.has(s.id))]);
+      } else {
+        setSmsSubscribers(INITIAL_SMS_SUBSCRIBERS);
       }
 
       if (storedHardwareOrders) {
@@ -3192,6 +3227,107 @@ export function useNfcStore() {
     playDeliveryChime();
   };
 
+  const toggleSmsWorkflow = (id: string) => {
+    setSmsWorkflows(prev => {
+      const next = prev.map(w => w.id === id ? { ...w, isActive: !w.isActive } : w);
+      localStorage.setItem(STORAGE_KEYS.SMS_WORKFLOWS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
+  const updateSmsWorkflowTemplate = (id: string, newTemplate: string) => {
+    setSmsWorkflows(prev => {
+      const next = prev.map(w => w.id === id ? { ...w, smsTemplate: newTemplate } : w);
+      localStorage.setItem(STORAGE_KEYS.SMS_WORKFLOWS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const sendManualSms = (recipientPhone: string, recipientName: string, businessName: string, messageBody: string, workflowName?: string) => {
+    const newLog: SmsLogMessage = {
+      id: `sms-${Date.now().toString(36)}`,
+      workflowName: workflowName || 'Direct Merchant SMS',
+      recipientPhone,
+      recipientName,
+      businessName,
+      messageBody,
+      status: 'delivered',
+      timestamp: new Date().toISOString(),
+      direction: 'outbound',
+      cost: 0.0079,
+    };
+    setSmsLogs(prev => {
+      const next = [newLog, ...prev];
+      localStorage.setItem(STORAGE_KEYS.SMS_LOGS, JSON.stringify(next));
+      return next;
+    });
+
+    // Increment workflow count if matched
+    if (workflowName) {
+      setSmsWorkflows(prev => {
+        const next = prev.map(w => w.name === workflowName ? { ...w, sentCount: w.sentCount + 1 } : w);
+        localStorage.setItem(STORAGE_KEYS.SMS_WORKFLOWS, JSON.stringify(next));
+        return next;
+      });
+    }
+
+    playDeliveryChime();
+    return newLog;
+  };
+
+  const broadcastSmsCampaign = (businessName: string, messageBody: string, targetTown?: string) => {
+    const eligibleSubscribers = smsSubscribers.filter(s => {
+      if (!s.isActive) return false;
+      if (targetTown && targetTown !== 'all' && !s.town.toLowerCase().includes(targetTown.toLowerCase())) return false;
+      return true;
+    });
+
+    const newLogs: SmsLogMessage[] = eligibleSubscribers.map(sub => ({
+      id: `sms-blast-${Date.now().toString(36)}-${sub.id}`,
+      workflowName: 'VIP SMS Broadcast Blast',
+      recipientPhone: sub.phone,
+      recipientName: sub.name,
+      businessName,
+      messageBody,
+      status: 'delivered',
+      timestamp: new Date().toISOString(),
+      direction: 'outbound',
+      cost: 0.0079
+    }));
+
+    setSmsLogs(prev => {
+      const next = [...newLogs, ...prev];
+      localStorage.setItem(STORAGE_KEYS.SMS_LOGS, JSON.stringify(next));
+      return next;
+    });
+
+    playDeliveryChime();
+    return newLogs.length;
+  };
+
+  const addSmsSubscriber = (phone: string, name: string, town: string, source: SmsSubscriberContact['optInSource'] = 'website_vip_club') => {
+    const newSub: SmsSubscriberContact = {
+      id: `sub-c-${Date.now().toString(36)}`,
+      phone,
+      name,
+      town,
+      optInSource: source,
+      subscribedDate: new Date().toISOString().split('T')[0],
+      isActive: true,
+      tags: ['VIP Member', town]
+    };
+    setSmsSubscribers(prev => {
+      const next = [newSub, ...prev];
+      localStorage.setItem(STORAGE_KEYS.SMS_SUBSCRIBERS, JSON.stringify(next));
+      return next;
+    });
+
+    awardLoyaltyPoints(50, 'Joined Carroll County VIP SMS Club');
+    playDeliveryChime();
+    return newSub;
+  };
+
   return {
     towns,
     activeTown,
@@ -3225,6 +3361,9 @@ export function useNfcStore() {
     events,
     tableTickets,
     localConditions,
+    smsWorkflows,
+    smsLogs,
+    smsSubscribers,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -3288,5 +3427,10 @@ export function useNfcStore() {
     submitDineInTableOrder,
     updateTableTicketStatus,
     importAiScannedMenu,
+    toggleSmsWorkflow,
+    updateSmsWorkflowTemplate,
+    sendManualSms,
+    broadcastSmsCampaign,
+    addSmsSubscriber,
   };
 }
