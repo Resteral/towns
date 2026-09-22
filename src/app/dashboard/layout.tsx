@@ -15,14 +15,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { deliveryOrders, feedbacks, userMembership, tableTickets } = useNfcStore();
+  const { deliveryOrders, feedbacks, userMembership, tableTickets, isAdmin } = useNfcStore();
   const pendingOrdersCount = deliveryOrders.filter(o => o.status === 'pending').length;
   const newFeedbackCount = feedbacks.filter(f => f.status === 'new').length;
   const newTableOrdersCount = tableTickets.filter(t => t.status === 'new_order').length;
 
   const navItems = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { href: '/dashboard/admin', label: 'Admin & Automation Suite', icon: Crown, badge: '👑 Master' },
+    { href: '/dashboard/admin', label: 'Admin & Automation Suite', icon: Crown, badge: isAdmin ? '👑 Sean Martin' : '🔒 Sean Only' },
     { href: '/dashboard/sms-hub', label: 'SMS Automation & VIP Hub', icon: MessageSquare, badge: '⚡ SMS' },
     { href: '/dashboard/embeds', label: 'Website Embeds & Widgets', icon: Code2, badge: '✨ HTML' },
     { href: '/dashboard/ai-assistant', label: 'AI Menu & Review Assistant', icon: Bot, badge: '🧠 AI' },

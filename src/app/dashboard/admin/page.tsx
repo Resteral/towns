@@ -31,11 +31,15 @@ import {
   Bot, Zap, Play, CheckCircle2, UserCheck, Briefcase, Star,
   Smartphone, MessageSquare, ShieldAlert, Calendar, Users,
   Copy, Download, Share2, FileText, Wifi, Gift, Ticket,
-  MapPin, User, Mail, Globe, Building2, HardDrive, Sliders, FileCode
+  MapPin, User, Mail, Globe, Building2, HardDrive, Sliders, FileCode,
+  Lock, KeyRound
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const { 
+    currentUser,
+    isAdmin,
+    authenticateUser,
     cards,
     addCard,
     updateCard,
@@ -65,6 +69,9 @@ export default function AdminDashboardPage() {
     playDeliveryChime,
     userMembership
   } = useNfcStore();
+
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [adminPinError, setAdminPinError] = useState('');
 
   // Active Admin Sub-Tab
   const [activeTab, setActiveTab] = useState<
@@ -737,6 +744,84 @@ export default function AdminDashboardPage() {
     setNewSrvDesc('');
     setShowCreateServiceModal(false);
   };
+
+  const handleAdminUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminPinError('');
+    const res = authenticateUser('frijj555@gmail.com', adminPinInput);
+    if (!res.success) {
+      setAdminPinError(res.error || 'Invalid administrator security PIN.');
+      return;
+    }
+    setAdminPinInput('');
+  };
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 px-4 space-y-8 animate-in fade-in zoom-in-95 duration-300">
+        <div className="p-8 rounded-3xl bg-gradient-to-br from-[#18120d] via-[#100e14] to-[#0a0a0f] border border-amber-500/30 shadow-2xl text-center space-y-6">
+          <div className="w-20 h-20 rounded-3xl bg-amber-400/10 border border-amber-400/40 text-amber-400 flex items-center justify-center text-4xl mx-auto shadow-inner shadow-amber-400/20">
+            <Crown className="w-10 h-10" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-mono font-bold uppercase tracking-widest">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Lead Administrator Access Only</span>
+            </div>
+            <h2 className="text-3xl font-black italic uppercase tracking-tight text-white">
+              Sean Martin Administrator Console
+            </h2>
+            <p className="text-xs text-zinc-400 font-light max-w-md mx-auto leading-relaxed">
+              This master operating suite is strictly restricted to Sean Martin (<span className="text-amber-400 font-mono">frijj555@gmail.com</span> / <span className="text-amber-400 font-mono">(508) 507-0305</span>). Enter the Lead Admin Security PIN to unlock.
+            </p>
+          </div>
+
+          {adminPinError && (
+            <div className="p-3.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-mono font-bold flex items-center justify-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{adminPinError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleAdminUnlock} className="max-w-sm mx-auto space-y-3">
+            <div className="space-y-1 text-left">
+              <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Admin Security PIN (Sean Martin)</span>
+              </label>
+              <input
+                type="password"
+                required
+                maxLength={8}
+                placeholder="Enter Admin PIN (0305)"
+                value={adminPinInput}
+                onChange={(e) => { setAdminPinInput(e.target.value); setAdminPinError(''); }}
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-mono tracking-widest text-center focus:outline-none focus:border-amber-400 placeholder:text-zinc-600"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Authenticate & Unlock Admin Suite</span>
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs font-mono text-zinc-500">
+            <Link href="/dashboard" className="hover:text-white flex items-center gap-1">
+              <span>← Back to Dashboard Overview</span>
+            </Link>
+            <Link href="/login" className="text-amber-400 hover:underline flex items-center gap-1">
+              <span>Login Portal</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-24">

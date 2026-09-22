@@ -177,6 +177,14 @@ export const INITIAL_DELIVERY_DRIVERS: DeliveryDriverMember[] = [
   }
 ];
 
+export const isUserAdmin = (user: UserProfile | null): boolean => {
+  if (!user) return false;
+  const isSeanEmail = Boolean(user.email && user.email.trim().toLowerCase() === 'frijj555@gmail.com');
+  const isSeanPhone = Boolean(user.phone && user.phone.replace(/\D/g, '') === '5085070305');
+  const isSeanId = user.id === 'user-sean';
+  return isSeanId || isSeanEmail || isSeanPhone;
+};
+
 export const PRESET_USERS: UserProfile[] = [
   {
     id: 'user-sean',
@@ -184,11 +192,11 @@ export const PRESET_USERS: UserProfile[] = [
     email: 'frijj555@gmail.com',
     phone: '(508) 507-0305',
     pin: '0305',
-    role: 'driver',
+    role: 'admin',
     avatar: '👑',
     town: 'Effingham',
     state: 'NH',
-    badge: 'Founding Vanguard & Courier Lead',
+    badge: 'Founding Vanguard & Platform Lead Admin',
     isDriver: true,
     driverMemberId: 'driver-sean',
     createdAt: '2026-01-01'
@@ -3489,10 +3497,19 @@ export function useNfcStore() {
   };
 
   const registerUser = (userData: Omit<UserProfile, 'id' | 'createdAt'>) => {
+    const isSean = Boolean(
+      (userData.email && userData.email.trim().toLowerCase() === 'frijj555@gmail.com') ||
+      (userData.phone && userData.phone.replace(/\D/g, '') === '5085070305')
+    );
+    const sanitizedRole: UserRole = (userData.role === 'admin' && !isSean) 
+      ? 'resident' 
+      : (isSean ? 'admin' : userData.role);
+
     const newUser: UserProfile = {
       ...userData,
-      id: `user-${Date.now().toString(36)}`,
-      pin: userData.pin || '1234',
+      role: sanitizedRole,
+      id: isSean ? 'user-sean' : `user-${Date.now().toString(36)}`,
+      pin: userData.pin || (isSean ? '0305' : '1234'),
       createdAt: new Date().toISOString().split('T')[0]
     };
     setCurrentUser(newUser);
@@ -3796,6 +3813,7 @@ export function useNfcStore() {
     smsLogs,
     smsSubscribers,
     currentUser,
+    isAdmin: isUserAdmin(currentUser),
     registeredAccounts,
     deliveryDrivers,
     touristHunts,
