@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { NfcCardConfig, ReviewProduct } from '@/lib/types';
@@ -41,11 +41,294 @@ import {
   Zap, 
   HelpCircle,
   FileCode,
-  Tag
+  Tag,
+  DollarSign,
+  Award,
+  Ticket,
+  Wrench,
+  MapPin,
+  Flame,
+  Info
 } from 'lucide-react';
 
-export type NfcActionType = 'google_review' | 'menu' | 'driver_dispatch' | 'vcard' | 'url' | 'wifi' | 'sms' | 'town_node';
+export type NfcActionType = 
+  | 'google_review' 
+  | 'menu' 
+  | 'driver_dispatch' 
+  | 'vcard' 
+  | 'paypal_pay' 
+  | 'social_hub' 
+  | 'loyalty_pass' 
+  | 'event_ticket' 
+  | 'work_quote' 
+  | 'wifi' 
+  | 'sms' 
+  | 'pet_tag' 
+  | 'shortcuts' 
+  | 'town_node' 
+  | 'url';
+
 export type NfcFormFactorType = 'card' | 'sticker' | 'stand' | 'wood_puck' | 'keychain';
+
+export interface NfcCapabilityItem {
+  id: NfcActionType;
+  title: string;
+  category: 'growth' | 'contact' | 'courier' | 'cashless' | 'trades' | 'automation' | 'community';
+  categoryLabel: string;
+  badge: string;
+  icon: string;
+  shortDesc: string;
+  fullDesc: string;
+  howItWorks: string;
+  bestHardware: string;
+  chipRecommendation: string;
+  sampleHeadline: string;
+  realWorldExample: string;
+  defaultPayload: string;
+}
+
+export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
+  {
+    id: 'google_review',
+    title: 'Smart 5-Star Google & Yelp Review Booster',
+    category: 'growth',
+    categoryLabel: 'Business Growth & Reputation',
+    badge: '★ Most Popular',
+    icon: '⭐',
+    shortDesc: 'Filter 5-star reviews to Google Maps while intercepting lower ratings into private owner feedback.',
+    fullDesc: 'Place this counter stand or card at your checkout register. When satisfied customers tap their phone, it instantly opens the Google Maps 5-star review dialog with pre-filled 5 stars. If a customer rates 1-3 stars, it privately routes their complaint directly to your phone so you can resolve it before it goes public.',
+    howItWorks: 'Taps trigger an intelligent review funnel webapp that checks user sentiment and opens Google Maps Write Review.',
+    bestHardware: 'Acrylic Countertop Stand or Double-Sided Table Tent',
+    chipRecommendation: 'NTAG213 / NTAG215 (NDEF URL)',
+    sampleHeadline: 'Tap phone to review us on Google & Yelp!',
+    realWorldExample: 'Smoke World Ossipee & PNB Eats counter checkouts.',
+    defaultPayload: 'https://search.google.com/local/writereview?placeid=ChIJb6eBq9f94okRGb_SmokeWorldOss'
+  },
+  {
+    id: 'menu',
+    title: 'Table-Side Digital Menu & Contactless Ordering',
+    category: 'growth',
+    categoryLabel: 'Hospitality & Dining',
+    badge: '🍔 Contactless Dining',
+    icon: '🍽️',
+    shortDesc: 'Let diners tap the table wood puck to browse live food menus, customize orders, and buzz kitchen staff.',
+    fullDesc: 'Mount waterproof NFC tags or laser-engraved maple wood pucks to patio tables and bar seating. Customers instantly access full digital menus with allergen tags, daily chef specials, and direct checkout without waiting for servers or touching sticky paper menus.',
+    howItWorks: 'NFC encodes unique table IDs (e.g., /site/pnb-eats?table=4) so orders are instantly routed to the kitchen display.',
+    bestHardware: 'Engraved Maple Wood Puck or 30mm Waterproof Epoxy Table Sticker',
+    chipRecommendation: 'NTAG213 (Compact URL)',
+    sampleHeadline: 'Tap table to browse live menu & order!',
+    realWorldExample: 'PNB Eats Roadside Grill & Patio (Route 25, Effingham).',
+    defaultPayload: 'https://oasistap.local/site/pnb-eats'
+  },
+  {
+    id: 'driver_dispatch',
+    title: '1-Tap Emergency Courier & 4x4 Driver Dispatch',
+    category: 'courier',
+    categoryLabel: 'On-The-Go & Transportation',
+    badge: '🛻 Express Transit',
+    icon: '🚗',
+    shortDesc: 'Instant roadside assistance, courier delivery booking, or 1-tap phone dispatch to local drivers.',
+    fullDesc: 'Stick an NFC tag inside vehicle consoles, loading docks, or store backrooms. With one tap, staff or stranded motorists can dispatch Sean Martin 4x4 or Jake Reynolds courier fleet for winter towing, lumber hauling, grocery pickup, or emergency hot-shot parcels.',
+    howItWorks: 'Encodes direct telephone dispatch URI (tel:5085070305) or the live GPS courier booking portal.',
+    bestHardware: 'Heavy-Duty Key Fob or Automotive Dashboard Epoxy Sticker',
+    chipRecommendation: 'NTAG213 / NTAG216',
+    sampleHeadline: 'Tap phone to dispatch 4x4 courier & towing!',
+    realWorldExample: 'Sean Martin Vanguard Fleet & Carroll County 4x4 Dispatch.',
+    defaultPayload: 'tel:5085070305'
+  },
+  {
+    id: 'vcard',
+    title: 'Digital Business Card (vCard) & Instant Contact Save',
+    category: 'contact',
+    categoryLabel: 'Networking & Executive Identity',
+    badge: '📇 Paperless Networking',
+    icon: '📱',
+    shortDesc: '1-tap saves your name, phone, email, company, and bio directly into Apple Contacts or Google Contacts.',
+    fullDesc: 'Never run out of business cards again. Tap your matte black NFC smart card to anyone’s smartphone to instantly prompt them with "Add Contact". It transfers full name, phone number, email, town node, job title, and website without typing.',
+    howItWorks: 'Encodes standard NDEF vCard 3.0 electronic business card records recognized natively by iOS and Android.',
+    bestHardware: 'Matte Jet Black Smart PVC Card or Brushed Metal NFC Card',
+    chipRecommendation: 'NTAG215 / NTAG216 (High Storage for Contact Records)',
+    sampleHeadline: 'Tap phone to save my contact info & card!',
+    realWorldExample: 'Walt Henderson (Walt’s Woodcraft) & Sean Martin (Oasis Founder).',
+    defaultPayload: 'BEGIN:VCARD\nVERSION:3.0\nFN:Sean Martin\nORG:Oasis Towns Network\nTEL:(508) 507-0305\nEMAIL:seanhse97@gmail.com\nADR:;;Effingham;NH;;03882;\nEND:VCARD'
+  },
+  {
+    id: 'paypal_pay',
+    title: 'Cashless PayPal Payments, Checkout & Driver Tip Jar',
+    category: 'cashless',
+    categoryLabel: 'Cashless Payments & Tipping',
+    badge: '💳 Instant Settlement',
+    icon: '💵',
+    shortDesc: '1-tap opens PayPal (seanhse97@gmail.com / paypal.me/seanhse97) for instant payment or contactless tipping.',
+    fullDesc: 'Perfect for roadside vendors, pop-up craft markets, food trucks, and courier delivery drivers. Customers tap the card or stand to instantly open PayPal, Venmo, or Apple Pay pre-filled to your verified recipient account with custom amounts.',
+    howItWorks: 'Directly triggers PayPal / PayPal.me deep links with pre-configured recipient addresses for instant friction-free settlement.',
+    bestHardware: 'Countertop Tip Jar Stand or Driver Lanyard Badge',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap phone to pay or tip via PayPal!',
+    realWorldExample: 'Sean Martin Delivery & Carroll County Artisan Market Tipping.',
+    defaultPayload: 'https://paypal.me/seanhse97'
+  },
+  {
+    id: 'social_hub',
+    title: 'Multi-Link Social Hub & Brand Linktree',
+    category: 'growth',
+    categoryLabel: 'Social Media & Marketing',
+    badge: '🌐 Viral Growth',
+    icon: '🔗',
+    shortDesc: 'Consolidate Instagram, TikTok, Facebook, YouTube, Spotify, and your store website into 1 seamless tap.',
+    fullDesc: 'Turn physical foot traffic into loyal online followers. Tap the NFC card to bring customers directly to your branded bio link hub showcasing your latest posts, video reels, seasonal discounts, and social handles.',
+    howItWorks: 'Encodes your consolidated link tree URL with embedded analytics to track which physical locations generate the most clicks.',
+    bestHardware: 'Branded Acrylic Window / Register Stand',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap to follow our Instagram, TikTok & Facebook!',
+    realWorldExample: 'Local boutiques, barber shops, coffee roasters, and artists in Carroll County.',
+    defaultPayload: 'https://instagram.com/oasistap'
+  },
+  {
+    id: 'loyalty_pass',
+    title: 'Oasis Regional Loyalty Passport (+35 Pts per Tap)',
+    category: 'community',
+    categoryLabel: 'Loyalty & Gamification',
+    badge: '🏆 Earn Rewards',
+    icon: '🎁',
+    shortDesc: 'Reward recurring local customers with instant loyalty reward points and unlock secret community perks.',
+    fullDesc: 'Unite surrounding towns into one functional rewards economy. When customers tap the in-store Oasis Loyalty Tag, +25 to +50 points are credited to their regional digital pass. Points can be redeemed for delivery discounts, free coffees, or marketplace coupons.',
+    howItWorks: 'Connects to the Oasis Gamification Engine to authenticate customer wallets and increment town points.',
+    bestHardware: 'In-Store Wooden NFC Beacon or Register Tap Disc',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap to check in & earn +35 Oasis Loyalty Points!',
+    realWorldExample: 'All participating merchants across Effingham, Ossipee, Freedom, and Tamworth.',
+    defaultPayload: 'https://oasistap.local/rewards?checkin=store-loyalty'
+  },
+  {
+    id: 'event_ticket',
+    title: 'Community Event RSVP & Fast-Track Door Ticket Pass',
+    category: 'community',
+    categoryLabel: 'Events & Entertainment',
+    badge: '🎟️ Door Pass',
+    icon: '🎪',
+    shortDesc: '1-tap event check-in for live music patio nights, autumn craft fairs, brewery tastings, and town meetings.',
+    fullDesc: 'Eliminate paper ticket lines and check-in bottlenecks. Attendees tap their NFC Oasis wristband, keychain, or pass at the entrance to verify their RSVP, unlock VIP access, and collect community attendance badges.',
+    howItWorks: 'Encodes secure event check-in tokens that authenticate with the live community event calendar.',
+    bestHardware: 'Waterproof NFC Silicone Wristband or VIP Badge',
+    chipRecommendation: 'NTAG213 / NTAG215',
+    sampleHeadline: 'Tap to check-in with your Oasis Event Pass!',
+    realWorldExample: 'Tamworth Distillers Craft Spirits Tasting & North Conway Foliage Craft Fair.',
+    defaultPayload: 'https://oasistap.local/events'
+  },
+  {
+    id: 'work_quote',
+    title: 'Contractor Transformation Proof & Instant Work Quote',
+    category: 'trades',
+    categoryLabel: 'Trades & Home Improvement',
+    badge: '🔨 Contractor Proof',
+    icon: '🪓',
+    shortDesc: 'Showcase interactive Before & After craftsmanship proof and let homeowners request instant project quotes.',
+    fullDesc: 'Leave behind an NFC magnet or card with homeowners after finishing a job. Neighbors and visitors tap the tag to see high-resolution Before & After transformation photos (roofing, decks, tree removal, stonework) and submit quote requests with one tap.',
+    howItWorks: 'Links directly to the contractor’s visual portfolio and pre-filled estimate request form on the Oasis Work Board.',
+    bestHardware: 'Magnetic NFC Job Site Plaque or Smart Business Card',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap to view Before & After transformations & get quote!',
+    realWorldExample: 'Walt Henderson Carpentry, Ossipee Valley Tree Works & Carroll County Trades.',
+    defaultPayload: 'https://oasistap.local/work?tab=gallery'
+  },
+  {
+    id: 'wifi',
+    title: 'Instant Guest Wi-Fi Auto-Connect (Zero Password Typing)',
+    category: 'automation',
+    categoryLabel: 'Connectivity & Hospitality',
+    badge: '📶 Zero Password',
+    icon: '⚡',
+    shortDesc: 'Guests tap the card with their phone and are instantly connected to your secure Wi-Fi network.',
+    fullDesc: 'Stop spelling out complex Wi-Fi passwords to Airbnb guests, coffee shop patrons, or customers. A single NFC tap automatically configures their phone’s network settings and logs them onto the high-speed guest network securely.',
+    howItWorks: 'Uses standard Wi-Fi Simple Configuration protocol (WIFI:S:SSID;T:WPA;P:Password;;) recognized natively by iOS & Android.',
+    bestHardware: 'Lakeside Cabin Wall Plaque or Tabletop Wooden Stand',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap phone to connect to Guest Wi-Fi instantly!',
+    realWorldExample: 'Lakes Region Cottages, Airbnb rentals, and local coffee shops.',
+    defaultPayload: 'WIFI:S:CarrollCounty-Guest-WiFi;T:WPA2;P:LakesRegion2026!;;'
+  },
+  {
+    id: 'sms',
+    title: 'Pre-Composed SMS & WhatsApp Emergency Dispatch',
+    category: 'automation',
+    categoryLabel: 'Direct Communications',
+    badge: '💬 1-Tap Text',
+    icon: '✉️',
+    shortDesc: 'Tapping automatically opens the phone’s messaging app with recipient phone number and pre-written message.',
+    fullDesc: 'Ideal for emergency service calls, customer service feedback, or roadside 4x4 help. When tapped, the customer’s default messaging app opens with your phone number and pre-formatted text (e.g. "I need an urgent 4x4 tow in Effingham NH").',
+    howItWorks: 'Encodes standard URI scheme (sms:+15085070305?body=...) for instant message sending.',
+    bestHardware: 'Equipment Sticker or Fleet Vehicle Decal',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap to send pre-formatted courier text!',
+    realWorldExample: 'Hot-shot delivery pings and emergency vehicle recovery in Carroll County.',
+    defaultPayload: 'sms:5085070305?body=Hi%20Sean!%20I%20need%20a%20courier%20run%20in%20Carroll%20County.'
+  },
+  {
+    id: 'pet_tag',
+    title: 'Smart Pet Collar ID & Lost Property Recovery Beacon',
+    category: 'community',
+    categoryLabel: 'Pet & Asset Protection',
+    badge: '🐾 Smart Finder',
+    icon: '🐕',
+    shortDesc: 'Pet collar tag displaying owner phone number, home address, medical notes, and reward info upon tap.',
+    fullDesc: 'Attach a durable, waterproof NFC pendant to your dog or cat’s collar, or to toolboxes and luggage. If lost, anyone with a smartphone can tap the tag to immediately see your direct phone number, pet medical needs, and reward details without needing a chip scanner.',
+    howItWorks: 'Directly opens an emergency contact page or triggers a phone call to the owner.',
+    bestHardware: 'Epoxy Waterproof Pet Collar Pendant or Metal Keyring Tag',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap to see pet owner contact info & medical details!',
+    realWorldExample: 'Carroll County family pets, hunting dogs, and contractor toolkits.',
+    defaultPayload: 'https://oasistap.local/contact?item=pet-tag-max'
+  },
+  {
+    id: 'shortcuts',
+    title: 'Apple Shortcuts & Smart Vehicle Automation Triggers',
+    category: 'automation',
+    categoryLabel: 'Smart Automation & IoT',
+    badge: '⚡ Apple Shortcuts',
+    icon: '🚀',
+    shortDesc: 'Trigger automated iOS Shortcuts (open garage, start GPS route, play driving playlist, adjust lights).',
+    fullDesc: 'Mount NFC chips in your delivery truck phone mount, bedside table, or workshop bench. Tapping with an iPhone instantly executes custom Apple Shortcuts: launching turn-by-turn navigation to the next delivery stop, opening gate codes, or toggling shop power.',
+    howItWorks: 'Uses iOS native NFC Background Tag Reading to trigger personal or home automation workflows.',
+    bestHardware: 'Dashboard 3M Adhesive Disc or Keychain',
+    chipRecommendation: 'NTAG213 / NTAG215',
+    sampleHeadline: 'Tap phone to trigger automated delivery route workflow!',
+    realWorldExample: 'Courier delivery route automation and smart garage opening.',
+    defaultPayload: 'shortcuts://run-shortcut?name=CourierDispatch'
+  },
+  {
+    id: 'town_node',
+    title: 'Carroll County Town Node Hub & Live Community Wire',
+    category: 'community',
+    categoryLabel: 'Regional Town Unification',
+    badge: '🌲 Regional Node',
+    icon: '🏛️',
+    shortDesc: 'Instantly launch the unified local hub for Effingham, Ossipee, Freedom, Wolfeboro, Conway, or Tamworth.',
+    fullDesc: 'Part of the mission to unite surrounding towns in one functional atmosphere. Tapping this tag instantly takes residents and tourists to their town’s live pulse: active couriers, neighborhood feed shoutouts, open restaurants, and local event schedules.',
+    howItWorks: 'Routes to the town command dashboard pre-filtered to the chosen municipality.',
+    bestHardware: 'Town Hall Wall Plaque or Community Bulletin Stand',
+    chipRecommendation: 'NTAG213',
+    sampleHeadline: 'Tap to enter the live Carroll County Town Node!',
+    realWorldExample: 'Effingham, Ossipee, Freedom, and Conway town welcome kiosks.',
+    defaultPayload: 'https://oasistap.local/towns?town=Effingham'
+  },
+  {
+    id: 'url',
+    title: 'Custom Deep Link & Dynamic Web Redirect',
+    category: 'growth',
+    categoryLabel: 'Custom & Enterprise',
+    badge: '🌐 Universal Link',
+    icon: '🔮',
+    shortDesc: 'Encode any custom website URL, Shopify checkout, PDF catalog, or dynamic web application.',
+    fullDesc: 'Total flexibility. Program your NFC tag to point to any online destination: booking pages, real estate virtual 3D walkthroughs, downloadable PDF guides, product registration pages, or private app webhooks.',
+    howItWorks: 'Encodes standard NDEF URI record pointing to any valid HTTPS URL.',
+    bestHardware: 'Universal Smart PVC Card, Table Stand, or Sticker',
+    chipRecommendation: 'NTAG213 / NTAG215 / NTAG216',
+    sampleHeadline: 'Tap phone to launch custom experience!',
+    realWorldExample: 'Custom brand campaigns and real estate virtual tours.',
+    defaultPayload: 'https://oasistap.local'
+  }
+];
 
 interface ScannedTagData {
   uid: string;
@@ -86,6 +369,27 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
     }
   },
   {
+    name: 'Sean Martin Express Courier Tip & PayPal Stand',
+    desc: 'NTAG213 • 144 Bytes • Instant PayPal (seanhse97@gmail.com)',
+    data: {
+      uid: '04:99:EE:41:2B:67:88',
+      chipType: 'NXP NTAG213 (Cashless Tip Jar)',
+      capacityBytes: 144,
+      usedBytes: 52,
+      isLocked: false,
+      technology: 'NFC Forum Type 2 Tag',
+      records: [
+        {
+          type: 'URI (NDEF Record #1)',
+          payload: 'https://paypal.me/seanhse97',
+          description: 'Instant Cashless Payment / Tip to Sean Martin (seanhse97@gmail.com)',
+          actionUrl: 'https://paypal.me/seanhse97'
+        }
+      ],
+      timestamp: 'Just now (Simulated NFC Tap)'
+    }
+  },
+  {
     name: 'PNB Eats Roadside Table #4 Stand',
     desc: 'NTAG215 • 504 Bytes • Dine-in Mobile Ordering',
     data: {
@@ -112,48 +416,68 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
     }
   },
   {
-    name: 'Sean Martin Vanguard Courier Dispatch Tag',
-    desc: 'NTAG216 • 888 Bytes • Direct 1-Tap Driver Ping',
+    name: 'Walt\'s Woodcraft Contractor vCard & Proofs',
+    desc: 'NTAG216 • 888 Bytes • Master Carpenter Contact vCard',
     data: {
-      uid: '04:99:EE:41:2B:67:88',
-      chipType: 'NXP NTAG216 (Vanguard Fleet Unit)',
+      uid: '04:33:AA:19:D4:55:82',
+      chipType: 'NXP NTAG216 (High Storage)',
       capacityBytes: 888,
-      usedBytes: 210,
-      isLocked: true,
-      technology: 'NFC Forum Type 2 Tag • 13.56 MHz',
+      usedBytes: 240,
+      isLocked: false,
+      technology: 'NFC Forum Type 2 Tag',
       records: [
         {
-          type: 'URI (NDEF Record #1)',
-          payload: 'tel:5085070305',
-          description: 'Emergency / Express Courier Phone Dispatch',
-          actionUrl: 'tel:5085070305'
+          type: 'Text/vCard',
+          payload: 'BEGIN:VCARD\nVERSION:3.0\nFN:Walter Henderson\nORG:Walt\'s Woodcraft\nTITLE:Master Carpenter\nTEL:(603)539-8120\nEMAIL:walt@woodcraft.local\nADR:;;Effingham;NH;;03882;\nEND:VCARD',
+          description: 'Walter Henderson - Walt\'s Woodcraft (Effingham NH)',
+          actionUrl: 'tel:6035398120'
         },
         {
           type: 'URI (NDEF Record #2)',
-          payload: 'https://oasistap.local/courier?driver=driver-sean',
-          description: 'Online Delivery Booking Route',
-          actionUrl: 'https://oasistap.local/courier?driver=driver-sean'
+          payload: 'https://oasistap.local/work?tab=gallery',
+          description: 'Interactive Before & After Project Portfolio',
+          actionUrl: 'https://oasistap.local/work?tab=gallery'
         }
       ],
       timestamp: 'Just now (Simulated NFC Tap)'
     }
   },
   {
-    name: 'Walt\'s Woodcraft Contractor vCard',
-    desc: 'NTAG213 • 144 Bytes • Master Carpenter Contact vCard',
+    name: 'Carroll County Lakeside Guest Wi-Fi Tag',
+    desc: 'NTAG213 • 144 Bytes • Instant Auto-Connect Wi-Fi',
     data: {
-      uid: '04:33:AA:19:D4:55:82',
+      uid: '04:F8:11:55:22:90:31',
       chipType: 'NXP NTAG213',
       capacityBytes: 144,
-      usedBytes: 114,
+      usedBytes: 74,
+      isLocked: true,
+      technology: 'NFC Forum Type 2 Tag',
+      records: [
+        {
+          type: 'Wi-Fi Configuration',
+          payload: 'WIFI:S:CarrollCounty-Guest-WiFi;T:WPA2;P:LakesRegion2026!;;',
+          description: 'Auto-Connects iOS & Android to Guest High-Speed Wi-Fi'
+        }
+      ],
+      timestamp: 'Just now (Simulated NFC Tap)'
+    }
+  },
+  {
+    name: 'Lost Pet & Emergency Recovery Beacon (Max)',
+    desc: 'NTAG213 • 144 Bytes • Pet Collar Waterproof Tag',
+    data: {
+      uid: '04:EE:33:88:12:44:99',
+      chipType: 'NXP NTAG213 Epoxy Pendant',
+      capacityBytes: 144,
+      usedBytes: 88,
       isLocked: false,
       technology: 'NFC Forum Type 2 Tag',
       records: [
         {
-          type: 'Text/vCard',
-          payload: 'BEGIN:VCARD\\nFN:Walter Henderson\\nTITLE:Master Carpenter\\nTEL:(603)539-8120\\nEND:VCARD',
-          description: 'Walter Henderson - Walt\'s Woodcraft (Effingham NH)',
-          actionUrl: 'tel:6035398120'
+          type: 'URI (Emergency Pet Record)',
+          payload: 'https://oasistap.local/contact?item=pet-tag-max',
+          description: 'Max (Golden Retriever) • Owner Phone: (508) 507-0305 • Reward Offered',
+          actionUrl: 'tel:5085070305'
         }
       ],
       timestamp: 'Just now (Simulated NFC Tap)'
@@ -162,10 +486,11 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
 ];
 
 export default function NfcTagReaderCustomizer() {
-  const { addCard, playDeliveryChime, products, addToCart } = useNfcStore();
+  const { addCard, playDeliveryChime, products, addToCart, currentUser } = useNfcStore();
 
-  // Active Main Tab: Reader vs Customizer
-  const [activeTab, setActiveTab] = useState<'reader' | 'customizer' | 'export'>('customizer');
+  // Active Main Tab: Capabilities vs Customizer vs Reader vs Export
+  const [activeTab, setActiveTab] = useState<'capabilities' | 'customizer' | 'reader' | 'export'>('capabilities');
+  const [capabilitiesFilter, setCapabilitiesFilter] = useState<'all' | 'growth' | 'contact' | 'courier' | 'cashless' | 'trades' | 'automation' | 'community'>('all');
 
   // --- NFC READER STATE ---
   const [isWebNfcScanning, setIsWebNfcScanning] = useState(false);
@@ -186,16 +511,19 @@ export default function NfcTagReaderCustomizer() {
   const [formFactor, setFormFactor] = useState<NfcFormFactorType>('card');
 
   // Payload Content State
-  const [businessName, setBusinessName] = useState('Smoke World Ossipee');
+  const [businessName, setBusinessName] = useState(currentUser?.name ? `${currentUser.name}'s Oasis Beacon` : 'Smoke World Ossipee');
   const [headline, setHeadline] = useState('Tap phone to review us on Google!');
   const [googleReviewUrl, setGoogleReviewUrl] = useState('https://search.google.com/local/writereview?placeid=ChIJb6eBq9f94okRGb_SmokeWorldOss');
   const [customUrl, setCustomUrl] = useState('https://oasistap.local');
+  const [paypalUsername, setPaypalUsername] = useState('seanhse97');
+  const [paypalEmail, setPaypalEmail] = useState('seanhse97@gmail.com');
+  const [socialUrl, setSocialUrl] = useState('https://instagram.com/oasistap');
   const [vCardData, setVCardData] = useState({
-    name: 'Sean Martin',
+    name: currentUser?.name || 'Sean Martin',
     title: 'Lead Courier & Vanguard Operator',
-    phone: '(508) 507-0305',
-    email: 'frijj555@gmail.com',
-    town: 'Effingham, NH',
+    phone: currentUser?.phone || '(508) 507-0305',
+    email: currentUser?.email || 'seanhse97@gmail.com',
+    town: currentUser?.town ? `${currentUser.town}, NH` : 'Effingham, NH',
   });
   const [wifiData, setWifiData] = useState({
     ssid: 'CarrollCounty-Guest-WiFi',
@@ -203,17 +531,23 @@ export default function NfcTagReaderCustomizer() {
     encryption: 'WPA2'
   });
   const [smsData, setSmsData] = useState({
-    phone: '(508) 507-0305',
+    phone: currentUser?.phone || '(508) 507-0305',
     message: 'Hi Sean! I need a fast courier run in Carroll County.'
   });
-  const [selectedTownNode, setSelectedTownNode] = useState('Effingham');
+  const [petData, setPetData] = useState({
+    petName: 'Max (Golden Retriever)',
+    ownerPhone: currentUser?.phone || '(508) 507-0305',
+    medicalInfo: 'Friendly, microchipped, allergic to chicken',
+    rewardText: '★ Reward offered if found!'
+  });
+  const [shortcutName, setShortcutName] = useState('CourierDispatch');
+  const [selectedTownNode, setSelectedTownNode] = useState(currentUser?.town || 'Effingham');
 
   // Visual Customization State
   const [selectedColor, setSelectedColor] = useState('#0f172a');
   const [selectedTexture, setSelectedTexture] = useState<'matte' | 'carbon' | 'metal' | 'cyber' | 'holo'>('cyber');
   const [selectedEmoji, setSelectedEmoji] = useState('💨');
   const [customLogoUrl, setCustomLogoUrl] = useState('');
-  const [accentColor, setAccentColor] = useState('#10b981');
   const [isCopied, setIsCopied] = useState(false);
   const [writeSuccessMsg, setWriteSuccessMsg] = useState<string | null>(null);
   const [isWritingNfc, setIsWritingNfc] = useState(false);
@@ -230,10 +564,24 @@ export default function NfcTagReaderCustomizer() {
         return `tel:${smsData.phone.replace(/[^0-9]/g, '')}`;
       case 'vcard':
         return `BEGIN:VCARD\nVERSION:3.0\nN:${vCardData.name}\nFN:${vCardData.name}\nORG:${businessName}\nTITLE:${vCardData.title}\nTEL:${vCardData.phone}\nEMAIL:${vCardData.email}\nADR:;;${vCardData.town};;;;\nEND:VCARD`;
+      case 'paypal_pay':
+        return `https://paypal.me/${paypalUsername || 'seanhse97'}`;
+      case 'social_hub':
+        return socialUrl || 'https://instagram.com/oasistap';
+      case 'loyalty_pass':
+        return `https://oasistap.local/rewards?checkin=${encodeURIComponent(businessName)}`;
+      case 'event_ticket':
+        return `https://oasistap.local/events`;
+      case 'work_quote':
+        return `https://oasistap.local/work?tab=gallery`;
       case 'wifi':
         return `WIFI:S:${wifiData.ssid};T:${wifiData.encryption};P:${wifiData.password};;`;
       case 'sms':
         return `sms:${smsData.phone.replace(/[^0-9]/g, '')}?body=${encodeURIComponent(smsData.message)}`;
+      case 'pet_tag':
+        return `tel:${petData.ownerPhone.replace(/[^0-9]/g, '')}`;
+      case 'shortcuts':
+        return `shortcuts://run-shortcut?name=${encodeURIComponent(shortcutName)}`;
       case 'town_node':
         return `https://oasistap.local/towns?town=${encodeURIComponent(selectedTownNode)}`;
       case 'url':
@@ -250,7 +598,38 @@ export default function NfcTagReaderCustomizer() {
       margin: 2,
       color: { dark: '#000000', light: '#ffffff' }
     }).then(url => setGeneratedQrDataUrl(url)).catch(() => {});
-  }, [actionType, googleReviewUrl, customUrl, vCardData, wifiData, smsData, selectedTownNode, businessName]);
+  }, [
+    actionType, 
+    googleReviewUrl, 
+    customUrl, 
+    paypalUsername, 
+    socialUrl, 
+    vCardData, 
+    wifiData, 
+    smsData, 
+    petData, 
+    shortcutName, 
+    selectedTownNode, 
+    businessName
+  ]);
+
+  // Load a Capability into Customizer Studio
+  const handleLoadCapability = (cap: NfcCapabilityItem) => {
+    setActionType(cap.id);
+    setHeadline(cap.sampleHeadline);
+    if (cap.id === 'google_review') setGoogleReviewUrl(cap.defaultPayload);
+    if (cap.id === 'paypal_pay') setPaypalUsername('seanhse97');
+    if (cap.id === 'url') setCustomUrl(cap.defaultPayload);
+    if (cap.id === 'menu') setBusinessName('PNB Eats Roadside Grill');
+    if (cap.id === 'driver_dispatch') setBusinessName('Sean Martin 4x4 Courier');
+    if (cap.id === 'work_quote') setBusinessName('Walt\'s Woodcraft Carpentry');
+
+    setActiveTab('customizer');
+    setWriteSuccessMsg(`Loaded "${cap.title}" into Customizer Canvas!`);
+    playDeliveryChime();
+    confetti({ particleCount: 40, spread: 60 });
+    setTimeout(() => setWriteSuccessMsg(null), 3500);
+  };
 
   // Handle Real Web NFC Scanning
   const handleStartWebNfcScan = async () => {
@@ -334,6 +713,8 @@ export default function NfcTagReaderCustomizer() {
       setCustomUrl(firstRec.actionUrl);
     } else if (firstRec.payload.includes('VCARD')) {
       setActionType('vcard');
+    } else if (firstRec.payload.includes('paypal.me')) {
+      setActionType('paypal_pay');
     } else {
       setActionType('url');
       setCustomUrl(firstRec.payload);
@@ -356,7 +737,7 @@ export default function NfcTagReaderCustomizer() {
       const payload = getComputedPayloadUrl();
       await ndef.write({
         records: [
-          { recordType: actionType === 'url' || actionType === 'google_review' ? 'url' : 'text', data: payload }
+          { recordType: actionType === 'url' || actionType === 'google_review' || actionType === 'paypal_pay' ? 'url' : 'text', data: payload }
         ]
       });
       setIsWritingNfc(false);
@@ -437,6 +818,12 @@ export default function NfcTagReaderCustomizer() {
     URL.revokeObjectURL(url);
   };
 
+  // Filtered Capabilities
+  const filteredCapabilities = ALL_NFC_CAPABILITIES.filter(cap => {
+    if (capabilitiesFilter === 'all') return true;
+    return cap.category === capabilitiesFilter;
+  });
+
   return (
     <div className="space-y-10 max-w-7xl mx-auto">
       
@@ -449,57 +836,69 @@ export default function NfcTagReaderCustomizer() {
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-widest">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span>13.56MHz Smart Hardware Studio</span>
+              <span>13.56MHz Smart Contactless Hardware Studio</span>
             </div>
 
             <h1 className="text-3xl md:text-5xl font-black italic tracking-tight uppercase text-white leading-tight">
-              NFC Tag Reader & <br />
+              All The Things You Can Do <br />
               <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-400 bg-clip-text text-transparent">
-                Hardware Customizer
+                With Your NFC Cards & Tags
               </span>
             </h1>
 
             <p className="text-zinc-300 text-xs md:text-sm font-normal leading-relaxed">
-              Read and inspect physical NFC chips, decode NDEF records, and custom-design your own <b>Smart Review Cards</b>, <b>Dine-in Menu Stands</b>, <b>Driver Dispatch Tags</b>, and <b>vCards</b> with instant 1-tap encoding.
+              Explore 15+ powerful real-world applications: <b>5-Star Google Review Boosters</b>, <b>Dine-In Digital Menus</b>, <b>Emergency 4x4 Courier Dispatch</b>, <b>Instant PayPal Cashless Tipping</b> (<span className="text-amber-400 font-mono">seanhse97@gmail.com</span>), <b>Paperless vCards</b>, <b>Guest Wi-Fi Auto-Connect</b>, and <b>Smart Pet Collars</b>.
             </p>
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/10 w-full lg:w-auto">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-white/10 w-full lg:w-auto">
+            <button
+              onClick={() => setActiveTab('capabilities')}
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'capabilities'
+                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>1. All Capabilities ({ALL_NFC_CAPABILITIES.length})</span>
+            </button>
+
             <button
               onClick={() => setActiveTab('customizer')}
-              className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'customizer'
                   ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
               <Palette className="w-4 h-4" />
-              <span>1. Customizer & Canvas</span>
+              <span>2. Customizer Studio</span>
             </button>
 
             <button
               onClick={() => setActiveTab('reader')}
-              className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'reader'
                   ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
               <Scan className="w-4 h-4" />
-              <span>2. Tag Reader & Inspector</span>
+              <span>3. Tag Reader</span>
             </button>
 
             <button
               onClick={() => setActiveTab('export')}
-              className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'export'
                   ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
               <Cpu className="w-4 h-4" />
-              <span>3. Write & Flash NFC</span>
+              <span>4. Flash & Program</span>
             </button>
           </div>
         </div>
@@ -520,7 +919,148 @@ export default function NfcTagReaderCustomizer() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 1: CUSTOMIZER & VISUAL CARD CANVAS                  */}
+      {/* TAB 1: ALL THINGS YOU CAN DO (NFC CAPABILITIES MATRIX)  */}
+      {/* ======================================================== */}
+      {activeTab === 'capabilities' && (
+        <div className="space-y-8">
+          
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {[
+              { id: 'all', label: 'All 15 Capabilities', icon: '✨' },
+              { id: 'growth', label: 'Business Growth & Menus', icon: '⭐' },
+              { id: 'cashless', label: 'PayPal & Cashless Tips', icon: '💵' },
+              { id: 'courier', label: 'Courier & 4x4 Transit', icon: '🛻' },
+              { id: 'contact', label: 'vCards & Networking', icon: '📇' },
+              { id: 'trades', label: 'Contractor Visual Proofs', icon: '🔨' },
+              { id: 'automation', label: 'Wi-Fi & Apple Shortcuts', icon: '⚡' },
+              { id: 'community', label: 'Loyalty & Town Passports', icon: '🌲' },
+            ].map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setCapabilitiesFilter(cat.id as any)}
+                className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shrink-0 flex items-center gap-2 border ${
+                  capabilitiesFilter === cat.id
+                    ? 'bg-amber-400 text-black border-amber-300 shadow-lg shadow-amber-400/20 scale-105'
+                    : 'bg-white/5 text-white/70 border-white/5 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Capabilities Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCapabilities.map(cap => (
+              <div 
+                key={cap.id}
+                className="bg-[#0c0c12] border border-white/10 hover:border-amber-400/50 rounded-3xl p-6 flex flex-col justify-between space-y-5 transition-all duration-300 group hover:shadow-2xl hover:shadow-amber-500/10"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-inner">
+                      {cap.icon}
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-white/5 text-amber-300 border border-white/10 text-[9px] font-mono font-bold uppercase">
+                      {cap.badge}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
+                      {cap.categoryLabel}
+                    </span>
+                    <h3 className="text-lg font-black italic tracking-tight text-white group-hover:text-amber-300 transition-colors leading-snug">
+                      {cap.title}
+                    </h3>
+                  </div>
+
+                  <p className="text-xs text-zinc-300 font-normal leading-relaxed">
+                    {cap.fullDesc}
+                  </p>
+
+                  <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1.5 text-[11px] font-mono">
+                    <div className="text-zinc-400 flex items-center gap-1">
+                      <span className="text-amber-400 font-bold">Recommended Hardware:</span>
+                      <span className="text-white truncate">{cap.bestHardware}</span>
+                    </div>
+                    <div className="text-zinc-400 flex items-center gap-1">
+                      <span className="text-amber-400 font-bold">Target Chip:</span>
+                      <span className="text-zinc-300">{cap.chipRecommendation}</span>
+                    </div>
+                    <div className="text-zinc-400">
+                      <span className="text-emerald-400 font-bold">Carroll County Node: </span>
+                      <span className="text-zinc-300">{cap.realWorldExample}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/10 flex items-center gap-2">
+                  <button
+                    onClick={() => handleLoadCapability(cap)}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>Load into Canvas</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const matchingPreset = PRESET_SIMULATED_TAGS.find(p => p.name.toLowerCase().includes(cap.id.replace('_', ' '))) || PRESET_SIMULATED_TAGS[0];
+                      setScannedTag(matchingPreset.data);
+                      setActiveTab('reader');
+                    }}
+                    className="px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-xs font-bold transition-all"
+                    title="Simulate Mobile Tap"
+                  >
+                    <Smartphone className="w-4 h-4 text-amber-400" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Hardware & Form Factor Showcase */}
+          <div className="p-8 rounded-3xl bg-gradient-to-r from-[#10101c] via-[#0d0d16] to-[#0a0a10] border border-white/10 space-y-6">
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">
+                Physical Form Factors Supported
+              </span>
+              <h3 className="text-2xl font-black text-white uppercase italic">
+                Any Object Can Become an NFC Touchpoint
+              </h3>
+              <p className="text-xs text-zinc-400 max-w-2xl">
+                Our standardized 13.56 MHz chips work universally with all iPhones (XS through 16 Pro) and all Android smartphones with zero apps required.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {[
+                { name: 'Smart PVC Card', desc: 'CR80 standard credit-card size matte finish', icon: '💳', use: 'Wallets & vCards' },
+                { name: 'Countertop Stand', desc: 'Sleek acrylic slant stand with dual QR backup', icon: '🏛️', use: 'Cash registers & bars' },
+                { name: 'Epoxy Waterproof Sticker', desc: '30mm 3M adhesive waterproof sticker', icon: '🏷️', use: 'Tables, trucks & windows' },
+                { name: 'Lakeside Maple Puck', desc: 'Laser-engraved solid New England maple wood', icon: '🪵', use: 'Dining tables & patios' },
+                { name: 'Heavy-Duty Key Fob', desc: 'Rugged keychain for drivers & tradesmen', icon: '🛡️', use: 'Keyrings & fleet vehicles' },
+              ].map((hf, i) => (
+                <div key={i} className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-2 text-center">
+                  <span className="text-3xl block">{hf.icon}</span>
+                  <h4 className="text-xs font-black text-white">{hf.name}</h4>
+                  <p className="text-[10px] text-zinc-400 leading-tight">{hf.desc}</p>
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[8px] font-mono font-bold uppercase">
+                    {hf.use}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 2: CUSTOMIZER & VISUAL CARD CANVAS                  */}
       {/* ======================================================== */}
       {activeTab === 'customizer' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -573,7 +1113,13 @@ export default function NfcTagReaderCustomizer() {
                     <div className="text-left">
                       <h4 className="font-black italic text-white text-base tracking-tight leading-tight line-clamp-1">{businessName}</h4>
                       <p className="text-[9px] font-mono uppercase text-white/60 tracking-wider">
-                        {actionType === 'google_review' ? 'Google 5-Star NFC Beacon' : actionType === 'driver_dispatch' ? 'Express Courier NFC' : actionType === 'vcard' ? 'Digital vCard NFC' : 'Smart Contactless Tag'}
+                        {actionType === 'google_review' ? 'Google 5-Star NFC Beacon' : 
+                         actionType === 'driver_dispatch' ? 'Express Courier NFC' : 
+                         actionType === 'vcard' ? 'Digital vCard NFC' : 
+                         actionType === 'paypal_pay' ? 'PayPal Instant Pay & Tip' : 
+                         actionType === 'wifi' ? 'Guest Wi-Fi Auto-Connect' : 
+                         actionType === 'loyalty_pass' ? 'Oasis Loyalty Pass' : 
+                         'Smart Contactless Tag'}
                       </p>
                     </div>
                   </div>
@@ -599,6 +1145,12 @@ export default function NfcTagReaderCustomizer() {
                       <span>Instant AWD / 4x4 Dispatch</span>
                     </div>
                   )}
+                  {actionType === 'paypal_pay' && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[9px] font-mono font-bold uppercase">
+                      <DollarSign className="w-3 h-3 text-blue-400" />
+                      <span>PayPal Direct: {paypalUsername}</span>
+                    </div>
+                  )}
                   {actionType === 'vcard' && (
                     <p className="text-xs font-mono text-zinc-300">
                       👤 {vCardData.name} • {vCardData.title}
@@ -621,6 +1173,12 @@ export default function NfcTagReaderCustomizer() {
                         <span className="text-[11px] font-bold text-green-400">l</span>
                         <span className="text-[11px] font-bold text-red-400">e</span>
                         <span className="text-[10px] font-bold text-white ml-1">Reviews</span>
+                      </div>
+                    ) : actionType === 'paypal_pay' ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] font-black italic text-blue-400">Pay</span>
+                        <span className="text-[11px] font-black italic text-cyan-300">Pal</span>
+                        <span className="text-[9px] font-mono text-white/60 ml-1">seanhse97@gmail.com</span>
                       </div>
                     ) : (
                       <span className="text-[10px] font-black uppercase tracking-wider text-white">
@@ -699,21 +1257,28 @@ export default function NfcTagReaderCustomizer() {
               </div>
             </div>
 
-            {/* 2. Action / Payload Selector */}
+            {/* 2. Action / Payload Selector (All 15 Actions) */}
             <div className="p-6 rounded-3xl bg-[#0e0e14] border border-white/10 space-y-4">
               <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-amber-400" />
-                <span>2. Choose NFC Tap Trigger Action:</span>
+                <span>2. Choose NFC Tap Trigger Action (15 Modes):</span>
               </label>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-72 overflow-y-auto pr-1">
                 {[
                   { id: 'google_review', label: 'Google Review', icon: '⭐' },
                   { id: 'menu', label: 'Dine-In Menu', icon: '🍔' },
                   { id: 'driver_dispatch', label: 'Driver Dispatch', icon: '🚗' },
+                  { id: 'paypal_pay', label: 'PayPal / Tip', icon: '💵' },
                   { id: 'vcard', label: 'Digital vCard', icon: '📱' },
+                  { id: 'social_hub', label: 'Social Hub', icon: '🔗' },
+                  { id: 'loyalty_pass', label: 'Loyalty Pass', icon: '🎁' },
+                  { id: 'event_ticket', label: 'Event Pass', icon: '🎟️' },
+                  { id: 'work_quote', label: 'Work Quotes', icon: '🔨' },
                   { id: 'wifi', label: 'Wi-Fi Connect', icon: '📶' },
                   { id: 'sms', label: 'SMS Ping', icon: '💬' },
+                  { id: 'pet_tag', label: 'Pet Collar ID', icon: '🐕' },
+                  { id: 'shortcuts', label: 'Apple Shortcut', icon: '⚡' },
                   { id: 'town_node', label: 'Town Node', icon: '🌲' },
                   { id: 'url', label: 'Custom URL', icon: '🌐' },
                 ].map((act) => (
@@ -724,19 +1289,26 @@ export default function NfcTagReaderCustomizer() {
                       if (act.id === 'google_review') setHeadline('Tap phone to review us on Google!');
                       if (act.id === 'menu') setHeadline('Tap to view live menu & order!');
                       if (act.id === 'driver_dispatch') setHeadline('Tap phone to dispatch local courier!');
+                      if (act.id === 'paypal_pay') setHeadline('Tap phone to pay or tip via PayPal!');
                       if (act.id === 'vcard') setHeadline('Tap phone to save my contact info!');
+                      if (act.id === 'social_hub') setHeadline('Tap to follow our Instagram & TikTok!');
+                      if (act.id === 'loyalty_pass') setHeadline('Tap to earn +35 Loyalty Points!');
+                      if (act.id === 'event_ticket') setHeadline('Tap to check in with Event Pass!');
+                      if (act.id === 'work_quote') setHeadline('Tap to view transformations & get quote!');
                       if (act.id === 'wifi') setHeadline('Tap to join Guest High-Speed Wi-Fi!');
                       if (act.id === 'sms') setHeadline('Tap to send instant SMS message!');
+                      if (act.id === 'pet_tag') setHeadline('Tap for emergency pet owner contact!');
+                      if (act.id === 'shortcuts') setHeadline('Tap phone to trigger automated workflow!');
                       if (act.id === 'town_node') setHeadline(`Tap to explore ${selectedTownNode} Community Wire!`);
                     }}
-                    className={`p-3 rounded-xl border text-center transition-all ${
+                    className={`p-2.5 rounded-xl border text-center transition-all ${
                       actionType === act.id
                         ? 'bg-amber-400 text-black font-bold shadow-md'
                         : 'bg-white/5 border-white/10 text-zinc-300 hover:text-white'
                     }`}
                   >
                     <span className="text-base block">{act.icon}</span>
-                    <span className="text-[11px] font-semibold block mt-0.5">{act.label}</span>
+                    <span className="text-[10px] font-semibold block mt-0.5 truncate">{act.label}</span>
                   </button>
                 ))}
               </div>
@@ -749,32 +1321,55 @@ export default function NfcTagReaderCustomizer() {
                       Google Review URL or Place ID
                     </label>
                     <input
-                      type="text"
+                      type="url"
                       value={googleReviewUrl}
                       onChange={e => setGoogleReviewUrl(e.target.value)}
                       placeholder="https://search.google.com/local/writereview?placeid=..."
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-amber-400"
+                      className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 )}
 
-                {actionType === 'url' && (
+                {actionType === 'paypal_pay' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase">PayPal.me Username</label>
+                      <input
+                        type="text"
+                        placeholder="seanhse97"
+                        value={paypalUsername}
+                        onChange={e => setPaypalUsername(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase">Verified PayPal Email</label>
+                      <input
+                        type="email"
+                        placeholder="seanhse97@gmail.com"
+                        value={paypalEmail}
+                        onChange={e => setPaypalEmail(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {actionType === 'social_hub' && (
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
-                      Destination Website / Linktree URL
-                    </label>
+                    <label className="text-[10px] font-mono text-zinc-400 uppercase">Social Media Hub URL</label>
                     <input
                       type="url"
-                      value={customUrl}
-                      onChange={e => setCustomUrl(e.target.value)}
+                      value={socialUrl}
+                      onChange={e => setSocialUrl(e.target.value)}
                       placeholder="https://instagram.com/mybusiness"
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-amber-400"
+                      className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 )}
 
                 {actionType === 'vcard' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <input
                       type="text"
                       placeholder="Full Name"
@@ -843,6 +1438,38 @@ export default function NfcTagReaderCustomizer() {
                   </div>
                 )}
 
+                {actionType === 'pet_tag' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <input
+                      type="text"
+                      placeholder="Pet Name (e.g. Max)"
+                      value={petData.petName}
+                      onChange={e => setPetData({...petData, petName: e.target.value})}
+                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Owner Phone"
+                      value={petData.ownerPhone}
+                      onChange={e => setPetData({...petData, ownerPhone: e.target.value})}
+                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                )}
+
+                {actionType === 'shortcuts' && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-zinc-400 uppercase">iOS Shortcut Name</label>
+                    <input
+                      type="text"
+                      value={shortcutName}
+                      onChange={e => setShortcutName(e.target.value)}
+                      placeholder="CourierDispatch"
+                      className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                )}
+
                 {actionType === 'town_node' && (
                   <select
                     value={selectedTownNode}
@@ -852,9 +1479,23 @@ export default function NfcTagReaderCustomizer() {
                     <option value="Effingham">Effingham, NH Node</option>
                     <option value="Ossipee">Center Ossipee, NH Node</option>
                     <option value="Freedom">Freedom, NH Node</option>
-                    <option value="Wakefield">Wakefield / Sanbornville, NH Node</option>
+                    <option value="Wolfeboro">Wolfeboro, NH Node</option>
+                    <option value="Tamworth">Tamworth, NH Node</option>
                     <option value="Conway">Conway / North Conway, NH Node</option>
                   </select>
+                )}
+
+                {actionType === 'url' && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-zinc-400 uppercase">Target Web URL</label>
+                    <input
+                      type="url"
+                      value={customUrl}
+                      onChange={e => setCustomUrl(e.target.value)}
+                      placeholder="https://mywebsite.com"
+                      className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
                 )}
               </div>
             </div>
@@ -946,7 +1587,7 @@ export default function NfcTagReaderCustomizer() {
               <div className="space-y-1.5">
                 <span className="text-[10px] font-mono text-zinc-400">Logo Emoji Icon:</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {['💨', '⭐', '🍔', '🥪', '🍕', '🚗', '🛻', '🌲', '🔨', '🪵', '☕', '💈', '🏨', '✨'].map(em => (
+                  {['💨', '⭐', '🍔', '💵', '📱', '🔗', '🎁', '🎟️', '🚗', '🛻', '🌲', '🔨', '🐕', '☕', '✨'].map(em => (
                     <button
                       key={em}
                       type="button"
@@ -979,7 +1620,7 @@ export default function NfcTagReaderCustomizer() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 2: REAL & SIMULATED NFC TAG READER / INSPECTOR       */}
+      {/* TAB 3: REAL & SIMULATED NFC TAG READER / INSPECTOR       */}
       {/* ======================================================== */}
       {activeTab === 'reader' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1035,7 +1676,7 @@ export default function NfcTagReaderCustomizer() {
               <div className="space-y-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">
-                    Interactive Chip Simulator:
+                    Interactive Chip Simulator ({PRESET_SIMULATED_TAGS.length} Presets):
                   </span>
                   <span className="text-[10px] font-mono text-zinc-500">Click any tag to tap</span>
                 </div>
@@ -1186,7 +1827,7 @@ export default function NfcTagReaderCustomizer() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 3: ENCODING & FLASHING WORKSTATION                  */}
+      {/* TAB 4: ENCODING & FLASHING WORKSTATION                  */}
       {/* ======================================================== */}
       {activeTab === 'export' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

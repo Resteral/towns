@@ -146,6 +146,30 @@ export default function CardsFleetPage() {
         </div>
       </div>
 
+      {/* All Things You Can Do Banner */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#121220] to-[#0a0a14] border border-amber-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            <span>15+ Hardware Super-Capabilities</span>
+          </div>
+          <h2 className="text-xl font-black italic uppercase text-white">
+            What All Can You Do With Your NFC Cards?
+          </h2>
+          <p className="text-xs text-zinc-300 font-light max-w-2xl">
+            From 5-star Google review funnels, contactless dine-in menus, 1-tap courier dispatch, and cashless PayPal payments (<span className="text-amber-400 font-mono">seanhse97@gmail.com</span>) to instant guest Wi-Fi auto-connect and pet collar finders.
+          </p>
+        </div>
+
+        <Link
+          href="/custom-nfc"
+          className="px-5 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2 shrink-0"
+        >
+          <span>Explore All 15 Capabilities & Studio</span>
+          <Radio className="w-4 h-4 text-black animate-pulse" />
+        </Link>
+      </div>
+
       {/* Cards Table / Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card) => (
