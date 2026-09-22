@@ -155,79 +155,118 @@ export default function MarketplacePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             
             {/* Products Grid */}
-            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-              {filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-[#0b0b10] border border-white/10 rounded-[2.5rem] p-6 flex flex-col justify-between hover:border-amber-400/40 transition-all duration-300 group relative overflow-hidden space-y-4"
-                >
-                  <div className="space-y-4">
-                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-zinc-900">
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                      />
-                      {product.badge && (
-                        <span className="absolute top-3 left-3 px-3 py-1 bg-amber-400 text-black font-black text-[9px] uppercase tracking-widest rounded-full shadow-lg">
-                          {product.badge}
-                        </span>
-                      )}
-                      {product.town && (
-                        <span className="absolute bottom-3 left-3 px-2.5 py-1 bg-black/70 backdrop-blur-md text-white font-mono text-[8px] uppercase tracking-wider rounded-lg border border-white/10 flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-emerald-400" /> {product.town}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-amber-400 text-xs">
-                          <Star className="w-3.5 h-3.5 fill-amber-400" />
-                          <span className="font-mono text-white text-[11px] font-bold">{product.rating}</span>
-                          <span className="text-zinc-500 font-mono text-[10px]">({product.reviewsCount})</span>
+            <div className="lg:col-span-8">
+              {filteredProducts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {filteredProducts.map((product) => (
+                    <div
+                      key={product.id}
+                      className="bg-[#0b0b10] border border-white/10 rounded-[2.5rem] p-6 flex flex-col justify-between hover:border-amber-400/40 transition-all duration-300 group relative overflow-hidden space-y-4"
+                    >
+                      <div className="space-y-4">
+                        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-zinc-900">
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                          />
+                          {product.badge && (
+                            <span className="absolute top-3 left-3 px-3 py-1 bg-amber-400 text-black font-black text-[9px] uppercase tracking-widest rounded-full shadow-lg">
+                              {product.badge}
+                            </span>
+                          )}
+                          {product.town && (
+                            <span className="absolute bottom-3 left-3 px-2.5 py-1 bg-black/70 backdrop-blur-md text-white font-mono text-[8px] uppercase tracking-wider rounded-lg border border-white/10 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-emerald-400" /> {product.town}
+                            </span>
+                          )}
                         </div>
-                        {product.sellerName && (
-                          <span className="text-[10px] font-mono text-indigo-400 font-bold">{product.sellerName}</span>
-                        )}
+
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1 text-amber-400 text-xs">
+                              <Star className="w-3.5 h-3.5 fill-amber-400" />
+                              <span className="font-mono text-white text-[11px] font-bold">{product.rating}</span>
+                              <span className="text-zinc-500 font-mono text-[10px]">({product.reviewsCount})</span>
+                            </div>
+                            {product.sellerName && (
+                              <span className="text-[10px] font-mono text-indigo-400 font-bold">{product.sellerName}</span>
+                            )}
+                          </div>
+
+                          <h3 className="text-xl font-black italic text-white tracking-tight leading-snug">
+                            {product.name}
+                          </h3>
+
+                          <p className="text-xs text-zinc-400 line-clamp-2">
+                            {product.description}
+                          </p>
+                        </div>
                       </div>
 
-                      <h3 className="text-xl font-black italic text-white tracking-tight leading-snug">
-                        {product.name}
-                      </h3>
+                      <div className="pt-4 border-t border-white/5 space-y-3">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-2xl font-black italic text-amber-400">{formatCurrency(product.price)}</span>
+                          <span className="text-[9px] font-mono text-emerald-400 uppercase">Express Courier Ready</span>
+                        </div>
 
-                      <p className="text-xs text-zinc-400 line-clamp-2">
-                        {product.description}
-                      </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => setSelectedProductForCustomization(product)}
+                            className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1"
+                          >
+                            <Sliders className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Customize</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleQuickAdd(product)}
+                            className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-amber-400/20 flex items-center justify-center gap-1 font-sans"
+                          >
+                            <ShoppingBag className="w-3.5 h-3.5" />
+                            <span>{justAddedId === product.id ? 'Added! ✓' : 'Add to Cart'}</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center bg-[#0b0b10] border border-white/10 rounded-[2.5rem] space-y-6">
+                  <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-2xl">
+                    🛍️
                   </div>
-
-                  <div className="pt-4 border-t border-white/5 space-y-3">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-2xl font-black italic text-amber-400">{formatCurrency(product.price)}</span>
-                      <span className="text-[9px] font-mono text-emerald-400 uppercase">Express Courier Ready</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setSelectedProductForCustomization(product)}
-                        className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1"
-                      >
-                        <Sliders className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Customize</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleQuickAdd(product)}
-                        className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-amber-400/20 flex items-center justify-center gap-1 font-sans"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>{justAddedId === product.id ? 'Added! ✓' : 'Add to Cart'}</span>
-                      </button>
-                    </div>
+                  <div className="space-y-2 max-w-md mx-auto">
+                    <h3 className="text-xl font-black italic uppercase text-white tracking-tight">
+                      Explore Catalog Ready For Items
+                    </h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      No products are listed in this category yet. Import products in bulk via CSV, create a merchant storefront, or build custom NFC smart hardware.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                    <Link
+                      href="/csv-importer"
+                      className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black text-xs uppercase tracking-wider rounded-xl hover:opacity-95 transition-all shadow-md"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 inline mr-1" />
+                      Import CSV Catalog
+                    </Link>
+                    <Link
+                      href="/create-storefront"
+                      className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all"
+                    >
+                      Register Storefront
+                    </Link>
+                    <Link
+                      href="/creator"
+                      className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-amber-300 font-bold text-xs uppercase tracking-wider rounded-xl transition-all"
+                    >
+                      NFC Creator
+                    </Link>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Sidebar: Live Social Pulse & Shoutouts */}
