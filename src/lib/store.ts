@@ -65,7 +65,7 @@ const STORAGE_KEYS = {
   SMS_SUBSCRIBERS: 'pulpulse_sms_subscribers_v1',
   AUTH_USER: 'pulpulse_auth_user_v2',
   REGISTERED_ACCOUNTS: 'pulpulse_registered_accounts_v2',
-  DELIVERY_DRIVERS: 'pulpulse_delivery_drivers_v2',
+  DELIVERY_DRIVERS: 'pulpulse_delivery_drivers_v3',
   TOURIST_HUNTS: 'pulpulse_tourist_hunts_v1',
   PASSPORT_STAMPS: 'pulpulse_passport_stamps_v1',
   STORE_CIRCUITS: 'pulpulse_store_circuits_v1',
@@ -98,83 +98,6 @@ export const INITIAL_DELIVERY_DRIVERS: DeliveryDriverMember[] = [
     canDeliverGroceries: true,
     canDeliverHardware: true,
     canDeliverFirewood: true
-  },
-  {
-    id: 'driver-jake',
-    name: 'Jake Reynolds',
-    phone: '(603) 539-8822',
-    email: 'jake.r@gmail.com',
-    avatar: '🛻',
-    town: 'Center Ossipee',
-    state: 'NH',
-    vehicleName: 'Ford F-150 SuperCrew 4x4 (Bed & Heavy Haul)',
-    vehiclePlate: 'NH-539R',
-    isOnline: true,
-    status: 'online_ready',
-    specialties: ['Wood Pellets & Feed Bags', 'Heavy Hardware', 'Campground Supply', 'Restaurant Takeout'],
-    rating: 4.9,
-    reviewsCount: 42,
-    deliveriesCompleted: 128,
-    joinedDate: '2026-03-01',
-    preferredTowns: ['Center Ossipee', 'West Ossipee', 'Effingham', 'Freedom'],
-    activeShiftStart: 'Today at 8:15 AM',
-    hourlyRateEstimate: '$9.99 base flat',
-    currentLocation: 'Route 16 Corridor',
-    canDeliverFood: true,
-    canDeliverGroceries: true,
-    canDeliverHardware: true,
-    canDeliverFirewood: true
-  },
-  {
-    id: 'driver-amanda',
-    name: 'Amanda Vance',
-    phone: '(603) 539-4419',
-    email: 'amanda.v@gmail.com',
-    avatar: '🚙',
-    town: 'Freedom',
-    state: 'NH',
-    vehicleName: 'Toyota RAV4 Hybrid AWD',
-    vehiclePlate: 'NH-441V',
-    isOnline: true,
-    status: 'online_ready',
-    specialties: ['Hannaford To Go Curbside', 'Deli & Morning Bakery', 'Lakeside Cabins', 'Prescription Pickup'],
-    rating: 5.0,
-    reviewsCount: 38,
-    deliveriesCompleted: 94,
-    joinedDate: '2026-04-15',
-    preferredTowns: ['Freedom', 'Wakefield', 'Sanbornville', 'Effingham'],
-    activeShiftStart: 'Today at 9:00 AM',
-    hourlyRateEstimate: '$8.99 base flat',
-    currentLocation: 'Ossipee Lake / Freedom Village',
-    canDeliverFood: true,
-    canDeliverGroceries: true,
-    canDeliverHardware: false,
-    canDeliverFirewood: false
-  },
-  {
-    id: 'driver-dave',
-    name: 'Dave Miller',
-    phone: '(603) 539-7710',
-    email: 'dave.m@gmail.com',
-    avatar: '🚗',
-    town: 'Wakefield',
-    state: 'NH',
-    vehicleName: 'Subaru Crosstrek AWD',
-    vehiclePlate: 'NH-771D',
-    isOnline: false,
-    status: 'off_duty',
-    specialties: ['Evening Diner Runs', 'Weekend Errand Runner', 'Pizza Barn Delivery'],
-    rating: 4.8,
-    reviewsCount: 26,
-    deliveriesCompleted: 62,
-    joinedDate: '2026-05-01',
-    preferredTowns: ['Wakefield', 'Sanbornville', 'Union'],
-    hourlyRateEstimate: '$9.99 base flat',
-    currentLocation: 'Wakefield / Sanbornville',
-    canDeliverFood: true,
-    canDeliverGroceries: true,
-    canDeliverHardware: false,
-    canDeliverFirewood: false
   }
 ];
 
@@ -201,21 +124,6 @@ export const PRESET_USERS: UserProfile[] = [
     isDriver: true,
     driverMemberId: 'driver-sean',
     createdAt: '2026-01-01'
-  },
-  {
-    id: 'user-jake',
-    name: 'Jake Reynolds',
-    email: 'jake.r@gmail.com',
-    phone: '(603) 539-8822',
-    pin: '8822',
-    role: 'driver',
-    avatar: '🛻',
-    town: 'Center Ossipee',
-    state: 'NH',
-    badge: 'Community Courier Driver (4x4)',
-    isDriver: true,
-    driverMemberId: 'driver-jake',
-    createdAt: '2026-03-01'
   },
   {
     id: 'user-gary',
@@ -1887,8 +1795,9 @@ export function useNfcStore() {
       const storedDrivers = localStorage.getItem(STORAGE_KEYS.DELIVERY_DRIVERS);
       if (storedDrivers) {
         const parsed: DeliveryDriverMember[] = JSON.parse(storedDrivers);
-        const existingIds = new Set(parsed.map(d => d.id));
-        setDeliveryDrivers([...parsed, ...INITIAL_DELIVERY_DRIVERS.filter(d => !existingIds.has(d.id))]);
+        const cleaned = parsed.filter(d => d.id !== 'driver-jake' && d.id !== 'driver-amanda' && d.id !== 'driver-dave');
+        const existingIds = new Set(cleaned.map(d => d.id));
+        setDeliveryDrivers([...cleaned, ...INITIAL_DELIVERY_DRIVERS.filter(d => !existingIds.has(d.id))]);
       } else {
         setDeliveryDrivers(INITIAL_DELIVERY_DRIVERS);
       }

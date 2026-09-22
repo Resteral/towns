@@ -145,7 +145,7 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     badge: '🛻 Express Transit',
     icon: '🚗',
     shortDesc: 'Instant roadside assistance, courier delivery booking, or 1-tap phone dispatch to local drivers.',
-    fullDesc: 'Stick an NFC tag inside vehicle consoles, loading docks, or store backrooms. With one tap, staff or stranded motorists can dispatch Sean Martin 4x4 or Jake Reynolds courier fleet for winter towing, lumber hauling, grocery pickup, or emergency hot-shot parcels.',
+    fullDesc: 'Stick an NFC tag inside vehicle consoles, loading docks, or store backrooms. With one tap, staff or stranded motorists can dispatch Sean Martin 4x4 Vanguard courier fleet for winter towing, lumber hauling, grocery pickup, or emergency hot-shot parcels.',
     howItWorks: 'Encodes direct telephone dispatch URI (tel:5085070305) or the live GPS courier booking portal.',
     bestHardware: 'Heavy-Duty Key Fob or Automotive Dashboard Epoxy Sticker',
     chipRecommendation: 'NTAG213 / NTAG216',
