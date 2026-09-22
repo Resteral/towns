@@ -22,7 +22,7 @@ import { DineInTableTicket } from '@/lib/types';
 
 export default function KitchenDisplayPage() {
   const { tableTickets, updateTableTicketStatus, submitDineInTableOrder, storefronts } = useNfcStore();
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState(storefronts[0]?.id || 'sf-pnb-eats');
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(storefronts[0]?.id || 'sf-oasis-roastery');
 
   const filteredTickets = tableTickets.filter(t => t.restaurantId === selectedRestaurantId);
 
@@ -38,7 +38,7 @@ export default function KitchenDisplayPage() {
     submitDineInTableOrder({
       tableNumber: tableNum,
       restaurantId: selectedRestaurantId,
-      restaurantName: curStore?.businessName || 'PNB Eats',
+      restaurantName: curStore?.businessName || 'Oasis Artisan Roastery',
       customerName: 'Walk-in Diner',
       customerPhone: '(603) 555-0199',
       items: [

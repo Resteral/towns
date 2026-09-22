@@ -44,7 +44,7 @@ interface ChatMessage {
 
 export default function AiAssistantPage() {
   const { storefronts, importAiScannedMenu, sendManualSms, playDeliveryChime } = useNfcStore();
-  const [selectedStorefrontId, setSelectedStorefrontId] = useState(storefronts[0]?.id || 'sf-pnb-eats');
+  const [selectedStorefrontId, setSelectedStorefrontId] = useState(storefronts[0]?.id || 'sf-oasis-roastery');
   const [activeTab, setActiveTab] = useState<'menu_scanner' | 'review_responder' | 'chat_simulator' | 'rules'>('menu_scanner');
 
   const currentStore = storefronts.find(s => s.id === selectedStorefrontId) || storefronts[0];

@@ -25,7 +25,7 @@ type WidgetType = 'floating_badge' | 'star_ribbon' | 'review_carousel' | 'tap_bu
 
 export default function EmbedsStudioPage() {
   const { storefronts, cards } = useNfcStore();
-  const [selectedStorefrontId, setSelectedStorefrontId] = useState<string>(storefronts[0]?.id || 'sf-pnb-eats');
+  const [selectedStorefrontId, setSelectedStorefrontId] = useState<string>(storefronts[0]?.id || 'sf-oasis-roastery');
   const [widgetType, setWidgetType] = useState<WidgetType>('floating_badge');
   const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'gold'>('dark');
   const [accentColor, setAccentColor] = useState<string>('#f59e0b');
@@ -33,14 +33,14 @@ export default function EmbedsStudioPage() {
   const [copiedSnippet, setCopiedSnippet] = useState<boolean>(false);
 
   const selectedStorefront = storefronts.find(s => s.id === selectedStorefrontId) || storefronts[0];
-  const businessName = selectedStorefront?.businessName || 'PNB Eats Roadside Grill';
+  const businessName = selectedStorefront?.businessName || 'Oasis Artisan Roastery & Bakehouse';
   const rating = selectedStorefront?.googleRating || 4.9;
   const reviewCount = selectedStorefront?.reviewsCount || 128;
 
   // Generate embed code snippet
   const embedCodeSnippet = `<!-- Townraise Verified Local Trust Badge for ${businessName} -->
 <div id="townraise-badge-container" 
-  data-merchant="${selectedStorefront?.id || 'sf-pnb-eats'}"
+  data-merchant="${selectedStorefront?.id || 'sf-oasis-roastery'}"
   data-theme="${themeMode}"
   data-widget="${widgetType}"
   data-accent="${accentColor}">

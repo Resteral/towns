@@ -91,7 +91,7 @@ export default function AdminDashboardPage() {
   const [showCreateServiceModal, setShowCreateServiceModal] = useState<boolean>(false);
 
   // Web NFC Flasher State
-  const [writerSelectedStore, setWriterSelectedStore] = useState<string>(storefronts[0]?.slug || 'pnb-eats');
+  const [writerSelectedStore, setWriterSelectedStore] = useState<string>(storefronts[0]?.slug || 'oasis-roastery-bakehouse');
   const [writerTableNumber, setWriterTableNumber] = useState<string>('');
   const [writerCustomUrl, setWriterCustomUrl] = useState<string>('');
   const [isNfcWriting, setIsNfcWriting] = useState<boolean>(false);
@@ -100,7 +100,7 @@ export default function AdminDashboardPage() {
   const [writerQrCodeUrl, setWriterQrCodeUrl] = useState<string>('');
 
   // Menu Stock Controller State
-  const [stockSelectedStoreId, setStockSelectedStoreId] = useState<string>(storefronts[0]?.id || 'sf-pnb-eats');
+  const [stockSelectedStoreId, setStockSelectedStoreId] = useState<string>(storefronts[0]?.id || 'sf-oasis-roastery');
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editingPriceValue, setEditingPriceValue] = useState<string>('');
   const [showAddMenuItemModal, setShowAddMenuItemModal] = useState<boolean>(false);
@@ -109,7 +109,7 @@ export default function AdminDashboardPage() {
   const [newProdTitle, setNewProdTitle] = useState<string>('');
   const [newProdSubtitle, setNewProdSubtitle] = useState<string>('');
   const [newProdDesc, setNewProdDesc] = useState<string>('');
-  const [newProdStoreSlug, setNewProdStoreSlug] = useState<string>(storefronts[0]?.slug || 'pnb-eats');
+  const [newProdStoreSlug, setNewProdStoreSlug] = useState<string>(storefronts[0]?.slug || 'oasis-roastery-bakehouse');
   const [newProdTable, setNewProdTable] = useState<string>('');
   const [newProdFormFactor, setNewProdFormFactor] = useState<NfcFormFactor>('acrylic_table_stand');
   const [newProdChipType, setNewProdChipType] = useState<'NTAG213' | 'NTAG215' | 'NTAG216'>('NTAG215');

@@ -49,8 +49,8 @@ export default function SmsAutomationHubPage() {
 
   // VIP Blast State
   const [blastOpen, setBlastOpen] = useState<boolean>(false);
-  const [blastCampaignName, setBlastCampaignName] = useState<string>('Friday Night Live Prime Rib Special');
-  const [blastMessage, setBlastMessage] = useState<string>('🔥 Oasis VIP: Show this text tonight at PNB Eats for 15% off any Prime Rib dinner or Wood-Fired Pizza! Reply STOP to opt-out.');
+  const [blastCampaignName, setBlastCampaignName] = useState<string>('Weekend Nitro Cold Brew & Hearth Sourdough Special');
+  const [blastMessage, setBlastMessage] = useState<string>('🔥 Oasis VIP: Show this text today at Oasis Artisan Roastery & Bakehouse for 15% off any Nitro Cold Brew or Hearth Sourdough! Reply STOP to opt-out.');
   const [blastTownFilter, setBlastTownFilter] = useState<string>('all');
   const [blastSending, setBlastSending] = useState<boolean>(false);
 
