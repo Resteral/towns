@@ -161,14 +161,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <Link
+                  href="/hunter-profile"
+                  onClick={onClose}
+                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-black uppercase tracking-wider transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5 shadow-md shadow-purple-500/20"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Hunter Profile</span>
+                </Link>
+
                 <button
                   onClick={() => {
                     logoutUser();
                     setSuccessMsg('Logged out successfully.');
                     setTimeout(() => setSuccessMsg(''), 1500);
                   }}
-                  className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                  className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Logout</span>

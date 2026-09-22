@@ -198,9 +198,25 @@ export default function StoreHuntingPage() {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 uppercase">
             Hunt <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent">Local Stores</span>, Tap & Win
           </h1>
-          <p className="text-white/60 text-sm md:text-base leading-relaxed">
+          <p className="text-white/60 text-sm md:text-base leading-relaxed mb-6">
             Discover historic antique barns, farmstands, stone-oven bakeries, timber workshops, and country mercantiles across Effingham, Ossipee, Freedom, Wolfeboro, Conway, and Tamworth. Tap in-store NFC counter beacons to reveal secret discounts, claim points, and support local merchants!
           </p>
+
+          {/* User's Own Hunter Profile Link Bar */}
+          <div className="inline-flex flex-wrap items-center justify-center gap-3 p-2.5 px-4 rounded-2xl bg-white/[0.04] border border-purple-500/30 backdrop-blur-xl">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-lg">{currentUser?.avatar || '🌲'}</span>
+              <span className="font-bold text-white">{currentUser?.name || 'Local Store Hunter'}</span>
+              <span className="text-purple-400 font-mono text-[11px]">({storeHunterStamps.length} Stamps • {storeHunterStamps.length} Perks)</span>
+            </div>
+            <Link
+              href="/hunter-profile"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black text-[11px] uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+            >
+              <span>👤 Open My Profile & Perks</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
         </div>
 
         {/* Stats Ribbon */}
