@@ -121,13 +121,20 @@ export default function CardsFleetPage() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/custom-nfc"
+            className="px-5 py-3 bg-gradient-to-r from-amber-400/20 to-orange-500/20 hover:bg-amber-400/30 text-amber-300 font-bold text-xs uppercase tracking-wider rounded-2xl border border-amber-400/40 transition-all flex items-center gap-2"
+          >
+            <Radio className="w-4 h-4 text-amber-400 animate-pulse" />
+            <span>NFC Reader & Customizer Studio</span>
+          </Link>
           <Link
             href="/dashboard/programmer"
             className="px-5 py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl border border-white/10 transition-all flex items-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Scan Effingham & Flash Cards</span>
+            <span>Scan Effingham & Flash</span>
           </Link>
           <button
             onClick={openCreateModal}
