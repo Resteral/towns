@@ -269,6 +269,226 @@ export default function ContactPage() {
           </div>
         </div>
 
+        {/* SEAN MARTIN'S PURCHASEABLE & PROGRAMMABLE NFC HARDWARE SUITE */}
+        <div className="space-y-8 pt-8 border-t border-white/10">
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Sean Martin Hardware Lab • Pre-Programmed & Shipped</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black italic tracking-tight text-white uppercase">
+              Purchaseable & Custom Programmed <span className="text-amber-400">NFC Smart Tech</span>
+            </h2>
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Every smart NFC unit is custom-encoded, laser engraved, and quality tested by Sean Martin. Ready to use out-of-the-box with any modern iPhone or Android—no apps required.
+            </p>
+          </div>
+
+          {/* 6 Core Programmable Archetypes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* 1. Digital Business Cards */}
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-amber-400/40 transition-all space-y-4 flex flex-col justify-between group shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-400/10 text-amber-400 flex items-center justify-center text-2xl font-black">
+                    🪪
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[9px] font-mono font-bold">$29.99</span>
+                </div>
+                <h3 className="font-black text-white text-lg uppercase group-hover:text-amber-300 transition-colors">
+                  Digital NFC Business Cards
+                </h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  1-tap transfers your vCard, phone number, portfolio website, and social profiles directly into the customer's contacts.
+                </p>
+                <div className="text-[10px] font-mono text-zinc-400 space-y-1 pt-1">
+                  <div>✓ Instant iPhone & Android Sync</div>
+                  <div>✓ Update Links Anytime in Cloud</div>
+                </div>
+              </div>
+              <Link
+                href="/marketplace"
+                className="w-full py-2.5 rounded-xl bg-amber-400/10 hover:bg-amber-400 hover:text-black text-amber-300 text-[10px] font-black uppercase tracking-wider transition-all text-center block border border-amber-400/20"
+              >
+                Order Business Card →
+              </Link>
+            </div>
+
+            {/* 2. Restaurant & Bar Menus */}
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-amber-400/40 transition-all space-y-4 flex flex-col justify-between group shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-400/10 text-amber-400 flex items-center justify-center text-2xl font-black">
+                    🍽️
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[9px] font-mono font-bold">$34.99</span>
+                </div>
+                <h3 className="font-black text-white text-lg uppercase group-hover:text-amber-300 transition-colors">
+                  Tap-to-Order Digital Menus
+                </h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Heavyweight acrylic stands & waterproof table discs. Diners tap to browse menus, order food, and tip waitstaff.
+                </p>
+                <div className="text-[10px] font-mono text-zinc-400 space-y-1 pt-1">
+                  <div>✓ Table Number Pre-Encoded</div>
+                  <div>✓ Alcohol & Spill Resistant</div>
+                </div>
+              </div>
+              <Link
+                href="/menus"
+                className="w-full py-2.5 rounded-xl bg-amber-400/10 hover:bg-amber-400 hover:text-black text-amber-300 text-[10px] font-black uppercase tracking-wider transition-all text-center block border border-amber-400/20"
+              >
+                Order Table Stands →
+              </Link>
+            </div>
+
+            {/* 3. Loyalty & Rewards Systems */}
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-amber-400/40 transition-all space-y-4 flex flex-col justify-between group shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-400/10 text-amber-400 flex items-center justify-center text-2xl font-black">
+                    🎁
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[9px] font-mono font-bold">$14.99</span>
+                </div>
+                <h3 className="font-black text-white text-lg uppercase group-hover:text-amber-300 transition-colors">
+                  VIP Rewards & Loyalty Keychains
+                </h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Pocket-sized leatherette & alloy FOB keychains. Customers tap in-store to earn bonus points and unlock secret mystery discounts.
+                </p>
+                <div className="text-[10px] font-mono text-zinc-400 space-y-1 pt-1">
+                  <div>✓ Level Multipliers & Combos</div>
+                  <div>✓ Re-Order Favorites Instantly</div>
+                </div>
+              </div>
+              <Link
+                href="/rewards"
+                className="w-full py-2.5 rounded-xl bg-amber-400/10 hover:bg-amber-400 hover:text-black text-amber-300 text-[10px] font-black uppercase tracking-wider transition-all text-center block border border-amber-400/20"
+              >
+                Explore Loyalty FOBs →
+              </Link>
+            </div>
+
+            {/* 4. Live Events & Festival VIP Passes */}
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-amber-400/40 transition-all space-y-4 flex flex-col justify-between group shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-2xl font-black">
+                    🎟️
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-pink-500/10 text-pink-400 text-[9px] font-mono font-bold">$19.99</span>
+                </div>
+                <h3 className="font-black text-white text-lg uppercase group-hover:text-pink-300 transition-colors">
+                  Event & Festival VIP Passes
+                </h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Wearable lanyard smart cards pre-encoded for rapid 0.1s door check-in, festival schedule view, and backstage access.
+                </p>
+                <div className="text-[10px] font-mono text-zinc-400 space-y-1 pt-1">
+                  <div>✓ Includes Soft-Touch Lanyard</div>
+                  <div>✓ Reusable for Future Events</div>
+                </div>
+              </div>
+              <Link
+                href="/events"
+                className="w-full py-2.5 rounded-xl bg-pink-500/10 hover:bg-pink-500 hover:text-black text-pink-300 text-[10px] font-black uppercase tracking-wider transition-all text-center block border border-pink-500/20"
+              >
+                Order Event Passes →
+              </Link>
+            </div>
+
+            {/* 5. 5-Star Google Reviews & Shields */}
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-amber-400/40 transition-all space-y-4 flex flex-col justify-between group shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-2xl font-black">
+                    ⭐
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[9px] font-mono font-bold">$49.99</span>
+                </div>
+                <h3 className="font-black text-white text-lg uppercase group-hover:text-indigo-300 transition-colors">
+                  5-Star Google Review Stands
+                </h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Dual-channel smart funnel. Forwards 4 & 5-star diners directly into Google Maps while diverting negative ratings to private manager inbox.
+                </p>
+                <div className="text-[10px] font-mono text-zinc-400 space-y-1 pt-1">
+                  <div>✓ 12.8x Review Acceleration</div>
+                  <div>✓ Zero Monthly Software Fees</div>
+                </div>
+              </div>
+              <Link
+                href="/marketplace?cat=stands"
+                className="w-full py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-300 text-[10px] font-black uppercase tracking-wider transition-all text-center block border border-indigo-500/20"
+              >
+                Order Review Stand →
+              </Link>
+            </div>
+
+            {/* 6. Airbnb & Lakehouse Wi-Fi Plaques */}
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-amber-400/40 transition-all space-y-4 flex flex-col justify-between group shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl font-black">
+                    🏡
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[9px] font-mono font-bold">$39.99</span>
+                </div>
+                <h3 className="font-black text-white text-lg uppercase group-hover:text-emerald-300 transition-colors">
+                  Airbnb & Lakehouse Wi-Fi Plaques
+                </h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Custom wooden plaque allowing cabin guests to tap for 1-second passwordless Wi-Fi connect, house rules, and dockside firewood delivery.
+                </p>
+                <div className="text-[10px] font-mono text-zinc-400 space-y-1 pt-1">
+                  <div>✓ 1-Tap Passwordless Connect</div>
+                  <div>✓ Sean Martin Food/Firewood Relay</div>
+                </div>
+              </div>
+              <Link
+                href="/concierge"
+                className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 hover:text-black text-emerald-300 text-[10px] font-black uppercase tracking-wider transition-all text-center block border border-emerald-500/20"
+              >
+                Order Airbnb Plaque →
+              </Link>
+            </div>
+
+          </div>
+
+          {/* 100-Card Batch Flashing Station Banner */}
+          <div className="p-8 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#0e0e16] to-indigo-600/15 border border-amber-400/30 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+            <div className="space-y-2 text-left">
+              <div className="inline-flex items-center gap-2 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider">
+                <Zap className="w-4 h-4" />
+                <span>100-Card Promotional Giveaway Pack</span>
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black italic uppercase text-white tracking-tight">
+                Need 100 Cards Pre-Programmed for Giveaways?
+              </h3>
+              <p className="text-xs text-zinc-300 max-w-xl">
+                Get a bulk crate of 100 sequentially coded cards pre-programmed with your business links, review prompts, or event passes. Free delivery across Carroll County.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <Link
+                href="/custom-nfc"
+                className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+              >
+                <span>Batch Flashing Station</span>
+                <Radio className="w-4 h-4 text-black" />
+              </Link>
+              <a
+                href="tel:5085070305"
+                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-widest transition-all border border-white/10"
+              >
+                Call Sean (508) 507-0305
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Access Action Banners */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
           <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
@@ -292,7 +512,7 @@ export default function ContactPage() {
             <p className="text-xs text-zinc-400 leading-relaxed">
               Scan surrounding businesses in Effingham and neighboring towns, extract Place IDs, and flash NFC cards.
             </p>
-            <Link href="/dashboard/programmer" className="text-xs text-indigo-400 hover:underline font-bold inline-block">
+            <Link href="/custom-nfc" className="text-xs text-indigo-400 hover:underline font-bold inline-block">
               Open NFC Programmer →
             </Link>
           </div>
