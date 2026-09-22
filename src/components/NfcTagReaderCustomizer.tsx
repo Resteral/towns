@@ -64,7 +64,9 @@ import {
   SlidersHorizontal,
   Key,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  X,
+  FileText
 } from 'lucide-react';
 
 export type NfcActionType = 
@@ -532,6 +534,8 @@ export default function NfcTagReaderCustomizer() {
   const [scannedTag, setScannedTag] = useState<ScannedTagData | null>(PRESET_SIMULATED_TAGS[0].data);
   const [isSimulatingTap, setIsSimulatingTap] = useState(false);
   const [hasWebNfcSupport, setHasWebNfcSupport] = useState<boolean>(false);
+  const [manualPastePayload, setManualPastePayload] = useState('');
+  const [showManualImportModal, setShowManualImportModal] = useState(false);
 
   // Check Web NFC support on mount
   useEffect(() => {
@@ -881,16 +885,17 @@ export default function NfcTagReaderCustomizer() {
     setTimeout(() => setWriteSuccessMsg(null), 3500);
   };
 
-  // Handle Real Web NFC Scanning
-  const handleStartWebNfcScan = async () => {
+  // Handle Real Web NFC Scanning with direct optional auto-import into website
+  const handleStartWebNfcScan = async (autoImportToFleet?: boolean | React.SyntheticEvent) => {
+    const shouldAutoImport = autoImportToFleet === true;
     if (!('NDEFReader' in window)) {
-      setScanStatusMessage('Web NFC is not supported on this browser. Try Chrome on Android or use our interactive hardware simulator below.');
+      setScanStatusMessage('Web NFC is not supported on this browser. Try Chrome on Android or paste raw payload below.');
       return;
     }
 
     try {
       setIsWebNfcScanning(true);
-      setScanStatusMessage('📡 Ready! Hold your phone or physical NFC tag against the NFC antenna...');
+      setScanStatusMessage('📡 Ready! Hold physical NFC tag against your phone or reader antenna...');
       const ndef = new (window as any).NDEFReader();
       await ndef.scan();
 
@@ -930,6 +935,10 @@ export default function NfcTagReaderCustomizer() {
         setScanStatusMessage('✅ NFC Tag Scanned & Decoded Successfully!');
         playDeliveryChime();
         confetti({ particleCount: 30, spread: 60 });
+
+        if (shouldAutoImport) {
+          handleDirectImportTagToWebsite(newTagData);
+        }
       };
 
       ndef.onreadingerror = () => {
@@ -954,7 +963,196 @@ export default function NfcTagReaderCustomizer() {
     }, 400);
   };
 
-  // Import Scanned Tag payload into the Customizer
+  // Smart Direct Importer: Parses raw or scanned NFC tag data and adds directly to Website Fleet
+  const handleDirectImportTagToWebsite = (tagData?: ScannedTagData) => {
+    const activeTag = tagData || scannedTag;
+    if (!activeTag || activeTag.records.length === 0) {
+      alert('No scanned NFC tag data found. Please scan a tag first.');
+      return;
+    }
+
+    const firstRec = activeTag.records[0];
+    const payload = firstRec.payload || '';
+    const uid = activeTag.uid || `04:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}`;
+
+    let cardTitle = 'Imported NFC Card';
+    let bizName = 'Imported Business';
+    let profileType: NfcCardConfig['profileType'] = 'custom_url';
+    let targetDest = payload;
+    let icon = '💳';
+    let color = '#0f172a';
+    let formFactorType: NfcCardConfig['hardwareFormFactor'] = 'pvc_card';
+    let contactName = '';
+    let contactPhone = '';
+    let contactEmail = '';
+    let contactTitle = '';
+    let contactTown = 'Effingham, NH';
+    let customHeadlineText = 'Tap with phone for instant info!';
+    let reviewLink = '';
+
+    // 1. vCard parser
+    if (payload.includes('BEGIN:VCARD')) {
+      profileType = 'digital_biz_card';
+      icon = '👤';
+      color = '#064e3b';
+      const fnMatch = payload.match(/FN:(.+)/i);
+      const orgMatch = payload.match(/ORG:(.+)/i);
+      const titleMatch = payload.match(/TITLE:(.+)/i);
+      const telMatch = payload.match(/TEL:(.+)/i);
+      const emailMatch = payload.match(/EMAIL:(.+)/i);
+      const adrMatch = payload.match(/ADR:(.+)/i);
+
+      contactName = fnMatch ? fnMatch[1].trim() : 'Contact';
+      bizName = orgMatch ? orgMatch[1].trim() : `${contactName}'s vCard`;
+      contactTitle = titleMatch ? titleMatch[1].trim() : '';
+      contactPhone = telMatch ? telMatch[1].trim() : '';
+      contactEmail = emailMatch ? emailMatch[1].trim() : '';
+      contactTown = adrMatch ? adrMatch[1].replace(/;/g, ' ').trim() : 'Effingham, NH';
+      cardTitle = `${contactName} (vCard)`;
+      customHeadlineText = `Tap to save ${contactName}'s contact info to your phone!`;
+      targetDest = firstRec.actionUrl || `tel:${contactPhone.replace(/[^0-9]/g, '')}`;
+    }
+    // 2. Wi-Fi parser
+    else if (payload.startsWith('WIFI:')) {
+      profileType = 'airbnb_wifi_plaque';
+      icon = '📡';
+      color = '#0f766e';
+      const ssidMatch = payload.match(/S:([^;]+)/i);
+      const ssid = ssidMatch ? ssidMatch[1] : 'Guest Wi-Fi';
+      bizName = `${ssid} Guest Wi-Fi`;
+      cardTitle = `${ssid} (Wi-Fi Plaque)`;
+      customHeadlineText = `Tap to instantly auto-connect to ${ssid}!`;
+      targetDest = payload;
+    }
+    // 3. Google Review Link parser
+    else if (payload.includes('search.google.com/local/writereview') || payload.includes('google.com/maps') || payload.includes('placeid=')) {
+      profileType = 'google_review_booster';
+      icon = '⭐';
+      color = '#1e1b4b';
+      bizName = 'Google 5-Star Review Booster';
+      cardTitle = 'Google Review Card';
+      reviewLink = payload;
+      targetDest = payload;
+      customHeadlineText = 'Love your experience? Tap to leave us a 5-star Google review!';
+    }
+    // 4. PayPal Tip / Pay parser
+    else if (payload.includes('paypal.me/')) {
+      profileType = 'custom_url';
+      icon = '💵';
+      color = '#1e3a8a';
+      const user = payload.split('paypal.me/')[1]?.split('?')[0] || 'merchant';
+      bizName = `PayPal: ${user}`;
+      cardTitle = `PayPal Tip Card (${user})`;
+      customHeadlineText = 'Tap to send instant payment or tip!';
+      targetDest = payload;
+    }
+    // 5. Telephone / SMS Courier Dispatch parser
+    else if (payload.startsWith('tel:') || payload.startsWith('sms:')) {
+      profileType = 'custom_url';
+      icon = '🛻';
+      color = '#312e81';
+      bizName = 'Courier & Hotline Lifeline';
+      cardTitle = '4x4 Hotline Card';
+      customHeadlineText = 'Tap phone for instant 24/7 hotline dispatch!';
+      targetDest = payload;
+    }
+    // 6. Townraise Tap Endpoint parser
+    else if (payload.includes('/tap/')) {
+      profileType = 'custom_url';
+      icon = '🌲';
+      color = '#0f172a';
+      bizName = 'Townraise Dynamic Beacon';
+      cardTitle = 'Imported Townraise Tag';
+      customHeadlineText = 'Tap phone to connect with local services!';
+      targetDest = payload;
+    }
+    // 7. General Web Link / Text
+    else {
+      profileType = 'custom_url';
+      icon = '🌐';
+      color = '#18181b';
+      try {
+        if (payload.startsWith('http')) {
+          const urlObj = new URL(payload);
+          bizName = urlObj.hostname.replace('www.', '');
+          cardTitle = `${bizName} Link`;
+        } else {
+          bizName = payload.substring(0, 30);
+          cardTitle = 'Custom Scanned Tag';
+        }
+      } catch {
+        bizName = 'Custom NFC Tag';
+        cardTitle = 'Imported Tag';
+      }
+      targetDest = payload;
+    }
+
+    // Add to Fleet store
+    const importedCard = addCard({
+      cardName: cardTitle,
+      businessName: bizName,
+      googleReviewUrl: reviewLink || targetDest,
+      customDestinationUrl: targetDest,
+      directTargetUrl: targetDest,
+      customHeadline: customHeadlineText,
+      mode: 'smart_funnel',
+      thresholdStars: 4,
+      logoUrl: icon,
+      primaryColor: color,
+      hardwareFormFactor: formFactorType,
+      profileType,
+      chipUid: uid,
+      notes: `Imported via NFC Tag Scanner on ${new Date().toLocaleDateString()}`,
+      contactFullName: contactName || undefined,
+      contactTitle: contactTitle || undefined,
+      contactPhone: contactPhone || undefined,
+      contactEmail: contactEmail || undefined,
+      contactAddress: contactTown || undefined,
+      active: true,
+      assignedLocation: 'Scanned Card Import'
+    });
+
+    setEditingCardId(importedCard.id);
+    playDeliveryChime();
+    confetti({ particleCount: 70, spread: 80 });
+    setWriteSuccessMsg(`🎉 Successfully scanned & imported "${cardTitle}" into your Website Fleet!`);
+    setActiveTab('fleet');
+    setTimeout(() => setWriteSuccessMsg(null), 5000);
+  };
+
+  // Manual Raw Payload Importer
+  const handleManualPasteImport = (payloadString?: string) => {
+    const raw = (payloadString !== undefined ? payloadString : manualPastePayload).trim();
+    if (!raw) {
+      alert('Please enter or paste a URL, vCard, or NFC payload to import.');
+      return;
+    }
+
+    const manualTag: ScannedTagData = {
+      uid: `04:MANUAL:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}`,
+      chipType: 'Manual Import NDEF String',
+      capacityBytes: 504,
+      usedBytes: raw.length,
+      isLocked: false,
+      technology: 'NDEF Formatted String',
+      records: [
+        {
+          type: raw.startsWith('http') ? 'URI' : raw.startsWith('WIFI:') ? 'Wi-Fi Configuration' : raw.includes('VCARD') ? 'Text/vCard' : 'Text',
+          payload: raw,
+          description: 'Manually imported payload string',
+          actionUrl: raw.startsWith('http') || raw.startsWith('tel:') ? raw : undefined
+        }
+      ],
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    setScannedTag(manualTag);
+    setShowManualImportModal(false);
+    setManualPastePayload('');
+    handleDirectImportTagToWebsite(manualTag);
+  };
+
+  // Import Scanned Tag payload into the Customizer Canvas
   const handleImportScannedTag = () => {
     if (!scannedTag || scannedTag.records.length === 0) return;
     const firstRec = scannedTag.records[0];
@@ -1497,13 +1695,31 @@ export default function NfcTagReaderCustomizer() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => handleStartWebNfcScan(true)}
+                className="px-3.5 py-1.5 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-black border border-emerald-500/40 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-emerald-500/10"
+                title="Hold NFC card to phone antenna to scan and import directly into website"
+              >
+                <Radio className="w-3.5 h-3.5" />
+                <span>📡 Scan Tag to Import</span>
+              </button>
+
+              <button
+                onClick={() => setShowManualImportModal(true)}
+                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+                title="Paste raw URL, vCard, or Wi-Fi string to import"
+              >
+                <Copy className="w-3.5 h-3.5 text-amber-400" />
+                <span>📋 Paste & Import</span>
+              </button>
+
               <button
                 onClick={() => setShowIosGuide(!showIosGuide)}
                 className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5"
               >
                 <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-                <span>{showIosGuide ? 'Hide iPhone / App Guide' : 'iPhone / NFC Tools Guide'}</span>
+                <span>{showIosGuide ? 'Hide App Guide' : 'iPhone Guide'}</span>
               </button>
             </div>
           </div>
@@ -2050,9 +2266,27 @@ export default function NfcTagReaderCustomizer() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <span className="text-[11px] font-mono text-zinc-400">
-                Showing {
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+              <button
+                onClick={() => handleStartWebNfcScan(true)}
+                className="px-3.5 py-2 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-black border border-emerald-500/40 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-emerald-500/10"
+                title="Scan physical NFC tag to import directly into fleet"
+              >
+                <Radio className="w-3.5 h-3.5" />
+                <span>📡 Scan Tag to Import</span>
+              </button>
+
+              <button
+                onClick={() => setShowManualImportModal(true)}
+                className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+                title="Paste raw payload or link to import"
+              >
+                <Copy className="w-3.5 h-3.5 text-amber-400" />
+                <span>Paste & Import</span>
+              </button>
+
+              <span className="text-[11px] font-mono text-zinc-400 ml-2 hidden md:inline-block">
+                {
                   (cards || []).filter(c => {
                     if (!cardSearchQuery.trim()) return true;
                     const q = cardSearchQuery.toLowerCase();
@@ -2066,7 +2300,7 @@ export default function NfcTagReaderCustomizer() {
                       c.googleReviewUrl?.toLowerCase().includes(q)
                     );
                   }).length
-                } of {cards?.length || 0} Cards
+                } / {cards?.length || 0} Cards
               </span>
             </div>
           </div>
@@ -3510,6 +3744,31 @@ export default function NfcTagReaderCustomizer() {
                 )}
               </div>
 
+              {/* Direct Manual Paste Box */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5 text-xs font-mono">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold text-amber-400 flex items-center gap-1.5">
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Manual Payload / NFC String Import:</span>
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={manualPastePayload}
+                    onChange={e => setManualPastePayload(e.target.value)}
+                    placeholder="Paste URL, vCard, Wi-Fi config, or text..."
+                    className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs placeholder:text-zinc-500 focus:outline-none focus:border-amber-400 font-mono"
+                  />
+                  <button
+                    onClick={() => handleManualPasteImport()}
+                    className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shrink-0"
+                  >
+                    Import
+                  </button>
+                </div>
+              </div>
+
               {/* Interactive Virtual NFC Tap Simulator */}
               <div className="space-y-3 pt-2 border-t border-white/5">
                 <div className="flex items-center justify-between">
@@ -3642,14 +3901,41 @@ export default function NfcTagReaderCustomizer() {
                   ))}
                 </div>
 
-                {/* Import to Customizer Button */}
-                <button
-                  onClick={handleImportScannedTag}
-                  className="w-full py-3.5 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
-                >
-                  <Palette className="w-4 h-4" />
-                  <span>Import Scanned Payload into Customizer</span>
-                </button>
+                {/* Direct Import Action Controls */}
+                <div className="space-y-2 pt-2 border-t border-white/10">
+                  <button
+                    onClick={() => handleDirectImportTagToWebsite()}
+                    className="w-full py-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-300 hover:from-emerald-300 hover:to-teal-200 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 transform hover:scale-[1.01]"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>📥 Import & Add Directly to Website Fleet</span>
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={handleImportScannedTag}
+                      className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 font-mono"
+                    >
+                      <Palette className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Edit in Studio Canvas</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (scannedTag.records[0]?.actionUrl || scannedTag.records[0]?.payload) {
+                          const payloadToCopy = scannedTag.records[0]?.actionUrl || scannedTag.records[0]?.payload;
+                          navigator.clipboard.writeText(payloadToCopy);
+                          setWriteSuccessMsg('Copied tag payload to clipboard!');
+                          setTimeout(() => setWriteSuccessMsg(null), 3000);
+                        }
+                      }}
+                      className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 font-mono"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Copy Raw Payload</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="p-10 rounded-3xl bg-[#0c0c12] border border-white/10 text-center space-y-4">
@@ -3988,6 +4274,83 @@ export default function NfcTagReaderCustomizer() {
               >
                 <Edit2 className="w-4 h-4" />
                 <span>Open in Visual Customizer to Edit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Tag Paste & Direct Import Modal */}
+      {showManualImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-zinc-900 border border-emerald-500/30 rounded-3xl p-6 shadow-2xl shadow-emerald-950/50 space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <Scan className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white uppercase tracking-wider">
+                    Direct NFC Card Importer
+                  </h3>
+                  <p className="text-xs text-zinc-400">
+                    Paste raw NDEF text, vCard, Wi-Fi config, or review URL
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowManualImportModal(false)}
+                className="p-2 text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
+                NDEF Payload / Content
+              </label>
+              <textarea
+                rows={5}
+                value={manualPastePayload}
+                onChange={(e) => setManualPastePayload(e.target.value)}
+                placeholder="Paste URL (e.g. https://g.page/r/..., /tap/card_...), vCard (BEGIN:VCARD...), Wi-Fi string (WIFI:S:MyNetwork;P:pass;;), or any contact text..."
+                className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all resize-none"
+              />
+            </div>
+
+            <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-3.5 space-y-1.5 text-xs text-zinc-300">
+              <p className="font-bold text-emerald-400 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5" /> Supported Tag Formats:
+              </p>
+              <ul className="list-disc list-inside text-[11px] text-zinc-400 space-y-0.5">
+                <li><strong className="text-zinc-200">vCard 3.0:</strong> Contact cards (`BEGIN:VCARD...`)</li>
+                <li><strong className="text-zinc-200">Wi-Fi Configs:</strong> QR / NDEF standard (`WIFI:S:...;P:...;;`)</li>
+                <li><strong className="text-zinc-200">Google Reviews / Maps:</strong> Direct link or place ID URLs</li>
+                <li><strong className="text-zinc-200">Payment & Dispatch:</strong> PayPal.me, courier phone/SMS triggers</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowManualImportModal(false);
+                  setManualPastePayload('');
+                }}
+                className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white font-mono text-xs font-bold rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleManualPasteImport()}
+                disabled={!manualPastePayload.trim()}
+                className="flex-[2] py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-40 disabled:pointer-events-none text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Import & Save Directly to Website</span>
               </button>
             </div>
           </div>
