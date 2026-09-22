@@ -12,7 +12,7 @@ import {
   Radio, Sparkles, ShieldCheck, Zap, TrendingUp, Star, 
   ArrowRight, CheckCircle2, ChevronRight, Cpu, Activity,
   Sliders, ShoppingBag, Eye, Layers, Compass, Truck, Phone,
-  Building2, MessageSquare, Code2, Plus, Check, ShoppingCart
+  Building2, MessageSquare, Code2, Plus, Check, ShoppingCart, Flame
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
@@ -85,17 +85,17 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-amber-400/10 border border-amber-400/20 rounded-full">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
-                Townraise • Carroll County Business OS
+                Townraise • People-Powered Town OS
               </span>
             </div>
 
             <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-[0.95] text-white">
-              Empower Your Business. <br />
-              <span className="text-amber-400">Storefront</span> or <span className="text-emerald-400">Contractor</span>.
+              Powered by the People. <br />
+              <span className="text-amber-400">Owned by</span> <span className="text-emerald-400">Our Towns</span>.
             </h1>
 
             <p className="text-base text-zinc-400 font-medium leading-relaxed max-w-xl">
-              Townraise unites Carroll County commerce. Launch instant digital menus, accelerate 5-star Google Reviews with smart NFC stands, or showcase before/after contractor projects to win high-budget homeowner leads.
+              Carroll County's decentralized commerce and community operating system. Built by residents, run by local shop owners, trade contractors, and mountain drivers with 0% corporate middleman cuts.
             </p>
 
             {/* Dual Business Registration Actions */}
@@ -289,6 +289,118 @@ export default function HomePage() {
             </div>
 
           </div>
+        </section>
+
+        {/* 1.8 PEOPLE-POWERED COMMUNITY GOVERNANCE & COMMERCE */}
+        <section className="relative p-8 md:p-12 rounded-[3rem] bg-gradient-to-b from-[#0e0e18] via-[#09090f] to-[#060609] border border-amber-500/20 shadow-2xl space-y-10 overflow-hidden">
+          
+          {/* Ambient Glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 blur-[140px] pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/10 blur-[140px] pointer-events-none" />
+
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/10 pb-8">
+            <div className="space-y-2 max-w-2xl text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 text-[9px] font-mono font-bold uppercase tracking-widest">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Decentralized & People-Governed</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
+                Built by the People. <br />
+                <span className="text-amber-400">Run by Our Community.</span>
+              </h2>
+              <p className="text-xs md:text-sm text-zinc-400 leading-relaxed">
+                Townraise removes corporate gatekeepers and closed algorithms. Local commerce, emergency 4x4 mountain delivery, treasure hunt rewards, and community decisions are placed directly into the hands of Carroll County residents.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3 shrink-0">
+              <Link
+                href="/community"
+                className="px-5 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-wider rounded-2xl hover:scale-105 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Town Square Bulletin</span>
+              </Link>
+              <Link
+                href="/society"
+                className="px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all flex items-center gap-2"
+              >
+                <Flame className="w-4 h-4 text-rose-400" />
+                <span>The People's Vault</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* 4 People-Powered Pillars Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+            
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-amber-400/40 transition-all space-y-3 group">
+              <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 text-xl group-hover:scale-110 transition-transform">
+                🗳️
+              </div>
+              <h3 className="text-base font-black uppercase text-white group-hover:text-amber-300 transition-colors">
+                Citizen Proposals & Voting
+              </h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Any resident can propose regional initiatives, tourist trails, and local merchant bounties. Every active passholder holds a vote.
+              </p>
+              <Link href="/community" className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 hover:underline pt-2">
+                <span>View Live Proposals</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-rose-400/40 transition-all space-y-3 group">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 text-xl group-hover:scale-110 transition-transform">
+                🏛️
+              </div>
+              <h3 className="text-base font-black uppercase text-white group-hover:text-rose-300 transition-colors">
+                The People's Vault
+              </h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                A community-backed treasury of milestone rewards, merchant discount vouchers, and cooperative goals that unlock perks for the entire town.
+              </p>
+              <Link href="/society" className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-400 hover:underline pt-2">
+                <span>Unlock Vault Perks</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-emerald-400/40 transition-all space-y-3 group">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl group-hover:scale-110 transition-transform">
+                💰
+              </div>
+              <h3 className="text-base font-black uppercase text-white group-hover:text-emerald-300 transition-colors">
+                0% Middleman Fees
+              </h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                No third-party app taking 30% from local diners or contractors. 100% of payments go directly to local creators and service providers.
+              </p>
+              <Link href="/create-storefront" className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:underline pt-2">
+                <span>Self-Service Registration</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-indigo-400/40 transition-all space-y-3 group">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl group-hover:scale-110 transition-transform">
+                🛻
+              </div>
+              <h3 className="text-base font-black uppercase text-white group-hover:text-indigo-300 transition-colors">
+                Peer-to-Peer 4x4 Courier
+              </h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Neighborhood drivers delivering food, firewood, and recovery to mountain cabins, boat launches, and remote dirt roads.
+              </p>
+              <Link href="/courier" className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:underline pt-2">
+                <span>Direct Driver Hotline</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+          </div>
+
         </section>
 
         {/* 2. LIVE RADAR / OASIS PULSE */}
