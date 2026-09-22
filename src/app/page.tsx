@@ -51,39 +51,41 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-amber-400/10 border border-amber-400/20 rounded-full">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
-                Next-Gen Tap Review Hardware
+                Townraise • Carroll County Business OS
               </span>
             </div>
 
             <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-[0.95] text-white">
-              Turn 1 Tap Into <span className="text-amber-400">5-Star</span> Google Reviews.
+              Empower Your Business. <br />
+              <span className="text-amber-400">Storefront</span> or <span className="text-emerald-400">Contractor</span>.
             </h1>
 
             <p className="text-base text-zinc-400 font-medium leading-relaxed max-w-xl">
-              Equip your staff, tables, and counters with contactless smart NFC cards. Customers tap with their iPhone or Android—no app required—and land directly on your official Google Review page in 0.1 seconds.
+              Townraise unites Carroll County commerce. Launch instant digital menus, accelerate 5-star Google Reviews with smart NFC stands, or showcase before/after contractor projects to win high-budget homeowner leads.
             </p>
 
+            {/* Dual Business Registration Actions */}
             <div className="flex flex-wrap gap-4 pt-2">
               <Link
-                href="/marketplace"
+                href="/create-storefront"
                 className="px-7 py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
               >
-                <span>Browse Hardware Fleet</span>
+                <span>🏪 Register Storefront</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/courier"
-                className="px-7 py-4 bg-gradient-to-r from-emerald-400/20 to-emerald-500/10 border border-emerald-400/30 text-emerald-300 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-emerald-400/20 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/10"
+                href="/work"
+                className="px-7 py-4 bg-gradient-to-r from-emerald-400/20 to-emerald-500/10 border border-emerald-400/40 text-emerald-300 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-emerald-400/20 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/10"
               >
-                <Truck className="w-4 h-4 text-emerald-400" />
-                <span>Prepay & Pickup Courier</span>
+                <span>🛠️ Register as Contractor</span>
+                <ArrowRight className="w-4 h-4 text-emerald-400" />
               </Link>
               <Link
-                href="/tap/card-oasis-main"
-                className="px-7 py-4 bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 hover:border-indigo-400/40 transition-all flex items-center gap-2"
+                href="/marketplace"
+                className="px-6 py-4 bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 hover:border-amber-400/40 transition-all flex items-center gap-2"
               >
-                <Radio className="w-4 h-4 text-indigo-400" />
-                <span>Test Live Tap</span>
+                <Radio className="w-4 h-4 text-amber-400" />
+                <span>NFC Hardware Fleet</span>
               </Link>
             </div>
 
@@ -94,12 +96,12 @@ export default function HomePage() {
                 <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">Review Velocity</p>
               </div>
               <div>
-                <p className="text-3xl font-black italic text-amber-400 tracking-tight">0.1s</p>
-                <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">Tap-to-Prompt</p>
+                <p className="text-3xl font-black italic text-amber-400 tracking-tight">0% Cut</p>
+                <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">Zero Commission</p>
               </div>
               <div>
-                <p className="text-3xl font-black italic text-emerald-400 tracking-tight">100%</p>
-                <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">App-Free Sync</p>
+                <p className="text-3xl font-black italic text-emerald-400 tracking-tight">6 Towns</p>
+                <p className="text-[9px] font-mono uppercase text-zinc-500 tracking-wider">Unified Dispatch</p>
               </div>
             </div>
           </div>
@@ -107,6 +109,151 @@ export default function HomePage() {
           {/* Right Interactive Phone & Card Simulator */}
           <div className="lg:col-span-6">
             <HeroTapSimulator />
+          </div>
+        </section>
+
+        {/* 1.5 DUAL-TRACK BUSINESS REGISTRATION SPOTLIGHT */}
+        <section className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
+              Start & Scale Your Carroll County Operation
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
+              Choose Your Business Path
+            </h2>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Whether you run a local diner, smoke shop, cafe, or trade business, Townraise gives you the modern digital tools to dominate your market.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Track 1: Retail Storefront / Restaurant */}
+            <div className="relative p-8 md:p-10 rounded-[2.5rem] bg-gradient-to-b from-amber-500/10 via-[#0d0d14] to-[#07070a] border border-amber-500/30 space-y-6 flex flex-col justify-between group hover:border-amber-400 transition-all shadow-2xl">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-400 text-black flex items-center justify-center font-black text-2xl shadow-lg shadow-amber-500/20">
+                    🏪
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20 text-[10px] font-mono font-bold uppercase tracking-wider">
+                    Retail & Dining Track
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-black italic uppercase text-white tracking-tight">
+                    Retail Storefront, Restaurant & Cafe
+                  </h3>
+                  <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
+                    Designed for diners, pizzerias, boutiques, farmstands, and retail stores in Effingham, Ossipee, Freedom, Wolfeboro, Conway, and Tamworth.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <span>📱</span> Digital Menu Ordering
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Mobile-ready menu with modifiers, options, and direct checkout.</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <span>⚡</span> Tabletop Tap Stands
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Diners tap to view menu or review on Google in 0.1 seconds.</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <span>🚚</span> Sean Martin Courier Sync
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Orders automatically relay to local delivery drivers with GPS.</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <span>🛡️</span> 5-Star Feedback Shield
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Pushes 5-stars to Google, catches unhappy guests privately.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Link
+                  href="/create-storefront"
+                  className="w-full py-4 px-6 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
+                >
+                  <span>Register Storefront in 60 Seconds</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Track 2: Trade Contractor / Builder */}
+            <div className="relative p-8 md:p-10 rounded-[2.5rem] bg-gradient-to-b from-emerald-500/10 via-[#0d0d14] to-[#07070a] border border-emerald-500/30 space-y-6 flex flex-col justify-between group hover:border-emerald-400 transition-all shadow-2xl">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-400 text-black flex items-center justify-center font-black text-2xl shadow-lg shadow-emerald-500/20">
+                    🛠️
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 text-[10px] font-mono font-bold uppercase tracking-wider">
+                    Contractor & Trades Track
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-black italic uppercase text-white tracking-tight">
+                    Licensed Contractor & Trade Specialist
+                  </h3>
+                  <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
+                    Designed for carpenters, deck builders, tree services, painters, landscapers, roofers, and mechanics across Carroll County.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <span>📸</span> Before/After Showcases
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Interactive split slider showcases your craftsmanship to homeowners.</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <span>📲</span> Instant SMS Job Leads
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Get texted immediately whenever a resident posts a work request.</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <span>💬</span> 1-Click Quote Dispatch
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Send estimate quotes and price ranges directly to homeowner phones.</p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
+                    <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <span>👑</span> Vanguard Trust Badge
+                    </div>
+                    <p className="text-[10px] text-zinc-400">Verified regional contractor badge building instant customer trust.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Link
+                  href="/work"
+                  className="w-full py-4 px-6 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
+                >
+                  <span>Register as Contractor & Claim Leads</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -694,22 +841,36 @@ export default function HomePage() {
         </section>
 
         {/* 6. CALL TO ACTION */}
-        <section className="text-center py-16 space-y-6 max-w-2xl mx-auto">
+        <section className="text-center py-16 space-y-6 max-w-3xl mx-auto">
           <div className="w-16 h-16 rounded-3xl bg-amber-400 text-black flex items-center justify-center mx-auto text-2xl font-black shadow-xl shadow-amber-500/20">
             <Radio className="w-8 h-8 text-black" />
           </div>
           <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-white">
-            Ready to Dominate Your Local Map Ranking?
+            Ready to Elevate Your Local Business?
           </h2>
-          <p className="text-sm text-zinc-400">
-            Free shipping, laser engraving, and lifetime cloud dynamic destination routing included with every card.
+          <p className="text-sm text-zinc-400 max-w-xl mx-auto">
+            Join hundreds of Carroll County shopkeepers, restaurateurs, and contractors leveraging Townraise for 5-star Google review growth, digital ordering, and high-budget job leads.
           </p>
-          <div className="pt-4 flex justify-center gap-4">
+          <div className="pt-4 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/create-storefront"
+              className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+            >
+              <span>🏪 Register Storefront</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/work"
+              className="px-8 py-4 bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-emerald-500/30 transition-all flex items-center gap-2"
+            >
+              <span>🛠️ Register as Contractor</span>
+              <ArrowRight className="w-4 h-4 text-emerald-400" />
+            </Link>
             <Link
               href="/marketplace"
-              className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20"
+              className="px-8 py-4 bg-white/5 border border-white/10 hover:border-amber-400/30 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all"
             >
-              Get Your NFC Cards Now
+              Order NFC Hardware Fleet
             </Link>
           </div>
         </section>
