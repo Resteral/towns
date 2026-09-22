@@ -70,6 +70,14 @@ export default function Navbar() {
             <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold">Concierge 🌲</span>
           </Link>
           <Link
+            href="/ai-concierge"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/ai-concierge') ? 'text-amber-400' : 'text-amber-400/90 hover:text-amber-300'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[9px] font-bold">AI Bot 🤖</span>
+          </Link>
+          <Link
             href="/rewards"
             className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
               pathname?.startsWith('/rewards') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'

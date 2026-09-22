@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AiOrderConciergeWidget from "@/components/AiOrderConciergeWidget";
 
 export const viewport: Viewport = {
   themeColor: "#070709",
@@ -35,6 +36,7 @@ export default function RootLayout({
         <main className="flex-1">
           {children}
         </main>
+        <AiOrderConciergeWidget />
         <Footer />
       </body>
     </html>
