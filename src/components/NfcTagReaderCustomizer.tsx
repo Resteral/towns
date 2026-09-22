@@ -592,8 +592,8 @@ export default function NfcTagReaderCustomizer() {
       let typeLabel = '';
 
       if (preset === 'oasis_community') {
-        payload = `https://oasistap.local/rewards?pass=${serial}&welcome=50&town=CarrollCounty`;
-        typeLabel = 'Oasis Regional VIP Pass (+50 Pts)';
+        payload = `https://oasistap.local/claim?pass=${serial}&welcome=50`;
+        typeLabel = 'Oasis Rewards for Applying Pass (+50 Pts)';
       } else if (preset === 'courier_lifeline') {
         payload = `https://oasistap.local/courier?card=${serial}&directPhone=5085070305&paypal=seanhse97`;
         typeLabel = 'Sean Martin 4x4 Hotline & Lifeline';
@@ -629,7 +629,7 @@ export default function NfcTagReaderCustomizer() {
   const handlePresetChange = (newPreset: typeof batchPreset) => {
     setBatchPreset(newPreset);
     let pfx = 'OASIS-PASS-';
-    let base = 'https://oasistap.local/rewards?pass=';
+    let base = 'https://oasistap.local/claim?pass=';
     if (newPreset === 'courier_lifeline') {
       pfx = 'SEAN-4X4-';
       base = 'https://oasistap.local/courier?card=';
@@ -1183,11 +1183,11 @@ export default function NfcTagReaderCustomizer() {
                   {[
                     {
                       id: 'oasis_community',
-                      title: 'Oasis Regional VIP Pass (+50 Loyalty Points)',
-                      desc: 'Give to neighbors & residents to join the network, earn store points & access couriers.',
-                      icon: '🌲',
-                      badge: 'Recommended for Towns',
-                      sampleUrl: 'https://oasistap.local/rewards?pass=OASIS-PASS-001'
+                      title: 'Oasis Rewards for Applying Pass (+50 Loyalty Points)',
+                      desc: 'Brings anyone who taps to the dedicated rewards application page to unlock +50 welcome points, $5 credit & local perks.',
+                      icon: '🎁',
+                      badge: 'Instant Rewards for Applying',
+                      sampleUrl: 'https://oasistap.local/claim?pass=OASIS-PASS-001'
                     },
                     {
                       id: 'courier_lifeline',
