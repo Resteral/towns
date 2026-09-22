@@ -57,6 +57,7 @@ export default function Footer() {
               <Compass className="w-3.5 h-3.5" /> Exploration & Games
             </h4>
             <ul className="space-y-2.5 text-xs text-zinc-400 font-medium">
+              <li><Link href="/society" className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1.5"><span>🏛️ Sovereign Society & Vault</span></Link></li>
               <li><Link href="/store-hunting" className="text-pink-400 font-bold hover:text-pink-300 transition-colors">🛍️ Store-to-Store Circuits</Link></li>
               <li><Link href="/tourist-hunts" className="hover:text-white transition-colors">🧭 Tourist Scavenger Hunts</Link></li>
               <li><Link href="/leaderboard" className="text-amber-400 hover:text-amber-300 transition-colors">🏆 Town Pride Cup Ladder</Link></li>

@@ -259,6 +259,36 @@ export default function StoreHuntingPage() {
           <NfcCardLevelWidget progression={cardProgression} />
         </div>
 
+        {/* Sovereign Society & Milestone Treasure Vault Banner */}
+        <div className="mb-10 p-5 rounded-3xl bg-gradient-to-r from-purple-500/15 via-amber-500/15 to-rose-500/15 border border-purple-500/30 backdrop-blur-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl shadow-purple-500/5">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-300 text-black flex items-center justify-center text-2xl font-black shadow-lg shadow-amber-400/20 shrink-0">
+              💎
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-purple-400/20 text-purple-300 border border-purple-400/30">
+                  Townraise Society Vault
+                </span>
+                <span className="text-[10px] font-mono text-white/50">Store Stamps Count Towards Milestone Chests</span>
+              </div>
+              <h3 className="text-base font-black text-white mt-0.5">
+                Redeem Tangible Rewards & Custom Physical NFC Keychains Hand-Delivered by Sean Martin
+              </h3>
+              <p className="text-xs text-white/60">
+                Level up your Citizen Smart RFID pass, solve cryptographic riddles for instant discounts, and complete community tap bounties.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/society"
+            className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 text-black font-black text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-1.5 shadow-lg shadow-purple-500/20"
+          >
+            <span>Enter Sovereign Society</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
         {/* Circuit Category Pills (Antiques, Farmstands, Woodcraft, Sweets, Mercantiles) */}
         <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
           {storeHuntCircuits.map((circuit) => {

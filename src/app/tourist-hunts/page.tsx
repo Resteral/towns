@@ -187,6 +187,36 @@ export default function TouristHuntsPage() {
           </div>
         </div>
 
+        {/* Sovereign Society & Treasure Vault Banner Callout */}
+        <div className="mb-10 p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-rose-500/15 border border-amber-500/30 backdrop-blur-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl shadow-amber-500/5">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-2xl font-black shadow-lg shadow-amber-400/20 shrink-0">
+              🏛️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  Sovereign Society Exclusive
+                </span>
+                <span className="text-[10px] font-mono text-white/50">4 Unlocked Milestone Vaults</span>
+              </div>
+              <h3 className="text-base font-black text-white mt-0.5">
+                Every Landmark Tap Feeds Into Your Townraise Society Vault & Physical Perks
+              </h3>
+              <p className="text-xs text-white/60">
+                Unlock custom engraved NFC keychains hand-delivered by Sean Martin, up to $100 in regional merchant credits, and collaborative bounties.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/society"
+            className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-1.5 shadow-lg shadow-amber-500/20"
+          >
+            <span>Open Vault & Society</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
         {/* Filter Toolbar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 bg-white/[0.02] p-3 rounded-2xl border border-white/5">
           {/* Town Filter Pills */}

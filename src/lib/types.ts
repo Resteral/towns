@@ -972,3 +972,58 @@ export interface LevelTierConfig {
   tierColor: string;
   perks: string[];
 }
+
+export interface TreasureMilestoneReward {
+  id: string;
+  requiredCheckpoints: number;
+  tier: 'bronze' | 'silver' | 'gold' | 'master_sovereign';
+  title: string;
+  description: string;
+  rewardType: 'voucher' | 'xp' | 'bounty_credit' | 'physical_fob' | 'society_relic';
+  rewardValue: string;
+  rewardCode?: string;
+  iconEmoji: string;
+  isClaimed?: boolean;
+}
+
+export interface SocietyMemberProfile {
+  id: string;
+  alias: string;
+  chapter: string;
+  rank: 'Novice Scout' | 'Trail Pioneer' | 'Town Vanguard' | 'Master Cryptographer' | 'Grand Sovereign';
+  rankLevel: number;
+  xp: number;
+  totalCheckpointsClaimed: number;
+  bountiesEarnedTotal: number;
+  badges: string[];
+  joinedDate: string;
+  avatarEmoji: string;
+  nfcPassId: string;
+}
+
+export interface SocietyCommunityBounty {
+  id: string;
+  title: string;
+  category: 'community_coop' | 'secret_cipher' | 'speedrun' | 'artisan_patron';
+  description: string;
+  targetCount: number;
+  currentProgress: number;
+  rewardSummary: string;
+  expiresIn: string;
+  iconEmoji: string;
+  isCompleted: boolean;
+}
+
+export interface SocietyCipherRiddle {
+  id: string;
+  title: string;
+  town: string;
+  riddle: string;
+  encodedClue: string;
+  locationHint: string;
+  solutionPasscode: string;
+  associatedBeaconTagId: string;
+  xpReward: number;
+  bountyRewardText: string;
+  isSolved?: boolean;
+}

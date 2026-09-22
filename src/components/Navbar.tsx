@@ -164,6 +164,16 @@ export default function Navbar() {
               </span>
             </Link>
             <Link
+              href="/society"
+              className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+                pathname?.startsWith('/society') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'
+              }`}
+            >
+              <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold flex items-center gap-1 shadow-lg shadow-amber-500/10 animate-pulse">
+                <span>🏛️ Society & Vault</span>
+              </span>
+            </Link>
+            <Link
               href="/leaderboard"
               className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
                 pathname?.startsWith('/leaderboard') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'
