@@ -30,6 +30,8 @@ export default function TownCommandPage() {
   const [batchSuccessMsg, setBatchSuccessMsg] = useState('');
   const [showPitchModal, setShowPitchModal] = useState(false);
 
+  const [expandedMenuBizId, setExpandedMenuBizId] = useState<string | null>(null);
+
   // Update town businesses when town selection changes
   const handleSelectTown = (townId: string) => {
     setSelectedTownId(townId);
@@ -37,6 +39,7 @@ export default function TownCommandPage() {
     const targetTown = towns.find(t => t.id === townId) || activeTown;
     setTownBusinesses(getBusinessesForTown(targetTown.name, targetTown.state));
     setBatchSuccessMsg('');
+    setExpandedMenuBizId(null);
   };
 
   // 1-Click Batch Add All Town Businesses to Merchant Fleet
@@ -262,74 +265,126 @@ export default function TownCommandPage() {
           <div className="space-y-3">
             {townBusinesses.map((biz) => {
               const isFlashed = cards.some(c => c.businessName.toLowerCase() === biz.name.toLowerCase());
+              const isMenuOpen = expandedMenuBizId === biz.id;
+              const hasMenu = biz.menuItems && biz.menuItems.length > 0;
+
               return (
                 <div
                   key={biz.id}
-                  className="p-5 rounded-2xl bg-[#0a0a0f] border border-white/5 hover:border-amber-400/30 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                  className="rounded-2xl bg-[#0a0a0f] border border-white/5 hover:border-amber-400/30 transition-all overflow-hidden group"
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shrink-0">
-                      {biz.logoEmoji}
+                  <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shrink-0">
+                        {biz.logoEmoji}
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors">
+                            {biz.name}
+                          </h4>
+                          <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/5 text-zinc-400">
+                            {biz.category}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-400 truncate max-w-sm">
+                          {biz.description}
+                        </p>
+                        <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-500 pt-0.5">
+                          <span className="text-amber-400 font-bold">⭐ {biz.googleRating} ({biz.reviewsCount} reviews)</span>
+                          <span>•</span>
+                          <span className="truncate max-w-[160px]">{biz.address}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-sm font-black text-white group-hover:text-amber-400 transition-colors">
-                          {biz.name}
-                        </h4>
-                        <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/5 text-zinc-400">
-                          {biz.category}
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {hasMenu && (
+                        <button
+                          onClick={() => setExpandedMenuBizId(isMenuOpen ? null : biz.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                            isMenuOpen
+                              ? 'bg-amber-400 text-black border-amber-400 shadow-md'
+                              : 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/10'
+                          }`}
+                        >
+                          <span>🍽️ {isMenuOpen ? 'Hide Menu' : 'View Menu'}</span>
+                        </button>
+                      )}
+
+                      {isFlashed ? (
+                        <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>In Fleet</span>
                         </span>
-                      </div>
-                      <p className="text-xs text-zinc-400 truncate max-w-sm">
-                        {biz.description}
-                      </p>
-                      <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-500 pt-0.5">
-                        <span className="text-amber-400 font-bold">⭐ {biz.googleRating} ({biz.reviewsCount} reviews)</span>
-                        <span>•</span>
-                        <span className="truncate max-w-[160px]">{biz.address}</span>
-                      </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            addCard({
+                              cardName: `${biz.name} Beacon`,
+                              businessName: biz.name,
+                              googlePlaceId: biz.googlePlaceId,
+                              googleReviewUrl: biz.googleReviewUrl,
+                              mode: 'smart_funnel',
+                              thresholdStars: 4,
+                              customHeadline: biz.suggestedCardHeadline,
+                              primaryColor: biz.accentColor,
+                              assignedLocation: biz.address,
+                              town: `${biz.town}, ${biz.state}`,
+                              active: true,
+                            });
+                            playDeliveryChime();
+                            setBatchSuccessMsg(`Added ${biz.name} to your Fleet!`);
+                          }}
+                          className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-amber-400/10"
+                        >
+                          Add to Fleet
+                        </button>
+                      )}
+
+                      <Link
+                        href="/dashboard/programmer"
+                        className="p-2 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-xl transition-colors"
+                        title="Open in Flasher"
+                      >
+                        <Radio className="w-4 h-4 text-amber-400" />
+                      </Link>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    {isFlashed ? (
-                      <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>In Fleet</span>
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          addCard({
-                            cardName: `${biz.name} Beacon`,
-                            businessName: biz.name,
-                            googlePlaceId: biz.googlePlaceId,
-                            googleReviewUrl: biz.googleReviewUrl,
-                            mode: 'smart_funnel',
-                            thresholdStars: 4,
-                            customHeadline: biz.suggestedCardHeadline,
-                            primaryColor: biz.accentColor,
-                            assignedLocation: biz.address,
-                            town: `${biz.town}, ${biz.state}`,
-                            active: true,
-                          });
-                          playDeliveryChime();
-                          setBatchSuccessMsg(`Added ${biz.name} to your Fleet!`);
-                        }}
-                        className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-amber-400/10"
-                      >
-                        Add to Fleet
-                      </button>
-                    )}
+                  {/* Expanded Menu Drawer */}
+                  {isMenuOpen && hasMenu && (
+                    <div className="px-5 pb-5 pt-2 border-t border-white/5 bg-black/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="flex items-center justify-between text-xs font-mono uppercase text-amber-400 font-bold">
+                        <span>{biz.menuTitle || 'Store Catalog & Menu'}</span>
+                        <span className="text-[10px] text-zinc-500">{biz.menuItems?.length} items listed</span>
+                      </div>
 
-                    <Link
-                      href="/dashboard/programmer"
-                      className="p-2 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-xl transition-colors"
-                      title="Open in Flasher"
-                    >
-                      <Radio className="w-4 h-4 text-amber-400" />
-                    </Link>
-                  </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                        {biz.menuItems?.map((item) => (
+                          <div
+                            key={item.id}
+                            className="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-start justify-between gap-3"
+                          >
+                            <div className="space-y-0.5 flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs font-bold text-white">{item.name}</span>
+                                {item.popular && (
+                                  <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20">
+                                    Popular
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-zinc-400 line-clamp-2">{item.description}</p>
+                            </div>
+                            <span className="text-xs font-mono font-black text-amber-400 shrink-0">
+                              {item.price}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

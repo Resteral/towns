@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { ReviewProduct } from '@/lib/types';
 import { useNfcStore } from '@/lib/store';
-import { X, Sparkles, ShoppingBag, Radio, Check, Palette, Building2, Type } from 'lucide-react';
+import { X, Sparkles, ShoppingBag, Radio, Check, Palette, Building2, Type, Image as ImageIcon } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import ImageUpload from '@/components/ImageUpload';
 
 interface Props {
   product: ReviewProduct;
@@ -18,6 +19,7 @@ export default function CardCustomizerModal({ product, isOpen, onClose }: Props)
   const [headline, setHeadline] = useState('Tap with Phone to Review');
   const [selectedColor, setSelectedColor] = useState(product.colorOptions?.[0] || '#0f172a');
   const [selectedIcon, setSelectedIcon] = useState('⭐');
+  const [customLogoUrl, setCustomLogoUrl] = useState<string>('');
   const [isAdded, setIsAdded] = useState(false);
 
   if (!isOpen) return null;
@@ -26,7 +28,7 @@ export default function CardCustomizerModal({ product, isOpen, onClose }: Props)
     addToCart(product, {
       color: selectedColor,
       businessName,
-      logoUrl: selectedIcon
+      logoUrl: customLogoUrl || selectedIcon
     });
     setIsAdded(true);
     setTimeout(() => {
@@ -35,7 +37,7 @@ export default function CardCustomizerModal({ product, isOpen, onClose }: Props)
     }, 1200);
   };
 
-  const icons = ['⭐', '☕', '🍕', '💈', '🚗', '🏨', '🔨', '✨', '🐾'];
+  const icons = ['⭐', '☕', '🍕', '💈', '🚗', '🏨', '🔨', '✨', '🐾', '💨', '🍔', '🦞'];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
@@ -70,8 +72,14 @@ export default function CardCustomizerModal({ product, isOpen, onClose }: Props)
 
             {/* Top Bar */}
             <div className="relative z-10 flex justify-between items-start">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{selectedIcon}</span>
+              <div className="flex items-center gap-2.5">
+                {customLogoUrl ? (
+                  <div className="w-8 h-8 rounded-xl overflow-hidden border border-white/30 bg-black/40 flex items-center justify-center shrink-0">
+                    <img src={customLogoUrl} alt="Logo" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <span className="text-2xl">{selectedIcon}</span>
+                )}
                 <div>
                   <h4 className="font-black italic text-white text-sm tracking-tight line-clamp-1">{businessName}</h4>
                   <p className="text-[8px] font-mono uppercase text-white/50 tracking-wider">Smart Review Card</p>
@@ -190,24 +198,38 @@ export default function CardCustomizerModal({ product, isOpen, onClose }: Props)
               </div>
             </div>
 
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">
-                Brand Emblem / Category Icon
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {icons.map((icon) => (
-                  <button
-                    key={icon}
-                    type="button"
-                    onClick={() => setSelectedIcon(icon)}
-                    className={`w-9 h-9 rounded-xl border text-sm flex items-center justify-center transition-all ${
-                      selectedIcon === icon ? 'bg-amber-400/20 border-amber-400 scale-105' : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
+            {/* Custom Logo Image Upload & Preset Icons */}
+            <div className="space-y-3 pt-1">
+              <ImageUpload
+                value={customLogoUrl}
+                onChange={(url) => setCustomLogoUrl(url)}
+                label="Custom Brand Logo / Emblem Image"
+                subtitle="Upload PNG, JPG, or SVG to engrave directly on card"
+                aspectRatio="square"
+                compact={true}
+              />
+
+              {!customLogoUrl && (
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">
+                    Or Choose Preset Icon
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {icons.map((icon) => (
+                      <button
+                        key={icon}
+                        type="button"
+                        onClick={() => setSelectedIcon(icon)}
+                        className={`w-9 h-9 rounded-xl border text-sm flex items-center justify-center transition-all ${
+                          selectedIcon === icon ? 'bg-amber-400/20 border-amber-400 scale-105' : 'bg-white/5 border-white/10 hover:bg-white/10'
+                        }`}
+                      >
+                        {icon}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

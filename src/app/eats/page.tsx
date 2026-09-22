@@ -153,18 +153,26 @@ export default function EatsPage() {
 
         {/* Restaurant / Store Grid */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <h2 className="text-xl font-black italic tracking-tight text-white uppercase flex items-center gap-2">
               <span>Featured Local Eateries in {activeTown.name}</span>
               <span className="text-xs font-mono font-normal text-amber-400">({filteredStores.length} Open)</span>
             </h2>
-            <Link 
-              href="/create-storefront"
-              className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-            >
-              <span>List Your Restaurant</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/menus"
+                className="px-3.5 py-1.5 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400 text-xs font-bold hover:bg-amber-400/20 transition-all flex items-center gap-1.5"
+              >
+                <span>📖 View All Digital Menus & QR</span>
+              </Link>
+              <Link 
+                href="/create-storefront"
+                className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+              >
+                <span>List Your Restaurant</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
 
           {filteredStores.length === 0 ? (

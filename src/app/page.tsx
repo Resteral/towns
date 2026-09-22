@@ -9,7 +9,7 @@ import { ReviewProduct } from '@/lib/types';
 import { 
   Radio, Sparkles, ShieldCheck, Zap, TrendingUp, Star, 
   ArrowRight, CheckCircle2, ChevronRight, Cpu, Activity,
-  Sliders, ShoppingBag, Eye, Layers, Compass, Truck
+  Sliders, ShoppingBag, Eye, Layers, Compass, Truck, Phone
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
@@ -59,17 +59,24 @@ export default function HomePage() {
             <div className="flex flex-wrap gap-4 pt-2">
               <Link
                 href="/marketplace"
-                className="px-8 py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+                className="px-7 py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
               >
                 <span>Browse Hardware Fleet</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
+                href="/courier"
+                className="px-7 py-4 bg-gradient-to-r from-emerald-400/20 to-emerald-500/10 border border-emerald-400/30 text-emerald-300 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-emerald-400/20 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/10"
+              >
+                <Truck className="w-4 h-4 text-emerald-400" />
+                <span>Prepay & Pickup Courier</span>
+              </Link>
+              <Link
                 href="/tap/card-oasis-main"
-                className="px-8 py-4 bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 hover:border-indigo-400/40 transition-all flex items-center gap-2"
+                className="px-7 py-4 bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 hover:border-indigo-400/40 transition-all flex items-center gap-2"
               >
                 <Radio className="w-4 h-4 text-indigo-400" />
-                <span>Test Live Tap Page</span>
+                <span>Test Live Tap</span>
               </Link>
             </div>
 
@@ -415,8 +422,107 @@ export default function HomePage() {
               <p className="text-xs text-zinc-300 leading-relaxed">
                 Dissatisfied guests are directed to a private, confidential feedback form sent straight to the owner/store manager before any negative public comment is posted.
               </p>
-              <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 font-bold pt-2">
-                <ShieldCheck className="w-4 h-4" /> Protects Public Google Rating Score
+            </div>
+          </div>
+        </section>
+
+        {/* 4.5 LOCAL COURIER & PRE-PAID STORE PICKUPS */}
+        <section className="bg-gradient-to-r from-emerald-950/20 via-[#0e0e13] to-amber-950/20 border border-emerald-500/20 rounded-[3rem] p-8 md:p-14 relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-400/10 border border-emerald-400/20 rounded-full text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-widest">
+                <Truck className="w-3.5 h-3.5 animate-bounce" />
+                <span>Regional Courier & Task Runner • Carroll County, NH</span>
+              </div>
+
+              <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-white">
+                Pre-Paid Pickups, <span className="text-amber-400">Buy & Deliver</span>, & Local Errands.
+              </h2>
+
+              <p className="text-sm text-zinc-300 leading-relaxed max-w-xl">
+                Need supplies picked up from Ace Hardware, items from Smoke World, dinner from Yankee Smokehouse BBQ, or a package delivered across town? Prepay online via Cash App, Venmo, or Zelle, or pay on delivery—Sean Martin handles the rest with live GPS tracking.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                  <span className="text-lg">📦</span>
+                  <div className="text-xs font-black text-white">Store Pickups</div>
+                  <div className="text-[10px] text-zinc-400">Call store ahead, send order #, courier retrieves it.</div>
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                  <span className="text-lg">🛒</span>
+                  <div className="text-xs font-black text-amber-400">Buy & Deliver</div>
+                  <div className="text-[10px] text-zinc-400">Prepay budget, courier shops & delivers receipt.</div>
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                  <span className="text-lg">⚡</span>
+                  <div className="text-xs font-black text-emerald-400">Custom Errands</div>
+                  <div className="text-[10px] text-zinc-400">Emergency supplies, firewood runs, local deliveries.</div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Link
+                  href="/courier"
+                  className="px-8 py-4 bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-2"
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>Request Courier & Pickup</span>
+                </Link>
+                <Link
+                  href="/eats"
+                  className="px-8 py-4 bg-white/5 border border-white/10 hover:border-amber-400/40 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all flex items-center gap-2"
+                >
+                  <span>Explore Local Food Menus</span>
+                  <ArrowRight className="w-4 h-4 text-amber-400" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 bg-black/60 border border-white/10 rounded-3xl p-6 space-y-5">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold">Instant Upfront Payment</span>
+                <span className="text-[9px] font-mono text-zinc-500">Zero Delays</span>
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-emerald-400 font-black text-sm">$</span>
+                    <div>
+                      <div className="text-xs font-black text-white">Cash App</div>
+                      <div className="text-[10px] font-mono text-emerald-400">$frijj555</div>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[9px] font-mono">1-Click Pay</span>
+                </div>
+
+                <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-cyan-400 font-black text-sm">V</span>
+                    <div>
+                      <div className="text-xs font-black text-white">Venmo</div>
+                      <div className="text-[10px] font-mono text-cyan-400">@Sean-Martin-NH</div>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono">Instant Sync</span>
+                </div>
+
+                <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-purple-400 font-black text-sm">Z</span>
+                    <div>
+                      <div className="text-xs font-black text-white">Zelle Bank Wire</div>
+                      <div className="text-[10px] font-mono text-purple-300">508-507-0305</div>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-purple-400/20 text-purple-300 text-[9px] font-mono">Direct Bank</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] font-mono text-zinc-400 flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>Driver Contact: Sean Martin • (508) 507-0305</span>
               </div>
             </div>
           </div>

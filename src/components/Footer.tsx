@@ -53,13 +53,13 @@ export default function Footer() {
 
           {/* Col 4 */}
           <div className="space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">Merchant Portal</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">Merchant & Courier</h4>
             <ul className="space-y-2.5 text-xs text-zinc-400 font-medium">
-              <li><Link href="/eats" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">🍔 Oasis Eats (Food Grid)</Link></li>
+              <li><Link href="/courier" className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors">📦 Pre-Paid Courier & Pickups</Link></li>
+              <li><Link href="/order" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">🚚 Express Local Delivery</Link></li>
+              <li><Link href="/eats" className="hover:text-white transition-colors">🍔 Oasis Eats (Regional Menus)</Link></li>
               <li><Link href="/dashboard" className="hover:text-white transition-colors">Overview Command Center</Link></li>
               <li><Link href="/dashboard/delivery" className="hover:text-white transition-colors">Delivery Dispatch Radar</Link></li>
-              <li><Link href="/dashboard/feedback" className="hover:text-white transition-colors">Shielded Feedback Inbox</Link></li>
-              <li><Link href="/dashboard/cards" className="hover:text-white transition-colors">NFC Fleet Manager</Link></li>
               <li><Link href="/dashboard/settings" className="hover:text-white transition-colors">Phone Relay Settings</Link></li>
             </ul>
           </div>

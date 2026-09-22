@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
-import { DeliveryItem } from '@/lib/types';
+import { DeliveryItem, PaymentMethod } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 import { 
   Truck, Phone, MapPin, Navigation, ShoppingBag, 
   Plus, Minus, Sparkles, CheckCircle2, ShieldCheck, 
-  Clock, DollarSign, ArrowRight, MessageSquare 
+  Clock, DollarSign, ArrowRight, MessageSquare,
+  CreditCard, Smartphone, Package, ExternalLink, Copy, Check
 } from 'lucide-react';
 
 const MENU_ITEMS = [
@@ -41,6 +42,9 @@ export default function DeliveryOrderPage() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [selectedTip, setSelectedTip] = useState<number>(5.00);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash_app');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [copiedHandle, setCopiedHandle] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const deliveryFee = 4.99;
@@ -104,11 +108,17 @@ export default function DeliveryOrderPage() {
     setIsSubmitting(true);
 
     try {
+      const paymentStatus = paymentMethod === 'cash_on_delivery' ? 'pay_on_delivery' : (paymentReference.trim() ? 'prepaid' : 'pending_verification');
+
       const newOrder = await placeDeliveryOrder({
         customerName,
         customerPhone,
         deliveryAddress,
         deliveryInstructions,
+        serviceType: 'standard_delivery',
+        paymentMethod,
+        paymentStatus,
+        paymentReference: paymentReference.trim() || undefined,
         items: orderItems,
         subtotal,
         deliveryFee,
@@ -131,6 +141,12 @@ export default function DeliveryOrderPage() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedHandle(true);
+    setTimeout(() => setCopiedHandle(false), 2000);
+  };
+
   return (
     <div className="min-h-screen pt-28 pb-32">
       {/* Background Ambience */}
@@ -139,7 +155,7 @@ export default function DeliveryOrderPage() {
         <div className="absolute top-[20%] right-[10%] w-[450px] h-[450px] bg-indigo-600/10 blur-[150px] rounded-full" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 md:px-10 space-y-12">
+      <div className="max-w-6xl mx-auto px-6 md:px-10 space-y-10">
         
         {/* Header Banner */}
         <div className="text-center space-y-3 max-w-3xl mx-auto">
@@ -153,15 +169,40 @@ export default function DeliveryOrderPage() {
           <p className="text-xs md:text-sm text-zinc-400 max-w-lg mx-auto">
             Order artisan food, fresh coffee, or pre-encoded NFC cards. Your order is pushed straight to our mobile driver with instant route navigation.
           </p>
+        </div>
 
-          <div className="pt-2">
-            <Link
-              href="/eats"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-black uppercase tracking-wider transition-all shadow-lg"
-            >
-              <span>🍔 Browse Full Oasis Eats Restaurant Menus & Customizers →</span>
-            </Link>
+        {/* Courier & Pre-paid Store Pickup Banner */}
+        <div className="p-4 md:p-6 bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-transparent border border-amber-400/30 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+              <Package className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase text-white tracking-wider flex items-center gap-2">
+                <span>Need Pre-Paid Store Pickup or Buy & Deliver?</span>
+                <span className="px-2 py-0.5 bg-amber-400 text-black text-[9px] font-black rounded-full">NEW</span>
+              </p>
+              <p className="text-[11px] text-zinc-400">
+                Pre-pay for pickups from Ace Hardware, Smoke World, Yankee Smokehouse, grocery stores, or custom errands.
+              </p>
+            </div>
           </div>
+          <Link
+            href="/courier"
+            className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 shrink-0 shadow-lg shadow-amber-500/20"
+          >
+            <span>Open Courier Dispatch</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="pt-2">
+          <Link
+            href="/eats"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-black uppercase tracking-wider transition-all shadow-lg"
+          >
+            <span>🍔 Browse Full Oasis Eats Restaurant Menus & Customizers →</span>
+          </Link>
         </div>
 
         <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
@@ -349,6 +390,138 @@ export default function DeliveryOrderPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Payment Method Selector */}
+                <div className="space-y-3 pt-3 border-t border-white/5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-mono uppercase text-amber-400 font-bold">
+                      Payment Method
+                    </label>
+                    <span className="text-[10px] text-zinc-400 font-mono">Upfront or On Delivery</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'cash_app', name: 'Cash App', badge: '$frijj555', color: 'emerald' },
+                      { id: 'venmo', name: 'Venmo', badge: '@Sean-Martin-NH', color: 'cyan' },
+                      { id: 'zelle', name: 'Zelle', badge: '508-507-0305', color: 'purple' },
+                      { id: 'card', name: 'Card / Apple Pay', badge: 'Online Reader', color: 'amber' },
+                      { id: 'cash_on_delivery', name: 'Cash On Hand', badge: 'At Door', color: 'zinc' },
+                    ].map((pm) => (
+                      <button
+                        key={pm.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(pm.id as PaymentMethod)}
+                        className={`p-3 rounded-2xl border text-left transition-all ${
+                          paymentMethod === pm.id
+                            ? 'bg-white/10 border-amber-400 shadow-lg shadow-amber-500/10'
+                            : 'bg-white/[0.02] border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black text-white">{pm.name}</span>
+                          {paymentMethod === pm.id && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                        </div>
+                        <span className="text-[9px] font-mono text-zinc-400 block mt-0.5">{pm.badge}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Payment Details Drawer */}
+                  {paymentMethod === 'cash_app' && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-emerald-400">Cash App: $frijj555</span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard('$frijj555')}
+                            className="px-2 py-1 bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-300 text-[10px] font-mono rounded-lg transition-colors flex items-center gap-1"
+                          >
+                            {copiedHandle ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                            <span>{copiedHandle ? 'Copied' : 'Copy'}</span>
+                          </button>
+                          <a
+                            href={`https://cash.app/$frijj555/${total.toFixed(2)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 bg-emerald-400 text-black text-[10px] font-black rounded-lg hover:bg-emerald-300 transition-colors flex items-center gap-1"
+                          >
+                            <span>Open Cash App (${total.toFixed(2)})</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        value={paymentReference}
+                        onChange={(e) => setPaymentReference(e.target.value)}
+                        placeholder="Your CashTag / Note (optional)"
+                        className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-zinc-500 font-mono"
+                      />
+                    </div>
+                  )}
+
+                  {paymentMethod === 'venmo' && (
+                    <div className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-cyan-400">Venmo: @Sean-Martin-NH</span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard('@Sean-Martin-NH')}
+                            className="px-2 py-1 bg-cyan-400/20 hover:bg-cyan-400/30 text-cyan-300 text-[10px] font-mono rounded-lg transition-colors flex items-center gap-1"
+                          >
+                            {copiedHandle ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                            <span>{copiedHandle ? 'Copied' : 'Copy'}</span>
+                          </button>
+                          <a
+                            href={`https://venmo.com/Sean-Martin-NH?txn=pay&amount=${total.toFixed(2)}&note=Oasis%20Delivery%20Order`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 bg-cyan-400 text-black text-[10px] font-black rounded-lg hover:bg-cyan-300 transition-colors flex items-center gap-1"
+                          >
+                            <span>Open Venmo (${total.toFixed(2)})</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        value={paymentReference}
+                        onChange={(e) => setPaymentReference(e.target.value)}
+                        placeholder="Your Venmo handle / Note (optional)"
+                        className="w-full bg-black/40 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-zinc-500 font-mono"
+                      />
+                    </div>
+                  )}
+
+                  {paymentMethod === 'zelle' && (
+                    <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-xs font-black text-purple-300 block">Zelle: (508) 507-0305</span>
+                          <span className="text-[10px] text-zinc-400 font-mono">frijj555@gmail.com</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard('5085070305')}
+                          className="px-2.5 py-1 bg-purple-400/20 hover:bg-purple-400/30 text-purple-300 text-[10px] font-mono rounded-lg transition-colors flex items-center gap-1"
+                        >
+                          {copiedHandle ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedHandle ? 'Copied' : 'Copy #'}</span>
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={paymentReference}
+                        onChange={(e) => setPaymentReference(e.target.value)}
+                        placeholder="Sender Name or Zelle confirmation note"
+                        className="w-full bg-black/40 border border-purple-500/30 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-zinc-500 font-mono"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 

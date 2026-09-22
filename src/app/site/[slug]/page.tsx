@@ -258,6 +258,46 @@ export default function StandaloneBusinessSitePage({
       {/* Main Menu / Catalog Section */}
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-12 space-y-8">
         
+        {/* Hannaford To Go Specific Call-In Banner */}
+        {storefront.slug === 'hannaford-to-go' && (
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-amber-500/10 to-emerald-500/10 border border-emerald-500/30 space-y-4 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🛒</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] font-mono font-bold uppercase">
+                    Important: How Hannaford Grocery Pickup Works
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
+                <h3 className="text-xl font-black italic text-white uppercase">
+                  Call Hannaford To-Go at (603) 641-9400 to Order & Pay for Your Groceries!
+                </h3>
+                <p className="text-xs text-zinc-300 leading-relaxed max-w-2xl">
+                  For customers who need groceries: you must call Hannaford To Go directly at <strong className="text-white">(603) 641-9400</strong> (or place through the Hannaford app) to place and pay for your grocery order. Once you receive your Pickup Name or Confirmation Code, hire local courier <strong>Sean Martin</strong> to pick up your grocery bags curbside and deliver them express to your doorstep!
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                <a
+                  href="tel:6036419400"
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-black font-black text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>1. Call (603) 641-9400</span>
+                </a>
+                <Link
+                  href="/courier"
+                  className="px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-lg shadow-amber-400/20 flex items-center gap-2"
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>2. Book Sean to Deliver ➔</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Category Filter Tabs */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2 overflow-x-auto pb-2">

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useNfcStore } from '@/lib/store';
 import { NfcCardConfig } from '@/lib/types';
+import { EFFINGHAM_AREA_BUSINESSES } from '@/lib/local-businesses';
 import confetti from 'canvas-confetti';
 import { 
   Star, Radio, ShieldCheck, CheckCircle2, ExternalLink, 
@@ -14,7 +15,7 @@ export default function TapRouterPage() {
   const params = useParams();
   const router = useRouter();
   const cardId = (params?.id as string) || 'card-oasis-main';
-  const { cards, recordTap, submitFeedback } = useNfcStore();
+  const { cards, storefronts, recordTap, submitFeedback } = useNfcStore();
 
   const [card, setCard] = useState<NfcCardConfig | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
@@ -267,6 +268,89 @@ export default function TapRouterPage() {
             </div>
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* INTERACTIVE STORE MENU & FEATURED CATALOG */}
+        {/* ========================================================================= */}
+        {(() => {
+          // Find matching local business or storefront
+          const matchedBiz = EFFINGHAM_AREA_BUSINESSES.find(
+            (b: any) => b.name.toLowerCase() === card.businessName.toLowerCase() ||
+                 b.id.toLowerCase() === card.businessName.toLowerCase()
+          );
+          const matchedStorefront = storefronts.find(
+            sf => sf.businessName.toLowerCase() === card.businessName.toLowerCase() ||
+                  sf.slug.toLowerCase() === card.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-')
+          );
+
+          const menuItems = matchedBiz?.menuItems || matchedStorefront?.products.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            price: `$${p.price.toFixed(2)}`,
+            category: p.category,
+            popular: !!p.badge,
+            imageEmoji: '🍽️'
+          })) || [];
+
+          if (menuItems.length === 0) return null;
+
+          return (
+            <div className="pt-2 border-t border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase text-amber-400 font-mono tracking-wider flex items-center gap-1.5">
+                  <span>🍽️</span>
+                  <span>{matchedBiz?.menuTitle || 'Featured Store Menu'}</span>
+                </span>
+                <span className="text-[10px] font-mono text-zinc-500 font-bold">{menuItems.length} Items</span>
+              </div>
+
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {menuItems.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 flex items-center justify-between gap-3 transition-colors"
+                  >
+                    <div className="space-y-0.5 flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-white truncate">{item.name}</span>
+                        {item.popular && (
+                          <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20">
+                            Popular
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-zinc-400 line-clamp-1">{item.description}</p>
+                    </div>
+                    <span className="text-xs font-mono font-black text-amber-400 shrink-0">
+                      {item.price}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                {matchedStorefront ? (
+                  <a
+                    href={`/site/${matchedStorefront.slug}`}
+                    className="flex-1 py-2.5 bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 hover:bg-amber-300"
+                  >
+                    <span>Order Online & Full Menu</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <a
+                    href="/menus"
+                    className="flex-1 py-2.5 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Browse All Local Digital Menus</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Footer info */}
         <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[8px] font-mono text-zinc-600">

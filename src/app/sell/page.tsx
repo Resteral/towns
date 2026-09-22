@@ -9,6 +9,7 @@ import {
   Tag, Image as ImageIcon, DollarSign, CheckCircle2, ArrowRight 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import ImageUpload from '@/components/ImageUpload';
 
 const SAMPLE_IMAGE_PRESETS = [
   { label: 'Artisan Woodcraft', url: 'https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&w=800&q=80' },
@@ -187,32 +188,34 @@ export default function SellPage() {
               />
             </div>
 
-            {/* Photo Selection / Presets */}
+            {/* Photo Upload & Presets */}
             <div className="space-y-3">
-              <label className="text-[10px] font-mono uppercase text-zinc-400 block">Product Photo (Image URL or Choose Preset)</label>
-              <input
-                type="url"
-                required
+              <ImageUpload
                 value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400 font-mono"
+                onChange={(url) => setImageUrl(url)}
+                label="Item Product Photo *"
+                subtitle="Upload high-resolution photo of your craft, food, or item (PNG, JPG, WEBP)"
+                aspectRatio="card"
               />
 
-              <div className="flex flex-wrap gap-2 pt-1">
-                {SAMPLE_IMAGE_PRESETS.map((preset, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setImageUrl(preset.url)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-mono transition-all border ${
-                      imageUrl === preset.url
-                        ? 'bg-amber-400 text-black border-amber-400 font-bold'
-                        : 'bg-white/5 text-zinc-400 border-white/5 hover:text-white'
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[9px] font-mono uppercase text-zinc-500 block">Or Choose Preset Stock Image:</span>
+                <div className="flex flex-wrap gap-2">
+                  {SAMPLE_IMAGE_PRESETS.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setImageUrl(preset.url)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-mono transition-all border ${
+                        imageUrl === preset.url
+                          ? 'bg-amber-400 text-black border-amber-400 font-bold'
+                          : 'bg-white/5 text-zinc-400 border-white/5 hover:text-white'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

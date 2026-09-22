@@ -6,9 +6,10 @@ import { useNfcStore } from '@/lib/store';
 import { NfcCardConfig } from '@/lib/types';
 import { 
   CreditCard, Plus, Edit2, Trash2, QrCode, ExternalLink, 
-  Radio, CheckCircle2, ShieldCheck, Download, Sparkles, X, Save
+  Radio, CheckCircle2, ShieldCheck, Download, Sparkles, X, Save, Image as ImageIcon
 } from 'lucide-react';
 import QRCode from 'qrcode';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function CardsFleetPage() {
   const { cards, addCard, updateCard, deleteCard } = useNfcStore();
@@ -337,6 +338,17 @@ export default function CardsFleetPage() {
                   onChange={(e) => setCustomHeadline(e.target.value)}
                   placeholder="How was your experience today?"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <ImageUpload
+                  value={logoUrl?.startsWith('data:') || logoUrl?.startsWith('http') ? logoUrl : ''}
+                  onChange={(url) => setLogoUrl(url || '⭐')}
+                  label="Beacon Logo / Emblem"
+                  subtitle="Upload custom icon or brand logo (PNG, JPG, SVG)"
+                  aspectRatio="square"
+                  compact={true}
                 />
               </div>
 

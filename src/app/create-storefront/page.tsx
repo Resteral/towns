@@ -12,6 +12,7 @@ import {
 import { useNfcStore } from '@/lib/store';
 import { StorefrontProduct } from '@/lib/types';
 import confetti from 'canvas-confetti';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function CreateStorefrontPage() {
   const router = useRouter();
@@ -463,6 +464,17 @@ export default function CreateStorefrontPage() {
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
+
+                <div className="md:col-span-2 pt-2">
+                  <ImageUpload
+                    value={coverImageUrl}
+                    onChange={(url) => setCoverImageUrl(url)}
+                    label="Storefront Header Cover Banner"
+                    subtitle="High-resolution panoramic banner photo of your storefront, restaurant, or products"
+                    aspectRatio="wide"
+                    maxDimension={1200}
+                  />
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end">
@@ -541,6 +553,15 @@ export default function CreateStorefrontPage() {
                     className="bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
+
+                <ImageUpload
+                  value={newItemImage}
+                  onChange={(url) => setNewItemImage(url)}
+                  label="Product Photo (Optional)"
+                  subtitle="Upload an appetizing photo of this dish or item"
+                  aspectRatio="card"
+                  compact={true}
+                />
 
                 <button
                   type="button"

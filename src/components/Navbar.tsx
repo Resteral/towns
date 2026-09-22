@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useNfcStore } from '@/lib/store';
 import TownSelector from '@/components/TownSelector';
-import { Sparkles, ShoppingBag, LayoutDashboard, Radio, Truck, MessageSquare, Compass, Crown } from 'lucide-react';
+import { Sparkles, ShoppingBag, LayoutDashboard, Radio, Truck, MessageSquare, Compass, Crown, Wrench } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -35,7 +35,7 @@ export default function Navbar() {
         </Link>
 
         {/* Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-6">
+        <nav className="hidden lg:flex items-center gap-5">
           <Link
             href="/"
             className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${
@@ -51,6 +51,22 @@ export default function Navbar() {
             }`}
           >
             <span className="px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/30 text-[9px]">Eats 🍔</span>
+          </Link>
+          <Link
+            href="/menus"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/menus') ? 'text-amber-400' : 'text-white/80 hover:text-white'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-white/5 text-amber-300 border border-white/10 text-[9px] font-bold">Menus 📖</span>
+          </Link>
+          <Link
+            href="/work"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/work') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[9px] font-bold">🛠️ Trades & Work</span>
           </Link>
           <Link
             href="/marketplace"
@@ -77,6 +93,14 @@ export default function Navbar() {
           >
             <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
             <span>Community Wire</span>
+          </Link>
+          <Link
+            href="/courier"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/courier') ? 'text-amber-400' : 'text-emerald-400 hover:text-emerald-300'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold">Courier 📦</span>
           </Link>
           <Link
             href="/order"
@@ -129,6 +153,15 @@ export default function Navbar() {
                 {cartItemCount}
               </span>
             )}
+          </Link>
+
+          <Link
+            href="/driver"
+            className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-400 text-black rounded-2xl text-[9px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-1.5"
+            title="Open Food Delivery Driver App"
+          >
+            <Truck className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Driver App</span>
           </Link>
 
           <Link

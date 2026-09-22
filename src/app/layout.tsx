@@ -1,11 +1,26 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+export const viewport: Viewport = {
+  themeColor: "#070709",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
-  title: "OasisTap | Smart NFC Google Review Network",
-  description: "Accelerate your 5-star Google Reviews with physical-to-digital smart NFC cards, countertop stands, and intelligent review filtering.",
+  title: "Oasis | Local Storefronts, NFC Network & Food Delivery Driver App",
+  description: "Accelerate your 5-star Google Reviews, browse local restaurant menus, and manage real-time courier food delivery dispatch.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Oasis Driver",
+  },
+  applicationName: "Oasis Courier",
 };
 
 export default function RootLayout({

@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { DeliveryOrder } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import DriverTrackerHUD from '@/components/DriverTrackerHUD';
 import { 
   Truck, Phone, MapPin, Navigation, CheckCircle2, 
-  Clock, AlertCircle, Sparkles, ExternalLink, ArrowRight, ShieldCheck 
+  Clock, AlertCircle, Sparkles, ExternalLink, ArrowRight, ShieldCheck, Compass, Radio 
 } from 'lucide-react';
 
 export default function DeliveryDispatchPage() {
-  const { deliveryOrders, updateOrderStatus, notificationSettings } = useNfcStore();
+  const { deliveryOrders, updateOrderStatus, notificationSettings, driverTelemetry } = useNfcStore();
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   const filteredOrders = deliveryOrders.filter(o => {
@@ -23,6 +24,12 @@ export default function DeliveryDispatchPage() {
   const activeDeliveryCount = deliveryOrders.filter(o => o.status === 'accepted' || o.status === 'out_for_delivery').length;
   const totalTips = deliveryOrders.reduce((sum, o) => sum + (o.tip || 0), 0);
   const totalRevenue = deliveryOrders.reduce((sum, o) => sum + o.total, 0);
+
+  // Active in-transit order for driver HUD
+  const activeOrder = deliveryOrders.find(o => o.status === 'out_for_delivery') 
+    || deliveryOrders.find(o => o.status === 'accepted') 
+    || deliveryOrders.find(o => o.status === 'pending')
+    || deliveryOrders[0];
 
   const getStatusBadge = (status: DeliveryOrder['status']) => {
     switch (status) {
@@ -45,32 +52,58 @@ export default function DeliveryDispatchPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
-            Real-Time Courier Telemetry
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
+              Live GPS Driver Telemetry
+            </span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          </div>
           <h1 className="text-3xl md:text-4xl font-black italic tracking-tight uppercase text-white">
             Delivery Dispatch Radar
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link
+            href="/dashboard/delivery/tracker"
+            className="px-5 py-2.5 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-black font-black text-xs uppercase tracking-widest rounded-xl hover:scale-105 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
+          >
+            <Compass className="w-4 h-4 animate-spin" />
+            <span>Driver GPS Cockpit 🛰️</span>
+          </Link>
           <Link
             href="/dashboard/settings"
             className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2"
           >
             <Phone className="w-4 h-4 text-amber-400" />
-            <span>Phone Relays: {notificationSettings.phoneNumber || 'Active'}</span>
+            <span>SMS Relays: {notificationSettings.phoneNumber || 'Active'}</span>
           </Link>
           <Link
             href="/eats"
             target="_blank"
-            className="px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-xl hover:scale-105 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
+            className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2"
           >
-            <Truck className="w-4 h-4" />
+            <Truck className="w-4 h-4 text-amber-400" />
             <span>Oasis Eats Grid 🍔</span>
           </Link>
         </div>
       </div>
+
+      {/* Live Driver Telemetry & Radar Cockpit HUD */}
+      {activeOrder && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-400 flex items-center gap-2">
+              <Radio className="w-3.5 h-3.5 animate-pulse" />
+              <span>Active Courier Telemetry & Navigation Cockpit</span>
+            </span>
+            <span className="text-[10px] font-mono text-zinc-400">
+              Driver: {driverTelemetry.driverName} • {driverTelemetry.vehicle}
+            </span>
+          </div>
+          <DriverTrackerHUD order={activeOrder} isDriverView={true} />
+        </div>
+      )}
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -137,8 +170,20 @@ export default function DeliveryDispatchPage() {
                       #{order.orderNumber}
                     </div>
                     <div>
-                      <h3 className="font-black italic text-white text-lg">{order.customerName}</h3>
-                      <p className="text-[10px] font-mono text-zinc-400">Ordered at {formatDate(order.createdAt)}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-black italic text-white text-lg">{order.customerName}</h3>
+                        {order.serviceType && (
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[9px] font-mono font-bold uppercase">
+                            {order.serviceType === 'store_pickup' ? '📦 Pre-Paid Pickup' : order.serviceType === 'prepaid_buy' ? '🛒 Prepaid Buy & Deliver' : '⚡ Custom Errand'}
+                          </span>
+                        )}
+                        {order.paymentMethod && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-bold uppercase">
+                            Paid via {order.paymentMethod === 'cash_app' ? 'Cash App' : order.paymentMethod === 'venmo' ? 'Venmo' : order.paymentMethod === 'zelle' ? 'Zelle' : order.paymentMethod === 'card' ? 'Card' : 'COD'}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] font-mono text-zinc-400">Ordered at {formatDate(order.createdAt)} • Town: {order.town || 'Effingham'}</p>
                     </div>
                   </div>
 
@@ -147,6 +192,48 @@ export default function DeliveryDispatchPage() {
                     <span className="text-xl font-black italic text-amber-400">{formatCurrency(order.total)}</span>
                   </div>
                 </div>
+
+                {/* Pickup Store Info if available */}
+                {(order.pickupStoreName || order.restaurantName) && (
+                  <div className="p-3.5 rounded-2xl bg-amber-400/[0.04] border border-amber-400/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl">🏪</span>
+                      <div>
+                        <span className="text-[9px] font-mono uppercase text-amber-400 font-bold">Pickup Merchant</span>
+                        <p className="font-black text-white">{order.pickupStoreName || order.restaurantName}</p>
+                        {order.pickupStoreAddress && (
+                          <p className="text-[10px] text-zinc-400 font-mono">{order.pickupStoreAddress}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {order.pickupOrderCode && (
+                        <span className="px-3 py-1 bg-black/60 border border-white/10 rounded-xl text-xs font-mono font-bold text-amber-400">
+                          Code: {order.pickupOrderCode}
+                        </span>
+                      )}
+                      {order.pickupStoreAddress && (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${order.pickupStoreName} ${order.pickupStoreAddress}`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1 bg-amber-400 text-black font-bold text-[10px] uppercase rounded-xl hover:bg-amber-300 transition-colors flex items-center gap-1"
+                        >
+                          <Navigation className="w-3 h-3" />
+                          <span>GPS Store</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Payment Reference & Note */}
+                {order.paymentReference && (
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-mono flex items-center gap-2 text-zinc-300">
+                    <span className="text-emerald-400 font-bold">💳 Customer Payment Note:</span>
+                    <span className="text-white bg-black/40 px-2 py-0.5 rounded border border-white/5">{order.paymentReference}</span>
+                  </div>
+                )}
 
                 {/* Customer Address & Quick Actions Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

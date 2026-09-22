@@ -5,17 +5,18 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import DriverTrackerHUD from '@/components/DriverTrackerHUD';
 import { 
   Truck, CheckCircle2, Clock, MapPin, Phone, 
   Navigation, ArrowLeft, Radio, ShieldCheck, Sparkles, 
-  Store, User, MessageCircle, AlertCircle, RefreshCw, Volume2
+  Store, User, MessageCircle, AlertCircle, RefreshCw, Volume2, Compass
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function OrderTrackingPage() {
   const params = useParams();
   const orderId = params?.id as string;
-  const { deliveryOrders, updateOrderStatus } = useNfcStore();
+  const { deliveryOrders, updateOrderStatus, driverTelemetry } = useNfcStore();
 
   const order = deliveryOrders.find(o => o.id === orderId) || deliveryOrders[0];
 
@@ -100,16 +101,28 @@ export default function OrderTrackingPage() {
           
           {/* Header Banner with ETA */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400/10 border border-amber-400/20 rounded-full text-amber-400 text-[9px] font-mono font-bold uppercase mb-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span>DoorDash / UberEats Live Dispatch Radar</span>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400/10 border border-amber-400/20 rounded-full text-amber-400 text-[9px] font-mono font-bold uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span>Oasis Live Courier Dispatch Radar</span>
+                </div>
+                {order.serviceType && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[9px] font-mono font-bold uppercase">
+                    {order.serviceType === 'store_pickup' ? '📦 Pre-Paid Store Pickup' : order.serviceType === 'prepaid_buy' ? '🛒 Prepay & Deliver' : '⚡ Custom Errand'}
+                  </span>
+                )}
+                {order.paymentMethod && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[9px] font-mono font-bold uppercase">
+                    Paid via {order.paymentMethod === 'cash_app' ? 'Cash App' : order.paymentMethod === 'venmo' ? 'Venmo' : order.paymentMethod === 'zelle' ? 'Zelle' : order.paymentMethod === 'card' ? 'Card' : 'COD'}
+                  </span>
+                )}
               </div>
               <h1 className="text-2xl md:text-3xl font-black italic tracking-tight uppercase text-white">
                 Delivery Order #{order.orderNumber}
               </h1>
               <p className="text-xs text-zinc-400">
-                Placed on {formatDate(order.createdAt)} • Destination: {order.town || 'Effingham, NH'}
+                Placed on {formatDate(order.createdAt)} • Destination: {order.town || order.deliveryAddress}
               </p>
             </div>
 
@@ -120,6 +133,30 @@ export default function OrderTrackingPage() {
               </p>
             </div>
           </div>
+
+          {/* If Store Pickup / Errand, show Store Details Card */}
+          {(order.pickupStoreName || order.restaurantName) && (
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center text-xl">
+                  🏪
+                </div>
+                <div>
+                  <span className="text-[9px] font-mono uppercase text-zinc-500">Pickup Location</span>
+                  <p className="text-xs font-black text-white">{order.pickupStoreName || order.restaurantName}</p>
+                  {order.pickupStoreAddress && (
+                    <p className="text-[10px] text-zinc-400">{order.pickupStoreAddress}</p>
+                  )}
+                </div>
+              </div>
+              {order.pickupOrderCode && (
+                <div className="text-right">
+                  <span className="text-[9px] font-mono uppercase text-zinc-500">Pickup Order Code</span>
+                  <p className="text-xs font-mono font-bold text-amber-400">{order.pickupOrderCode}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Stepper Progress */}
           <div className="space-y-6">
@@ -160,121 +197,8 @@ export default function OrderTrackingPage() {
             </div>
           </div>
 
-          {/* Simulated Interactive Live GPS Map Canvas (DoorDash/UberEats Style) */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
-              <span className="flex items-center gap-1.5 uppercase font-bold text-[10px] text-amber-400">
-                <Navigation className="w-3.5 h-3.5 text-amber-400 animate-spin" />
-                <span>Live Courier GPS Track</span>
-              </span>
-              <span>Speed: 28 mph • On Route 25</span>
-            </div>
-
-            <div className="relative h-64 w-full bg-[#0a0f18] border border-white/10 rounded-3xl overflow-hidden shadow-inner flex items-center justify-center">
-              {/* Map grid pattern styling */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px]" />
-              
-              {/* Simulated road polyline */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M 60 180 Q 200 40 400 130 T 700 80"
-                  fill="none"
-                  stroke="#334155"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M 60 180 Q 200 40 400 130 T 700 80"
-                  fill="none"
-                  stroke="#f59e0b"
-                  strokeWidth="4"
-                  strokeDasharray="8 6"
-                  className="animate-pulse"
-                />
-              </svg>
-
-              {/* Waypoint 1: Restaurant Pin */}
-              <div className="absolute left-10 bottom-12 flex flex-col items-center gap-1">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg border border-indigo-400">
-                  <Store className="w-5 h-5" />
-                </div>
-                <span className="text-[9px] font-mono font-black uppercase bg-black/80 px-2 py-0.5 rounded text-indigo-300 border border-indigo-500/30">
-                  Kitchen / Grill
-                </span>
-              </div>
-
-              {/* Waypoint 2: Moving Courier Vehicle */}
-              <div 
-                className="absolute transition-all duration-700 flex flex-col items-center gap-1 z-20"
-                style={{
-                  left: `${Math.min(85, Math.max(15, gpsProgress))}%`,
-                  top: `${Math.sin(gpsProgress / 15) * 30 + 90}px`,
-                }}
-              >
-                <div className="relative">
-                  <span className="absolute -inset-2 bg-amber-400/40 rounded-full animate-ping pointer-events-none" />
-                  <div className="w-11 h-11 rounded-2xl bg-amber-400 text-black flex items-center justify-center shadow-2xl shadow-amber-500/50 border border-amber-300">
-                    <Truck className="w-6 h-6" />
-                  </div>
-                </div>
-                <span className="text-[9px] font-mono font-black uppercase bg-black/90 px-2 py-0.5 rounded text-amber-300 border border-amber-400/40 whitespace-nowrap shadow-lg">
-                  Sean Martin (Courier)
-                </span>
-              </div>
-
-              {/* Waypoint 3: Customer House Pin */}
-              <div className="absolute right-10 top-12 flex flex-col items-center gap-1">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-black flex items-center justify-center shadow-lg border border-emerald-300">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <span className="text-[9px] font-mono font-black uppercase bg-black/80 px-2 py-0.5 rounded text-emerald-300 border border-emerald-500/30">
-                  Your Doorstep
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Assigned Courier Card (DoorDash style) */}
-          <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 p-0.5 shadow-xl shadow-amber-500/20 shrink-0">
-                  <div className="w-full h-full bg-[#0b0b12] rounded-[14px] flex items-center justify-center text-2xl">
-                    👑
-                  </div>
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-black text-white text-base">Sean Martin</h3>
-                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-amber-400/20 text-amber-400 border border-amber-400/30">
-                      Founding Courier Lead
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-400">
-                    Silver Subaru Outback (All-Wheel Drive) • 5.0 ★ (340+ Deliveries)
-                  </p>
-                </div>
-              </div>
-
-              {/* Direct Call & SMS Buttons */}
-              <div className="flex items-center gap-2">
-                <a
-                  href="tel:5085070305"
-                  className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/20"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>Call Driver</span>
-                </a>
-                <a
-                  href="sms:5085070305"
-                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-wider transition-all border border-white/10 flex items-center gap-1.5"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Text</span>
-                </a>
-              </div>
-            </div>
-          </div>
+          {/* Live Driver Telemetry & Radar Tracker */}
+          <DriverTrackerHUD order={order} isDriverView={false} />
 
           {/* Delivery Destination & Dropoff Notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">

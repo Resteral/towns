@@ -184,6 +184,10 @@ export interface DeliveryItem {
   storeName?: string;
 }
 
+export type OrderServiceType = 'standard_delivery' | 'store_pickup' | 'prepaid_buy' | 'custom_errand';
+export type PaymentMethod = 'cash_app' | 'venmo' | 'zelle' | 'card' | 'cash_on_delivery';
+export type PaymentStatus = 'prepaid' | 'pending_verification' | 'pay_on_delivery';
+
 export interface DeliveryDriverInfo {
   name: string;
   phone: string;
@@ -191,6 +195,50 @@ export interface DeliveryDriverInfo {
   vehicle: string;
   rating: number;
   totalDeliveries: number;
+}
+
+export interface DriverTelemetry {
+  driverId: string;
+  driverName: string;
+  driverPhone: string;
+  avatar: string;
+  vehicle: string;
+  rating: number;
+  totalDeliveries: number;
+  status: 'available' | 'en_route_store' | 'at_store' | 'in_transit' | 'arrived' | 'offline';
+  latitude: number;
+  longitude: number;
+  heading: number; // 0-360 degrees
+  speedMph: number;
+  altitudeFeet: number;
+  batteryPercent: number;
+  isBroadcastingGps: boolean;
+  lastPingTimestamp: string;
+  currentRoad: string;
+  activeOrderId?: string;
+  deviceTrackingActive?: boolean;
+}
+
+export interface ProofOfDelivery {
+  orderId: string;
+  photoUrl?: string;
+  dropoffLocationType: 'front_door' | 'porch' | 'handed_to_customer' | 'garage' | 'mailroom' | 'other';
+  notes?: string;
+  completedAt: string;
+  gpsCoordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+
+export interface DriverShiftSummary {
+  isOnline: boolean;
+  shiftStartTime?: string;
+  shiftDeliveriesCount: number;
+  shiftEarningsTotal: number;
+  shiftTipsTotal: number;
+  shiftMileageEstimate: number;
+  totalBalance: number;
 }
 
 export interface DeliveryOrder {
@@ -216,7 +264,16 @@ export interface DeliveryOrder {
   restaurantName?: string;
   restaurantAddress?: string;
   orderType?: 'delivery' | 'pickup';
+  serviceType?: OrderServiceType;
+  paymentMethod?: PaymentMethod;
+  paymentStatus?: PaymentStatus;
+  paymentReference?: string;
+  pickupStoreName?: string;
+  pickupStoreAddress?: string;
+  pickupOrderCode?: string;
+  estimatedItemCost?: number;
   driver?: DeliveryDriverInfo;
+  proofOfDelivery?: ProofOfDelivery;
 }
 
 export interface NotificationSettings {
@@ -278,4 +335,71 @@ export interface MerchantStorefront {
   createdAt: string;
 }
 
+export type TradeCategory = 
+  | 'landscaping'
+  | 'roofing_siding'
+  | 'carpentry'
+  | 'painting'
+  | 'cleaning'
+  | 'auto_repair'
+  | 'handyman'
+  | 'tree_service'
+  | 'masonry'
+  | 'plumbing_electrical'
+  | 'other';
 
+export interface BeforeAfterShowcase {
+  id: string;
+  businessName: string;
+  businessCategory: TradeCategory;
+  projectTitle: string;
+  description: string;
+  town: string;
+  state: string;
+  beforeImageUrl: string;
+  afterImageUrl: string;
+  beforeCaption?: string;
+  afterCaption?: string;
+  costOrBudgetEstimate?: string;
+  timeToComplete?: string;
+  contactPhone: string;
+  contactEmail?: string;
+  websiteUrl?: string;
+  googleReviewUrl?: string;
+  rating?: number;
+  specialOffer?: string;
+  createdAt: string;
+  featured?: boolean;
+  likesCount?: number;
+  userLiked?: boolean;
+}
+
+export interface WorkRequest {
+  id: string;
+  title: string;
+  category: TradeCategory;
+  description: string;
+  town: string;
+  state: string;
+  budgetRange: string;
+  urgency: 'emergency_today' | 'within_few_days' | 'flexible_this_month';
+  requesterName: string;
+  requesterPhone: string;
+  requesterEmail?: string;
+  addressOrNeighborhood?: string;
+  beforeImageUrl?: string;
+  status: 'open' | 'quotes_received' | 'in_progress' | 'completed';
+  quotesCount: number;
+  createdAt: string;
+}
+
+export interface ContractorQuote {
+  id: string;
+  requestId: string;
+  contractorName: string;
+  contractorPhone: string;
+  estimatedPrice: number;
+  message: string;
+  earliestStartDate?: string;
+  createdAt: string;
+}
