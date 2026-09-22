@@ -53,7 +53,7 @@ export default function CsvImporterPage() {
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-mono uppercase tracking-wider">
             <FileSpreadsheet className="w-4 h-4 text-amber-400" />
-            <span>Townraise Bulk CSV & Spreadsheet Extractor</span>
+            <span>Universal Bulk CSV & Datafiniti / Menus API JSON Ingestor</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
@@ -61,7 +61,7 @@ export default function CsvImporterPage() {
           </h1>
 
           <p className="text-zinc-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-            Easily migrate your business catalog, restaurant menu items, or artisan inventory into Townraise. Upload any <strong className="text-white">.CSV</strong>, <strong className="text-white">.TSV</strong>, or paste spreadsheet rows directly from Google Sheets or Excel.
+            Migrate your business catalog, restaurant menu items, or artisan inventory into Townraise. Upload any <strong className="text-white">.CSV / .TSV</strong>, or ingest raw <strong className="text-emerald-400">Datafiniti</strong> & <strong className="text-indigo-400">Menus API</strong> JSON scraper outputs with 1-click automatic schema detection.
           </p>
         </div>
 

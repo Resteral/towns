@@ -8,11 +8,15 @@ import {
   autoMapHeaders, 
   generateCsvString, 
   downloadCsvFile,
+  detectAndParseMenuJson,
+  SAMPLE_DATAFINITI_JSON,
+  SAMPLE_MENUS_API_JSON,
+  ParsedRestaurantPayload,
   BUSINESS_FIELD_SYNONYMS,
   PRODUCT_FIELD_SYNONYMS,
   MARKETPLACE_FIELD_SYNONYMS
 } from '@/lib/csv-parser';
-import { DirectoryCategory, StorefrontProduct, ReviewProduct } from '@/lib/types';
+import { DirectoryCategory, StorefrontProduct, ReviewProduct, MerchantStorefront } from '@/lib/types';
 import confetti from 'canvas-confetti';
 import { 
   UploadCloud, 
@@ -35,10 +39,18 @@ import {
   Copy,
   ChevronDown,
   Info,
-  Database
+  Database,
+  Code2,
+  FileCode,
+  Zap,
+  Globe,
+  MapPin,
+  Phone,
+  Tag,
+  Calendar
 } from 'lucide-react';
 
-type ImportMode = 'businesses' | 'storefront_products' | 'marketplace_products';
+type ImportMode = 'businesses' | 'storefront_products' | 'marketplace_products' | 'datafiniti_menus_api';
 
 const SAMPLE_BUSINESS_CSV = `Name,Category,Town,Address,Phone,Website,GoogleRating,ReviewCount,Description
 Poor Peoples Pub,dining_bars,Sanbornville,28 Meadow St,603-522-8991,https://poorpeoplespub.com,4.6,342,Legendary Carroll County pub with wood-fired burgers and craft beer
@@ -78,6 +90,7 @@ export default function CsvImporterHub({
     bulkImportDirectoryListings, 
     bulkImportStorefrontProducts, 
     bulkImportMarketplaceProducts,
+    createStorefront,
     activeTown
   } = useNfcStore();
 
@@ -91,10 +104,17 @@ export default function CsvImporterHub({
   const [fieldMappings, setFieldMappings] = useState<Record<string, string>>({});
   const [selectedRowIndices, setSelectedRowIndices] = useState<Set<number>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Datafiniti & Menus API State
+  const [jsonPayload, setJsonPayload] = useState<ParsedRestaurantPayload | null>(null);
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [apiImportTarget, setApiImportTarget] = useState<'create_new' | 'existing'>('create_new');
+
   const [importSuccessResult, setImportSuccessResult] = useState<{
     count: number;
     mode: ImportMode;
     timestamp: string;
+    storefrontName?: string;
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -105,6 +125,7 @@ export default function CsvImporterHub({
       case 'businesses': return BUSINESS_FIELD_SYNONYMS;
       case 'storefront_products': return PRODUCT_FIELD_SYNONYMS;
       case 'marketplace_products': return MARKETPLACE_FIELD_SYNONYMS;
+      default: return PRODUCT_FIELD_SYNONYMS;
     }
   }, [mode]);
 
@@ -116,6 +137,29 @@ export default function CsvImporterHub({
   // Parse Raw Text whenever text changes or is loaded
   const handleParseText = (text: string) => {
     setRawInputText(text);
+    setImportSuccessResult(null);
+
+    if (mode === 'datafiniti_menus_api') {
+      if (!text.trim()) {
+        setJsonPayload(null);
+        setJsonError(null);
+        setSelectedRowIndices(new Set());
+        return;
+      }
+
+      const res = detectAndParseMenuJson(text);
+      if (res.success && res.payload) {
+        setJsonPayload(res.payload);
+        setJsonError(null);
+        setSelectedRowIndices(new Set(res.payload.dishes.map((_, i) => i)));
+      } else {
+        setJsonPayload(null);
+        setJsonError(res.error || 'Failed to parse JSON.');
+        setSelectedRowIndices(new Set());
+      }
+      return;
+    }
+
     if (!text.trim()) {
       setParsedHeaders([]);
       setParsedRows([]);
@@ -134,7 +178,6 @@ export default function CsvImporterHub({
     // Select all parsed rows by default
     const allIndices = new Set(rows.map((_, i) => i));
     setSelectedRowIndices(allIndices);
-    setImportSuccessResult(null);
   };
 
   // Handle file drop or upload
@@ -150,13 +193,19 @@ export default function CsvImporterHub({
     reader.readAsText(file);
   };
 
-  // Load preset sample CSV
+  // Load preset sample CSV or JSON
   const handleLoadSample = (sampleType: ImportMode) => {
     setMode(sampleType);
-    let sample = SAMPLE_BUSINESS_CSV;
-    if (sampleType === 'storefront_products') sample = SAMPLE_MENU_CSV;
-    if (sampleType === 'marketplace_products') sample = SAMPLE_MARKETPLACE_CSV;
-    handleParseText(sample);
+    if (sampleType === 'businesses') handleParseText(SAMPLE_BUSINESS_CSV);
+    else if (sampleType === 'storefront_products') handleParseText(SAMPLE_MENU_CSV);
+    else if (sampleType === 'marketplace_products') handleParseText(SAMPLE_MARKETPLACE_CSV);
+    else if (sampleType === 'datafiniti_menus_api') handleParseText(SAMPLE_DATAFINITI_JSON);
+  };
+
+  // Load Menus API Scraper sample specifically
+  const handleLoadMenusApiSample = () => {
+    setMode('datafiniti_menus_api');
+    handleParseText(SAMPLE_MENUS_API_JSON);
   };
 
   // Download Sample Template CSV
@@ -169,9 +218,12 @@ export default function CsvImporterHub({
     } else if (mode === 'storefront_products') {
       content = SAMPLE_MENU_CSV;
       fileName = 'townraise_menu_products_template.csv';
-    } else {
+    } else if (mode === 'marketplace_products') {
       content = SAMPLE_MARKETPLACE_CSV;
       fileName = 'townraise_marketplace_inventory_template.csv';
+    } else {
+      content = SAMPLE_DATAFINITI_JSON;
+      fileName = 'datafiniti_restaurant_menu_sample.json';
     }
     downloadCsvFile(content, fileName);
   };
@@ -205,7 +257,7 @@ export default function CsvImporterHub({
         ImageUrl: p.imageUrl,
       }));
       downloadCsvFile(generateCsvString(data), `${sf?.slug || 'storefront'}_products_export.csv`);
-    } else {
+    } else if (mode === 'marketplace_products') {
       const data = products.map(p => ({
         Title: p.name,
         Subtitle: p.subtitle,
@@ -218,6 +270,10 @@ export default function CsvImporterHub({
         ImageUrl: p.imageUrl,
       }));
       downloadCsvFile(generateCsvString(data), 'townraise_marketplace_products_export.csv');
+    } else {
+      // Export all restaurants as JSON
+      const jsonStr = JSON.stringify(storefronts, null, 2);
+      downloadCsvFile(jsonStr, 'townraise_all_storefronts_and_menus.json');
     }
   };
 
@@ -230,14 +286,29 @@ export default function CsvImporterHub({
   };
 
   const toggleSelectAll = () => {
-    if (selectedRowIndices.size === parsedRows.length) {
+    const totalItems = mode === 'datafiniti_menus_api' 
+      ? (jsonPayload?.dishes.length || 0)
+      : parsedRows.length;
+
+    if (selectedRowIndices.size === totalItems) {
       setSelectedRowIndices(new Set());
     } else {
-      setSelectedRowIndices(new Set(parsedRows.map((_, i) => i)));
+      setSelectedRowIndices(new Set(Array.from({ length: totalItems }, (_, i) => i)));
     }
   };
 
   const deleteRow = (index: number) => {
+    if (mode === 'datafiniti_menus_api' && jsonPayload) {
+      const updatedDishes = jsonPayload.dishes.filter((_, i) => i !== index);
+      setJsonPayload({ ...jsonPayload, dishes: updatedDishes });
+      const nextSelected = new Set<number>();
+      updatedDishes.forEach((_, i) => {
+        if (selectedRowIndices.has(i)) nextSelected.add(i);
+      });
+      setSelectedRowIndices(nextSelected);
+      return;
+    }
+
     const updated = parsedRows.filter((_, i) => i !== index);
     setParsedRows(updated);
     const nextSelected = new Set<number>();
@@ -252,11 +323,65 @@ export default function CsvImporterHub({
     if (selectedRowIndices.size === 0) return;
     setIsProcessing(true);
 
-    const rowsToImport = parsedRows.filter((_, idx) => selectedRowIndices.has(idx));
     let importedCount = 0;
+    let targetStoreName = '';
 
     try {
-      if (mode === 'businesses') {
+      // 1. Datafiniti / Menus API JSON Mode
+      if (mode === 'datafiniti_menus_api' && jsonPayload) {
+        const dishesToImport = jsonPayload.dishes.filter((_, idx) => selectedRowIndices.has(idx));
+        
+        const formattedProducts: Omit<StorefrontProduct, 'id'>[] = dishesToImport.map(d => ({
+          name: d.name,
+          description: d.description || 'Fresh chef-prepared dish with authentic local ingredients.',
+          price: d.price,
+          category: d.category || 'Mains',
+          imageUrl: d.imageUrl || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80',
+          inStock: true,
+          badge: d.badge || (d.dateObserved ? 'Verified Price' : undefined),
+          dietaryTags: d.dietaryTags,
+          calories: d.calories
+        }));
+
+        if (apiImportTarget === 'create_new') {
+          const slug = jsonPayload.restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `sf-${Date.now()}`;
+          const newSf = createStorefront({
+            slug,
+            businessName: jsonPayload.restaurantName,
+            tagline: `${jsonPayload.town || activeTown.name} Fresh Menus & Roadside Kitchen`,
+            description: `Official digital storefront and ordering menu for ${jsonPayload.restaurantName}, located in ${jsonPayload.town || activeTown.name}, NH.`,
+            logoEmoji: '🍽️',
+            coverImageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&auto=format&fit=crop&q=80',
+            phone: jsonPayload.phone || '(603) 508-0305',
+            email: `contact@${slug}.local`,
+            address: jsonPayload.address || `${jsonPayload.town || 'Effingham'}, NH`,
+            town: jsonPayload.town || activeTown.name || 'Effingham',
+            state: jsonPayload.state || 'NH',
+            accentColor: '#f59e0b',
+            deliveryFee: 3.99,
+            minOrder: 12.00,
+            estimatedPrepTime: '20-30 mins',
+            googleRating: 4.9,
+            reviewsCount: 142,
+            googleReviewUrl: `https://www.google.com/search?q=${encodeURIComponent(jsonPayload.restaurantName)}`,
+            enablePickup: true,
+            enableDelivery: true,
+            listOnMarketplace: true,
+            isPublished: true,
+            products: formattedProducts.map((p, i) => ({ ...p, id: `dish-${Date.now()}-${i}` }))
+          });
+          targetStoreName = newSf.businessName;
+          importedCount = formattedProducts.length;
+        } else {
+          const targetSfId = selectedStorefrontId || storefronts[0]?.id || '';
+          const targetSf = storefronts.find(s => s.id === targetSfId);
+          bulkImportStorefrontProducts(targetSfId, formattedProducts);
+          targetStoreName = targetSf?.businessName || 'Storefront';
+          importedCount = formattedProducts.length;
+        }
+
+      } else if (mode === 'businesses') {
+        const rowsToImport = parsedRows.filter((_, idx) => selectedRowIndices.has(idx));
         const formattedListings = rowsToImport.map(row => {
           const name = (fieldMappings.name && row[fieldMappings.name]) || row['Name'] || row['name'] || 'Unnamed Business';
           const rawCat = (fieldMappings.category && row[fieldMappings.category]) || row['Category'] || 'dining_bars';
@@ -317,7 +442,9 @@ export default function CsvImporterHub({
         importedCount = formattedListings.length;
 
       } else if (mode === 'storefront_products') {
+        const rowsToImport = parsedRows.filter((_, idx) => selectedRowIndices.has(idx));
         const targetSfId = selectedStorefrontId || storefronts[0]?.id || 'storefront-sean-tap';
+        const targetSf = storefronts.find(s => s.id === targetSfId);
         const formattedProducts = rowsToImport.map((row, i) => {
           const name = (fieldMappings.name && row[fieldMappings.name]) || row['Item Name'] || row['name'] || `Menu Item ${i + 1}`;
           const price = Number((fieldMappings.price && row[fieldMappings.price]) || row['Price'] || 12.99);
@@ -340,10 +467,12 @@ export default function CsvImporterHub({
         });
 
         bulkImportStorefrontProducts(targetSfId, formattedProducts);
+        targetStoreName = targetSf?.businessName || 'Storefront';
         importedCount = formattedProducts.length;
 
       } else {
         // marketplace_products
+        const rowsToImport = parsedRows.filter((_, idx) => selectedRowIndices.has(idx));
         const formattedProducts = rowsToImport.map((row, i) => {
           const name = (fieldMappings.name && row[fieldMappings.name]) || row['Title'] || row['name'] || `Artisan Good ${i + 1}`;
           const price = Number((fieldMappings.price && row[fieldMappings.price]) || row['Price'] || 24.99);
@@ -386,6 +515,7 @@ export default function CsvImporterHub({
         count: importedCount,
         mode,
         timestamp: new Date().toLocaleTimeString(),
+        storefrontName: targetStoreName
       });
 
       if (onImportComplete) {
@@ -395,6 +525,7 @@ export default function CsvImporterHub({
       // Reset parser table
       setParsedRows([]);
       setParsedHeaders([]);
+      setJsonPayload(null);
       setRawInputText('');
       setSelectedRowIndices(new Set());
 
@@ -410,7 +541,7 @@ export default function CsvImporterHub({
       {/* ======================================================== */}
       {/* 1. IMPORT MODE SELECTION & STATS */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Mode 1: Restaurants & Businesses */}
         <button
           onClick={() => { setMode('businesses'); handleLoadSample('businesses'); }}
@@ -426,15 +557,15 @@ export default function CsvImporterHub({
             }`}>
               <Store className="w-5 h-5" />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-400">
-              {directoryListings.length} Live in Directory
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400">
+              CSV
             </span>
           </div>
           <h3 className="text-sm font-black text-white group-hover:text-amber-300 transition-colors">
-            🏪 Restaurants & Businesses
+            🏪 Directory Listings
           </h3>
           <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-            Bulk import restaurants, stores, contractors, and lodging into the Carroll County Directory.
+            Bulk import local stores, contractors & lodging.
           </p>
         </button>
 
@@ -453,394 +584,590 @@ export default function CsvImporterHub({
             }`}>
               <Utensils className="w-5 h-5" />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-400">
-              {storefronts.reduce((acc, sf) => acc + sf.products.length, 0)} Menu Dishes
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400">
+              CSV
             </span>
           </div>
           <h3 className="text-sm font-black text-white group-hover:text-orange-300 transition-colors">
-            🍕 Digital Menus & Dishes
+            🍽️ Restaurant Menus
           </h3>
           <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-            Import food dishes, prices, categories, and dietary tags directly to a storefront digital menu.
+            Import food dishes & subs into restaurant ordering.
           </p>
         </button>
 
-        {/* Mode 3: Marketplace & Artisan Inventory */}
+        {/* Mode 3: Artisan & Retail Marketplace */}
         <button
           onClick={() => { setMode('marketplace_products'); handleLoadSample('marketplace_products'); }}
           className={`p-5 rounded-2xl border text-left transition-all relative overflow-hidden group ${
             mode === 'marketplace_products'
-              ? 'bg-emerald-400/10 border-emerald-400 shadow-xl shadow-emerald-500/10'
+              ? 'bg-purple-400/10 border-purple-400 shadow-xl shadow-purple-500/10'
               : 'bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.05]'
           }`}
         >
           <div className="flex items-center justify-between mb-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              mode === 'marketplace_products' ? 'bg-emerald-400 text-black' : 'bg-white/10 text-emerald-400'
+              mode === 'marketplace_products' ? 'bg-purple-400 text-black' : 'bg-white/10 text-purple-400'
             }`}>
               <ShoppingBag className="w-5 h-5" />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-400">
-              {products.length} Artisan Items
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400">
+              CSV
             </span>
           </div>
-          <h3 className="text-sm font-black text-white group-hover:text-emerald-300 transition-colors">
-            🛍️ Marketplace Inventory
+          <h3 className="text-sm font-black text-white group-hover:text-purple-300 transition-colors">
+            ✨ Artisan Goods
           </h3>
           <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-            Bulk upload local syrups, woodwork, NFC hardware, and handcrafted goods for sale.
+            Import maple syrup, crafts & NFC smart hardware.
+          </p>
+        </button>
+
+        {/* Mode 4: Datafiniti & Menus API Ingestor */}
+        <button
+          onClick={() => { setMode('datafiniti_menus_api'); handleLoadSample('datafiniti_menus_api'); }}
+          className={`p-5 rounded-2xl border text-left transition-all relative overflow-hidden group ${
+            mode === 'datafiniti_menus_api'
+              ? 'bg-emerald-400/15 border-emerald-400 shadow-xl shadow-emerald-500/10 ring-1 ring-emerald-400/50'
+              : 'bg-white/[0.03] border-white/10 hover:border-emerald-400/30 hover:bg-white/[0.05]'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              mode === 'datafiniti_menus_api' ? 'bg-emerald-400 text-black' : 'bg-emerald-400/20 text-emerald-400'
+            }`}>
+              <Zap className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 font-bold">
+              JSON API
+            </span>
+          </div>
+          <h3 className="text-sm font-black text-white group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+            <span>Datafiniti & Menus API</span>
+          </h3>
+          <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+            Direct JSON ingestion for web, PDF & image scraper outputs.
           </p>
         </button>
       </div>
 
-      {/* Target Storefront Selector if in menu mode */}
-      {mode === 'storefront_products' && (
-        <div className="p-4 rounded-2xl bg-orange-950/20 border border-orange-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Utensils className="w-5 h-5 text-orange-400 shrink-0" />
-            <div>
-              <div className="text-xs font-bold text-white">Target Storefront for Imported Menu Items</div>
-              <div className="text-[10px] text-zinc-400">Dishes will be added directly to this business's tap-to-order menu.</div>
-            </div>
-          </div>
-
-          <select
-            value={selectedStorefrontId}
-            onChange={(e) => setSelectedStorefrontId(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-black/80 border border-orange-500/40 text-orange-200 text-xs font-bold focus:outline-none focus:border-orange-400"
-          >
-            {storefronts.map(sf => (
-              <option key={sf.id} value={sf.id}>
-                {sf.businessName} ({sf.town}, NH) — {sf.products.length} current items
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* ======================================================== */}
-      {/* 2. DRAG & DROP / FILE UPLOAD & TEMPLATE DOWNLOAD ZONE */}
-      {/* ======================================================== */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.02] border border-white/10 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <UploadCloud className="w-5 h-5 text-amber-400" />
-              <span>Upload or Paste Your CSV Data</span>
-            </h3>
-            <p className="text-xs text-zinc-400 mt-1">
-              Supports Google Sheets exports, Excel CSV, TSV tab-delimited, and standard formatted spreadsheets.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleDownloadTemplate}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all"
-            >
-              <Download className="w-3.5 h-3.5 text-amber-400" />
-              <span>Download Sample CSV Template</span>
-            </button>
-
-            <button
-              onClick={handleExportCurrentData}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all"
-            >
-              <Database className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Export Current Data</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Upload Box */}
-        <div 
-          onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-white/20 hover:border-amber-400/60 rounded-2xl p-8 text-center cursor-pointer transition-all bg-black/40 hover:bg-white/[0.02] space-y-3 group"
-        >
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            accept=".csv, .tsv, .txt" 
-            onChange={handleFileUpload} 
-            className="hidden" 
-          />
-          <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-            <FileSpreadsheet className="w-7 h-7" />
-          </div>
-          <div className="text-sm font-bold text-white">
-            Click to upload your <span className="text-amber-400">.CSV</span> or <span className="text-amber-400">.TSV</span> spreadsheet file
-          </div>
-          <p className="text-xs text-zinc-500">
-            or drag and drop your exported spreadsheet here
-          </p>
-        </div>
-
-        {/* Direct Textarea Paste fallback */}
-        <div className="space-y-2">
+      {/* Success Banner */}
+      {importSuccessResult && (
+        <div className="p-6 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-white space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-center justify-between">
-            <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span>Or Paste Raw CSV / Excel Clipboard Text Directly:</span>
-            </label>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleLoadSample(mode)}
-                className="text-[11px] text-amber-400 hover:text-amber-300 underline font-bold"
-              >
-                Load Sample {mode === 'businesses' ? 'Directory' : mode === 'storefront_products' ? 'Menu' : 'Marketplace'} CSV
-              </button>
-              {rawInputText && (
-                <button
-                  onClick={() => handleParseText('')}
-                  className="text-[11px] text-red-400 hover:text-red-300 underline"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-          <textarea
-            value={rawInputText}
-            onChange={(e) => handleParseText(e.target.value)}
-            rows={4}
-            placeholder={`e.g. Name,Category,Town,Address,Phone,Website,GoogleRating\nEffingham Pizzeria,dining_bars,Effingham,12 Elm St,603-555-0199,https://effinghampizza.com,4.9`}
-            className="w-full px-4 py-3 rounded-2xl bg-black/60 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-amber-400 resize-y"
-          />
-        </div>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 3. PARSED RESULTS, COLUMN MAPPER & INTERACTIVE DATA GRID */}
-      {/* ======================================================== */}
-      {parsedRows.length > 0 && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.02] border border-amber-500/30 space-y-6 backdrop-blur-xl animate-in fade-in-50">
-          
-          {/* Header Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center font-black">
-                {parsedRows.length}
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="text-base font-black text-white flex items-center gap-2">
-                  <span>Extracted {parsedRows.length} Rows</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono font-bold">
-                    {selectedRowIndices.size} Selected for Import
-                  </span>
+                <h4 className="text-base font-black text-emerald-400">
+                  Import Successful! {importSuccessResult.count} Items Live
                 </h4>
-                <p className="text-xs text-zinc-400">Review column mappings and toggle rows below before committing.</p>
+                <p className="text-xs text-zinc-300">
+                  {importSuccessResult.mode === 'businesses'
+                    ? 'Records added to Carroll County Directory & live map.'
+                    : importSuccessResult.mode === 'datafiniti_menus_api'
+                    ? `Dishes added to ${importSuccessResult.storefrontName || 'restaurant menu'} with live delivery dispatches.`
+                    : importSuccessResult.mode === 'storefront_products'
+                    ? `Dishes added to ${importSuccessResult.storefrontName || 'restaurant storefront'} with live ordering.`
+                    : 'Artisan goods published to Townraise Marketplace.'}
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={toggleSelectAll}
-                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 hover:text-white transition-all"
+            <div className="flex items-center gap-2">
+              <Link
+                href={
+                  importSuccessResult.mode === 'businesses' ? '/directory' :
+                  importSuccessResult.mode === 'marketplace_products' ? '/marketplace' :
+                  '/dashboard/storefront'
+                }
+                className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20"
               >
-                {selectedRowIndices.size === parsedRows.length ? 'Deselect All' : 'Select All'}
-              </button>
-
-              <button
-                onClick={handleExecuteImport}
-                disabled={isProcessing || selectedRowIndices.size === 0}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 text-black font-black text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 disabled:opacity-50"
-              >
-                {isProcessing ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4" />
-                )}
-                <span>Import {selectedRowIndices.size} Records Now</span>
-              </button>
+                <span>View Live</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Smart Column Mapping Configurator */}
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Smart Column Mappings (Detected vs. Target Field)</span>
+      {/* ======================================================== */}
+      {/* 2. UPLOAD & INPUT CONSOLE */}
+      {/* ======================================================== */}
+      <div className="p-6 md:p-8 rounded-3xl bg-[#0e0e16] border border-white/10 shadow-2xl space-y-6">
+        
+        {/* Header & Controls */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-amber-400 text-[10px] font-mono font-bold uppercase">
+                {mode === 'datafiniti_menus_api' ? '⚡ JSON Ingestor' : '📄 CSV Ingestor'}
               </span>
-              <span className="text-[10px] text-zinc-500">Auto-detected from CSV headers</span>
+              <span className="text-xs font-mono text-zinc-400">
+                {mode === 'businesses' ? 'Directory Listings' :
+                 mode === 'storefront_products' ? 'Restaurant Menu Dispatches' :
+                 mode === 'datafiniti_menus_api' ? 'Datafiniti / Menus API Engine' :
+                 'Townraise Marketplace Goods'}
+              </span>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {targetFields.map(field => {
-                const mappedHeader = fieldMappings[field] || '';
-                return (
-                  <div key={field} className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 space-y-1">
-                    <span className="text-[10px] font-mono text-amber-400/90 uppercase font-bold block">{field}</span>
-                    <select
-                      value={mappedHeader}
-                      onChange={(e) => setFieldMappings(prev => ({ ...prev, [field]: e.target.value }))}
-                      className="w-full px-2 py-1 rounded-lg bg-black/80 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
-                    >
-                      <option value="">(None / Skip)</option>
-                      {parsedHeaders.map((h, i) => (
-                        <option key={i} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-                );
-              })}
-            </div>
+            <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-tight text-white mt-1">
+              {mode === 'datafiniti_menus_api' ? 'Paste Datafiniti or Menus API JSON Payload' : 'Paste CSV or Upload Spreadsheet'}
+            </h2>
           </div>
 
-          {/* Spreadsheet Data Grid */}
-          <div className="border border-white/10 rounded-2xl overflow-hidden bg-black/60">
-            <div className="overflow-x-auto max-h-[400px]">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-[#0b0b14] border-b border-white/10 text-zinc-400 text-[10px] uppercase font-mono sticky top-0 z-10">
-                  <tr>
-                    <th className="p-3 w-10 text-center">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedRowIndices.size === parsedRows.length && parsedRows.length > 0} 
-                        onChange={toggleSelectAll}
-                        className="rounded border-zinc-700 text-amber-500 focus:ring-amber-400"
-                      />
-                    </th>
-                    <th className="p-3">#</th>
-                    {parsedHeaders.map((header, idx) => (
-                      <th key={idx} className="p-3 font-black text-zinc-300">
-                        {header}
-                      </th>
-                    ))}
-                    <th className="p-3 w-12 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {parsedRows.map((row, rowIdx) => {
-                    const isSelected = selectedRowIndices.has(rowIdx);
-                    return (
-                      <tr 
-                        key={rowIdx} 
-                        className={`transition-colors ${
-                          isSelected ? 'bg-amber-400/[0.04] hover:bg-amber-400/[0.08]' : 'opacity-40 hover:opacity-80 bg-black/40'
-                        }`}
-                      >
-                        <td className="p-3 text-center">
-                          <input 
-                            type="checkbox" 
-                            checked={isSelected} 
-                            onChange={() => toggleRowSelection(rowIdx)}
-                            className="rounded border-zinc-700 text-amber-500 focus:ring-amber-400"
-                          />
-                        </td>
-                        <td className="p-3 font-mono text-[10px] text-zinc-500">{rowIdx + 1}</td>
-                        {parsedHeaders.map((header, colIdx) => (
-                          <td key={colIdx} className="p-3 text-zinc-200 font-mono text-xs max-w-[200px] truncate">
-                            {row[header] || <span className="text-zinc-600 italic">—</span>}
-                          </td>
-                        ))}
-                        <td className="p-3 text-center">
-                          <button
-                            onClick={() => deleteRow(rowIdx)}
-                            title="Remove row"
-                            className="p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {mode === 'datafiniti_menus_api' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleLoadSample('datafiniti_menus_api')}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+                >
+                  <FileCode className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Datafiniti Sample</span>
+                </button>
 
-          {/* Bottom commit bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-            <div className="text-xs text-zinc-400">
-              Committing will instantly store records in Townraise local lattice and update all public views.
-            </div>
+                <button
+                  type="button"
+                  onClick={handleLoadMenusApiSample}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+                >
+                  <Code2 className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Menus API Sample</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleLoadSample(mode)}
+                  className="px-3.5 py-2 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Load Sample CSV</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white text-xs font-mono font-semibold transition-all flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Template</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-amber-500/20 flex items-center gap-1.5"
+                >
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  <span>Upload File</span>
+                </button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.tsv,.txt,.json"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </>
+            )}
 
             <button
-              onClick={handleExecuteImport}
-              disabled={isProcessing || selectedRowIndices.size === 0}
-              className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 text-black font-black text-xs uppercase tracking-wider hover:opacity-95 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              type="button"
+              onClick={handleExportCurrentData}
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-zinc-200 text-xs font-mono font-semibold transition-all flex items-center gap-1.5"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Import Selected {selectedRowIndices.size} Records</span>
+              <Database className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Export Live Data</span>
             </button>
           </div>
-
         </div>
-      )}
 
-      {/* ======================================================== */}
-      {/* 4. POST-IMPORT SUCCESS NOTIFICATION & SHORTCUTS */}
-      {/* ======================================================== */}
-      {importSuccessResult && (
-        <div className="p-8 rounded-3xl bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/40 space-y-4 animate-in fade-in-50">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-400 text-black flex items-center justify-center font-black text-xl">
-              ✓
+        {/* Storefront Target Selector (For Menu Imports) */}
+        {(mode === 'storefront_products' || mode === 'datafiniti_menus_api') && (
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Store className="w-5 h-5 text-amber-400 shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-white">Target Restaurant Storefront</p>
+                <p className="text-[11px] text-zinc-400 font-light">
+                  {mode === 'datafiniti_menus_api'
+                    ? 'Choose whether to auto-create a brand new restaurant from the JSON or append to an existing kitchen.'
+                    : 'Select which restaurant menu to populate with these dishes.'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-black text-white">
-                Successfully Imported {importSuccessResult.count} {importSuccessResult.mode === 'businesses' ? 'Businesses' : importSuccessResult.mode === 'storefront_products' ? 'Menu Dishes' : 'Artisan Products'}!
-              </h3>
-              <p className="text-xs text-emerald-300">
-                Data was committed at {importSuccessResult.timestamp} and is immediately live across Carroll County hubs.
-              </p>
-            </div>
-          </div>
 
-          <div className="pt-2 flex flex-wrap gap-3">
-            {importSuccessResult.mode === 'businesses' && (
-              <>
-                <Link
-                  href="/directory"
-                  className="px-4 py-2.5 rounded-xl bg-emerald-400 text-black font-black text-xs uppercase tracking-wider hover:bg-emerald-300 transition-all flex items-center gap-2 shadow"
+            {mode === 'datafiniti_menus_api' ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setApiImportTarget('create_new')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    apiImportTarget === 'create_new'
+                      ? 'bg-emerald-400 text-black shadow-md'
+                      : 'bg-white/5 text-zinc-400 hover:text-white'
+                  }`}
                 >
-                  <Store className="w-3.5 h-3.5" />
-                  <span>View in Business Directory →</span>
-                </Link>
-                <Link
-                  href="/eats"
-                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2"
+                  ➕ Auto-Create Storefront
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setApiImportTarget('existing')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    apiImportTarget === 'existing'
+                      ? 'bg-amber-400 text-black shadow-md'
+                      : 'bg-white/5 text-zinc-400 hover:text-white'
+                  }`}
                 >
-                  <Utensils className="w-3.5 h-3.5" />
-                  <span>View Food & Dining →</span>
-                </Link>
-              </>
-            )}
-
-            {importSuccessResult.mode === 'storefront_products' && (
-              <>
-                <Link
-                  href={`/site/${storefronts.find(s => s.id === selectedStorefrontId)?.slug || 'sean-custom-store'}`}
-                  className="px-4 py-2.5 rounded-xl bg-orange-400 text-black font-black text-xs uppercase tracking-wider hover:bg-orange-300 transition-all flex items-center gap-2 shadow"
-                >
-                  <Utensils className="w-3.5 h-3.5" />
-                  <span>View Digital Tap Menu →</span>
-                </Link>
-                <Link
-                  href="/dashboard/storefront"
-                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2"
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>Manage in Storefront Portal →</span>
-                </Link>
-              </>
-            )}
-
-            {importSuccessResult.mode === 'marketplace_products' && (
-              <>
-                <Link
-                  href="/marketplace"
-                  className="px-4 py-2.5 rounded-xl bg-emerald-400 text-black font-black text-xs uppercase tracking-wider hover:bg-emerald-300 transition-all flex items-center gap-2 shadow"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>View in Artisan Marketplace →</span>
-                </Link>
-              </>
+                  Append to Existing
+                </button>
+                {apiImportTarget === 'existing' && (
+                  <select
+                    value={selectedStorefrontId}
+                    onChange={(e) => setSelectedStorefrontId(e.target.value)}
+                    className="px-3 py-1.5 bg-[#15151f] border border-white/10 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                  >
+                    {storefronts.map((sf) => (
+                      <option key={sf.id} value={sf.id}>
+                        {sf.logoEmoji} {sf.businessName} ({sf.town})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            ) : (
+              <select
+                value={selectedStorefrontId}
+                onChange={(e) => setSelectedStorefrontId(e.target.value)}
+                className="w-full sm:w-auto px-4 py-2.5 bg-[#15151f] border border-white/10 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+              >
+                {storefronts.map((sf) => (
+                  <option key={sf.id} value={sf.id}>
+                    {sf.logoEmoji} {sf.businessName} ({sf.town}, NH) — {sf.products.length} Current Items
+                  </option>
+                ))}
+              </select>
             )}
           </div>
+        )}
+
+        {/* Textarea for CSV or JSON */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+            <span>
+              {mode === 'datafiniti_menus_api' 
+                ? 'Paste Raw JSON from Datafiniti API or MenusAPI.com Scraper:'
+                : 'Paste Comma/Tab Separated Rows or Upload .CSV:'}
+            </span>
+            <span>{rawInputText ? `${rawInputText.length} characters` : 'Empty'}</span>
+          </div>
+
+          <textarea
+            rows={mode === 'datafiniti_menus_api' ? 10 : 6}
+            value={rawInputText}
+            onChange={(e) => handleParseText(e.target.value)}
+            placeholder={
+              mode === 'datafiniti_menus_api'
+                ? '{\n  "name": "Restaurant Name",\n  "menus": [\n    { "name": "Steak Sub", "amount": 14.99, "categories": ["Hot Subs"] }\n  ]\n}'
+                : 'Name,Category,Town,Address,Phone\nExample Restaurant,dining_bars,Effingham,Route 25,(603) 539-7440'
+            }
+            className="w-full p-4 bg-[#08080c] border border-white/10 rounded-2xl text-white text-xs font-mono focus:outline-none focus:border-amber-400 placeholder:text-zinc-600 resize-y"
+          />
+
+          {jsonError && mode === 'datafiniti_menus_api' && (
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{jsonError}</span>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* ======================================================== */}
+        {/* 3. PARSED METADATA SUMMARY & PREVIEW */}
+        {/* ======================================================== */}
+
+        {/* DATAFINITI / MENUS API JSON EXTRACTED METADATA */}
+        {mode === 'datafiniti_menus_api' && jsonPayload && (
+          <div className="space-y-4">
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/30 space-y-3">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+                    🍽️
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-black text-white">{jsonPayload.restaurantName}</h3>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[9px] font-mono font-bold uppercase">
+                        {jsonPayload.rawSource === 'datafiniti' ? 'Datafiniti Schema' : 'Menus API Scraper'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400 flex items-center gap-2 mt-0.5 font-mono">
+                      {jsonPayload.address && <span>📍 {jsonPayload.address}</span>}
+                      {jsonPayload.phone && <span>📞 {jsonPayload.phone}</span>}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <span className="text-[10px] font-mono uppercase text-zinc-400 block">Parsed Dishes</span>
+                    <span className="text-xl font-black text-emerald-400 font-mono">
+                      {jsonPayload.dishes.length} Items
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dishes Preview Table */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                    Extracted Dishes & Pricing ({selectedRowIndices.size} selected):
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleSelectAll}
+                  className="text-xs font-mono text-amber-400 hover:underline"
+                >
+                  {selectedRowIndices.size === jsonPayload.dishes.length ? 'Deselect All' : 'Select All Dishes'}
+                </button>
+              </div>
+
+              <div className="border border-white/10 rounded-2xl overflow-x-auto max-h-96 overflow-y-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#12121c] border-b border-white/10 text-[10px] font-mono uppercase text-zinc-400 sticky top-0 z-10">
+                    <tr>
+                      <th className="p-3 w-10 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedRowIndices.size === jsonPayload.dishes.length && jsonPayload.dishes.length > 0}
+                          onChange={toggleSelectAll}
+                          className="rounded border-zinc-700 bg-zinc-900 text-amber-400 focus:ring-0"
+                        />
+                      </th>
+                      <th className="p-3">Dish / Item Name</th>
+                      <th className="p-3">Category</th>
+                      <th className="p-3">Price</th>
+                      <th className="p-3">Description</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 bg-[#0a0a0f]">
+                    {jsonPayload.dishes.map((dish, idx) => {
+                      const isSelected = selectedRowIndices.has(idx);
+                      return (
+                        <tr
+                          key={idx}
+                          className={`hover:bg-white/[0.03] transition-colors ${
+                            isSelected ? 'bg-white/[0.01]' : 'opacity-40'
+                          }`}
+                        >
+                          <td className="p-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleRowSelection(idx)}
+                              className="rounded border-zinc-700 bg-zinc-900 text-amber-400 focus:ring-0"
+                            />
+                          </td>
+                          <td className="p-3 font-bold text-white whitespace-nowrap">
+                            {dish.name}
+                            {dish.dateObserved && (
+                              <span className="ml-2 px-1.5 py-0.2 rounded bg-white/5 text-[9px] font-mono text-zinc-400">
+                                Date: {dish.dateObserved.split('T')[0]}
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[10px] font-mono whitespace-nowrap">
+                              {dish.category}
+                            </span>
+                          </td>
+                          <td className="p-3 font-mono font-bold text-emerald-400 whitespace-nowrap">
+                            ${dish.price.toFixed(2)}
+                          </td>
+                          <td className="p-3 text-zinc-400 max-w-md truncate font-light">
+                            {dish.description || '—'}
+                          </td>
+                          <td className="p-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => deleteRow(idx)}
+                              className="p-1 text-zinc-500 hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Ingest Action Button */}
+              <button
+                type="button"
+                onClick={handleExecuteImport}
+                disabled={isProcessing || selectedRowIndices.size === 0}
+                className="w-full py-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
+              >
+                <Zap className="w-4 h-4" />
+                <span>
+                  {isProcessing
+                    ? 'Ingesting into Storefront...'
+                    : `Execute 1-Click JSON Ingestion (${selectedRowIndices.size} Dishes)`}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* CSV FIELD MAPPINGS & PREVIEW TABLE (For Businesses, Menus CSV & Marketplace) */}
+        {mode !== 'datafiniti_menus_api' && parsedRows.length > 0 && (
+          <div className="space-y-6">
+            
+            {/* Header Mapping Configuration */}
+            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-mono uppercase font-bold text-white tracking-wider flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Smart Column Mapping ({Object.keys(fieldMappings).length} fields matched)</span>
+                  </h3>
+                  <p className="text-[11px] text-zinc-400 font-light mt-0.5">
+                    Match your spreadsheet columns to Townraise schema attributes.
+                  </p>
+                </div>
+                <span className="text-xs font-mono font-bold text-emerald-400">
+                  {selectedRowIndices.size} of {parsedRows.length} Rows Ready
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {targetFields.map(targetField => {
+                  const mappedHeader = fieldMappings[targetField] || '';
+                  return (
+                    <div key={targetField} className="space-y-1 bg-black/40 p-2.5 rounded-xl border border-white/5">
+                      <label className="text-[9px] font-mono uppercase tracking-wider text-amber-400 block font-bold truncate">
+                        {targetField}
+                      </label>
+                      <select
+                        value={mappedHeader}
+                        onChange={(e) => setFieldMappings({ ...fieldMappings, [targetField]: e.target.value })}
+                        className="w-full px-2 py-1.5 bg-[#15151f] border border-white/10 rounded-lg text-white text-[11px] font-mono focus:outline-none focus:border-amber-400"
+                      >
+                        <option value="">— Skip Column —</option>
+                        {parsedHeaders.map(h => (
+                          <option key={h} value={h}>{h}</option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* CSV Table Preview */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  Spreadsheet Rows Preview ({selectedRowIndices.size} selected):
+                </span>
+                <button
+                  type="button"
+                  onClick={toggleSelectAll}
+                  className="text-xs font-mono text-amber-400 hover:underline"
+                >
+                  {selectedRowIndices.size === parsedRows.length ? 'Deselect All' : 'Select All Rows'}
+                </button>
+              </div>
+
+              <div className="border border-white/10 rounded-2xl overflow-x-auto max-h-96 overflow-y-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#12121c] border-b border-white/10 text-[10px] font-mono uppercase text-zinc-400 sticky top-0 z-10">
+                    <tr>
+                      <th className="p-3 w-10 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedRowIndices.size === parsedRows.length && parsedRows.length > 0}
+                          onChange={toggleSelectAll}
+                          className="rounded border-zinc-700 bg-zinc-900 text-amber-400 focus:ring-0"
+                        />
+                      </th>
+                      {parsedHeaders.map(h => (
+                        <th key={h} className="p-3 whitespace-nowrap">{h}</th>
+                      ))}
+                      <th className="p-3 text-right">Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 bg-[#0a0a0f]">
+                    {parsedRows.map((row, idx) => {
+                      const isSelected = selectedRowIndices.has(idx);
+                      return (
+                        <tr
+                          key={idx}
+                          className={`hover:bg-white/[0.03] transition-colors ${
+                            isSelected ? 'bg-white/[0.01]' : 'opacity-40'
+                          }`}
+                        >
+                          <td className="p-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleRowSelection(idx)}
+                              className="rounded border-zinc-700 bg-zinc-900 text-amber-400 focus:ring-0"
+                            />
+                          </td>
+                          {parsedHeaders.map(h => (
+                            <td key={h} className="p-3 whitespace-nowrap font-light text-zinc-300 max-w-xs truncate">
+                              {row[h] || '—'}
+                            </td>
+                          ))}
+                          <td className="p-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => deleteRow(idx)}
+                              className="p-1 text-zinc-500 hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Execute Button */}
+              <button
+                type="button"
+                onClick={handleExecuteImport}
+                disabled={isProcessing || selectedRowIndices.size === 0}
+                className="w-full py-4 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-300 hover:to-orange-300 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span>
+                  {isProcessing
+                    ? 'Processing Bulk Import...'
+                    : `Execute Bulk Import (${selectedRowIndices.size} Items)`}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
 
     </div>
   );
