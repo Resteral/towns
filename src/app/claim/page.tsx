@@ -110,8 +110,8 @@ function ClaimPassContent() {
       state: 'NH',
       role: applicantRole as any,
       avatar: applicantRole === 'driver' ? '🛻' : applicantRole === 'merchant' ? '🏬' : applicantRole === 'contractor' ? '🛠️' : '🌟',
-      isDriver: applicantRole === 'driver',
-      vehicleName: applicantRole === 'driver' ? 'AWD Courier Unit' : undefined
+      badge: applicantRole === 'driver' ? 'AWD Courier' : applicantRole === 'merchant' ? 'Local Merchant' : applicantRole === 'contractor' ? 'Verified Trade' : 'Community Member',
+      isDriver: applicantRole === 'driver'
     });
 
     const newVoucherCode = `OASIS-WELCOME-${Math.floor(1000 + Math.random() * 9000)}`;
