@@ -1,38 +1,99 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import confetti from 'canvas-confetti';
-import { Star, Radio, Sparkles, CheckCircle2, ShieldCheck, ArrowRight, Smartphone, ExternalLink, RotateCcw } from 'lucide-react';
+import { useNfcStore, PRESET_USERS } from '@/lib/store';
+import { UserProfile, UserRole } from '@/lib/types';
+import { calculateCardProgression } from '@/lib/card-leveling';
+import { 
+  ShieldCheck, 
+  Sparkles, 
+  ArrowRight, 
+  User, 
+  Check, 
+  Store, 
+  Hammer, 
+  Truck, 
+  Gift, 
+  Compass, 
+  Trophy, 
+  LogOut, 
+  PlusCircle, 
+  MapPin, 
+  Phone,
+  LayoutDashboard,
+  Coins,
+  Crown,
+  Radio,
+  ExternalLink
+} from 'lucide-react';
 
 export default function HeroTapSimulator() {
-  const [isTapped, setIsTapped] = useState(false);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const [feedbackSent, setFeedbackSent] = useState(false);
-  const [feedbackText, setFeedbackText] = useState('');
+  const { 
+    currentUser, 
+    loginUser, 
+    logoutUser, 
+    registerUser, 
+    loyaltyWallet,
+    storeHunterStamps, 
+    passportStamps,
+    activeTown
+  } = useNfcStore();
 
-  const handleTap = () => {
-    setIsTapped(true);
-    setSelectedRating(null);
-    setFeedbackSent(false);
-    setFeedbackText('');
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [activeTab, setActiveTab] = useState<'quick_roles' | 'custom_login'>('quick_roles');
+  const [customName, setCustomName] = useState('');
+  const [customPhone, setCustomPhone] = useState('');
+  const [customTown, setCustomTown] = useState(activeTown.name || 'Effingham');
+  const [customRole, setCustomRole] = useState<UserRole>('resident');
+  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+
+  const cardProgression = useMemo(() => {
+    return calculateCardProgression(storeHunterStamps, passportStamps);
+  }, [storeHunterStamps, passportStamps]);
+
+  const handleSelectPreset = (user: UserProfile) => {
+    loginUser(user);
+    confetti({
+      particleCount: 70,
+      spread: 60,
+      origin: { y: 0.6 }
+    });
+    setFeedbackMsg(`Welcome back, ${user.name}!`);
+    setIsSwitching(false);
+    setTimeout(() => setFeedbackMsg(null), 3000);
   };
 
-  const handleRate = (stars: number) => {
-    setSelectedRating(stars);
-    if (stars >= 4) {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    }
-  };
+  const handleCustomLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customName.trim()) return;
 
-  const handleReset = () => {
-    setIsTapped(false);
-    setSelectedRating(null);
-    setFeedbackSent(false);
-    setFeedbackText('');
+    const isDriverRole = customRole === 'driver';
+    const avatar = isDriverRole ? '🚗' : (customRole === 'merchant' ? '🥪' : customRole === 'contractor' ? '🔨' : '🌲');
+
+    const newUser = registerUser({
+      name: customName.trim(),
+      email: `${customName.toLowerCase().replace(/\s+/g, '.')}@townraise.org`,
+      phone: customPhone.trim() || '(508) 507-0305',
+      role: customRole,
+      avatar,
+      town: customTown,
+      state: 'NH',
+      badge: isDriverRole ? 'Verified Community Courier' : `${customTown} Resident`,
+      isDriver: isDriverRole
+    });
+
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+    setFeedbackMsg(`Account created for ${newUser.name}! +50 Welcome Points added.`);
+    setIsSwitching(false);
+    setCustomName('');
+    setCustomPhone('');
+    setTimeout(() => setFeedbackMsg(null), 3500);
   };
 
   return (
@@ -41,196 +102,321 @@ export default function HeroTapSimulator() {
       <div className="absolute -inset-4 bg-gradient-to-r from-amber-500/20 via-indigo-500/20 to-emerald-500/20 blur-3xl rounded-[3rem] opacity-70 -z-10 animate-pulse-slow" />
 
       {/* Simulator Device Frame */}
-      <div className="bg-[#0e0e13] border-2 border-white/10 rounded-[3rem] p-4 shadow-2xl shadow-black/80">
-        <div className="relative bg-[#050507] border border-white/5 rounded-[2.5rem] p-6 min-h-[580px] flex flex-col justify-between overflow-hidden">
+      <div className="bg-[#0b0b10] border-2 border-white/10 rounded-[2.5rem] p-4 sm:p-5 shadow-2xl shadow-black/80">
+        <div className="relative bg-[#050508] border border-white/10 rounded-[2rem] p-5 sm:p-6 min-h-[560px] flex flex-col justify-between overflow-hidden">
           
-          {/* Phone Top Notch & NFC Beacon Sensor */}
-          <div className="flex justify-between items-center pb-4 border-b border-white/5">
+          {/* Top Notch & Telemetry Bar */}
+          <div className="flex justify-between items-center pb-3.5 border-b border-white/10">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400">NFC BEACON READY</span>
+              <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
+                Townraise Member Hub
+              </span>
             </div>
-            <div className="w-20 h-4 bg-zinc-900 rounded-full flex items-center justify-center">
-              <div className="w-3 h-1.5 bg-zinc-800 rounded-full" />
+            <div className="w-16 h-3 bg-zinc-900 rounded-full flex items-center justify-center">
+              <div className="w-2.5 h-1 bg-zinc-800 rounded-full" />
             </div>
-            <span className="text-[9px] font-mono text-zinc-500">5G • 100%</span>
+            <span className="text-[9px] font-mono text-amber-400 font-bold">Carroll County, NH</span>
           </div>
 
-          {/* Main Display Area */}
-          <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
-            {!isTapped ? (
-              /* State 0: Waiting for Tap */
-              <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-                <div className="relative inline-block">
-                  {/* Glowing NFC rings */}
-                  <div className="w-28 h-28 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center mx-auto animate-pulse">
-                    <div className="w-20 h-20 rounded-full bg-amber-400/20 flex items-center justify-center">
-                      <Radio className="w-10 h-10 text-amber-400 animate-bounce" />
+          {/* Toast Notification */}
+          {feedbackMsg && (
+            <div className="p-3 my-2 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center animate-in fade-in slide-in-from-top-2 flex items-center justify-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span>{feedbackMsg}</span>
+            </div>
+          )}
+
+          {/* MAIN CONTENT AREA */}
+          <div className="flex-1 py-4 flex flex-col justify-center">
+            
+            {/* STATE 1: User Logged In & Active Digital Pass */}
+            {currentUser && !isSwitching ? (
+              <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
+                
+                {/* Resident Digital Pass Card */}
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500/15 via-[#12121a] to-[#0a0a0f] border border-amber-400/30 shadow-xl relative overflow-hidden space-y-4">
+                  
+                  {/* Decorative background watermark */}
+                  <div className="absolute top-2 right-3 opacity-10 text-5xl font-black font-mono select-none pointer-events-none">
+                    NH
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-2xl shadow-inner">
+                        {currentUser.avatar || '👤'}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-base font-black text-white">{currentUser.name}</h4>
+                          <span className="px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-mono font-bold uppercase">
+                            Active Pass
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-zinc-400 font-mono flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-amber-400" />
+                          <span>{currentUser.town || 'Effingham'}, NH • {currentUser.badge || 'Verified Resident'}</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-400 text-black font-black text-[8px] uppercase tracking-widest rounded-full shadow-lg">
-                    Tap Zone
-                  </span>
+
+                  {/* Live Stats Row */}
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/10">
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
+                      <span className="text-[9px] font-mono text-zinc-400 uppercase block">Reward Points</span>
+                      <span className="text-sm font-black font-mono text-amber-400">
+                        {loyaltyWallet?.userPoints || 0} PTS
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
+                      <span className="text-[9px] font-mono text-zinc-400 uppercase block">Card Tier</span>
+                      <span className="text-xs font-black text-emerald-400 truncate block">
+                        Lv.{cardProgression.currentLevel}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
+                      <span className="text-[9px] font-mono text-zinc-400 uppercase block">Multiplier</span>
+                      <span className="text-sm font-black font-mono text-indigo-300">
+                        {cardProgression.multiplier}x
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Direct Action Hub */}
                 <div className="space-y-2">
-                  <h4 className="text-xl font-black italic tracking-tighter text-white uppercase">
-                    Touch Card to Phone
-                  </h4>
-                  <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                    Simulate what your customer sees immediately when their smartphone brushes against your card.
-                  </p>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 text-left pl-1">
+                    Quick Account Shortcuts:
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/hunter-profile"
+                      className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white flex items-center justify-between group transition-all text-xs font-bold"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-amber-400" />
+                        <span>My Profile & Pass</span>
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+
+                    <Link
+                      href="/rewards"
+                      className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white flex items-center justify-between group transition-all text-xs font-bold"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-pink-400" />
+                        <span>Redeem Rewards</span>
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-pink-400 group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+
+                    <Link
+                      href="/store-hunting"
+                      className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white flex items-center justify-between group transition-all text-xs font-bold"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Store className="w-4 h-4 text-purple-400" />
+                        <span>Store Hunting</span>
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+
+                    <Link
+                      href="/dashboard"
+                      className="p-3 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 flex items-center justify-between group transition-all text-xs font-bold"
+                    >
+                      <span className="flex items-center gap-2">
+                        <LayoutDashboard className="w-4 h-4 text-amber-400" />
+                        <span>Dashboard Portal</span>
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 text-amber-400 group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+                  </div>
                 </div>
 
-                {/* Simulated Physical NFC Card you can click */}
-                <div
-                  onClick={handleTap}
-                  className="cursor-pointer group relative bg-gradient-to-br from-zinc-900 via-black to-zinc-900 border border-amber-400/30 p-4 rounded-2xl shadow-xl hover:border-amber-400 hover:scale-105 transition-all duration-300 max-w-xs mx-auto"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      <Radio className="w-4 h-4 text-amber-400" />
-                      <span className="text-[9px] font-mono font-bold tracking-widest text-zinc-300">OASIS REVIEW CARD</span>
-                    </div>
-                    <span className="text-xs">⚡</span>
-                  </div>
-                  <div className="py-4 text-left">
-                    <p className="text-[9px] font-bold uppercase text-amber-400">Oasis Coffee & Bakery</p>
-                    <p className="text-sm font-black italic text-white tracking-tight">Tap to Rate 5 Stars</p>
-                  </div>
-                  <div className="flex justify-between items-center text-[8px] font-mono text-zinc-500 pt-2 border-t border-white/5">
-                    <span>NFC CHIP #8841</span>
-                    <span className="text-amber-400 font-bold group-hover:underline">CLICK TO TAP ⚡</span>
-                  </div>
+                {/* Switch Role Button */}
+                <div className="pt-2 flex items-center justify-between text-xs font-mono">
+                  <button
+                    onClick={() => setIsSwitching(true)}
+                    className="text-amber-400 hover:underline flex items-center gap-1.5"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Switch Role / Account</span>
+                  </button>
+
+                  <button
+                    onClick={() => logoutUser()}
+                    className="text-zinc-500 hover:text-red-400 flex items-center gap-1 transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
+
               </div>
-            ) : selectedRating === null ? (
-              /* State 1: Card Tapped -> Smart Gatekeeper Rating Prompt */
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom duration-500 w-full">
-                <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center mx-auto text-2xl">
-                  ☕
-                </div>
-
-                <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded-full text-emerald-400 text-[8px] font-black uppercase tracking-widest mb-2">
-                    <CheckCircle2 className="w-3 h-3" /> NFC Tap Detected
+            ) : (
+              /* STATE 2: Log In / Switch Account Form */
+              <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                
+                <div className="text-left space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[9px] font-mono font-bold uppercase">
+                    <Sparkles className="w-3 h-3" /> Instant Member Access
                   </div>
-                  <h4 className="text-lg font-black italic tracking-tighter text-white">
-                    Oasis Coffee & Craft Bakery
-                  </h4>
+                  <h3 className="text-xl font-black italic uppercase text-white tracking-tight">
+                    Sign In to Townraise
+                  </h3>
                   <p className="text-xs text-zinc-400">
-                    How was your experience with Dave today?
+                    Connect your account to claim courier deliveries, trade leads, and local store hunting discounts.
                   </p>
                 </div>
 
-                {/* 5-Star Interactive Rating Selector */}
-                <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 space-y-3">
-                  <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Select your rating</p>
-                  <div className="flex justify-center gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                {/* Tabs: 1-Click Roles vs Quick Sign In */}
+                <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 text-xs font-bold">
+                  <button
+                    onClick={() => setActiveTab('quick_roles')}
+                    className={`flex-1 py-1.5 rounded-lg transition-all ${
+                      activeTab === 'quick_roles' 
+                        ? 'bg-amber-400 text-black shadow-md' 
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    ⚡ 1-Click Roles
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('custom_login')}
+                    className={`flex-1 py-1.5 rounded-lg transition-all ${
+                      activeTab === 'custom_login' 
+                        ? 'bg-amber-400 text-black shadow-md' 
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    ✍️ Create / Custom Sign In
+                  </button>
+                </div>
+
+                {/* Tab 1: 1-Click Preset Roles */}
+                {activeTab === 'quick_roles' && (
+                  <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                    {PRESET_USERS.map((user) => (
                       <button
-                        key={star}
-                        onClick={() => handleRate(star)}
-                        className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-amber-400 hover:bg-amber-400/10 hover:scale-125 transition-all text-zinc-500 hover:text-amber-400 group"
+                        key={user.id}
+                        onClick={() => handleSelectPreset(user)}
+                        className="w-full p-2.5 rounded-xl bg-white/[0.03] hover:bg-amber-400/15 border border-white/10 hover:border-amber-400/40 transition-all flex items-center justify-between text-left group"
                       >
-                        <Star className="w-6 h-6 fill-current" />
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{user.avatar}</span>
+                          <div>
+                            <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                              {user.name}
+                            </div>
+                            <div className="text-[10px] text-zinc-400 font-mono">
+                              {user.badge} • {user.town}, NH
+                            </div>
+                          </div>
+                        </div>
+
+                        <span className="px-2 py-1 rounded-lg bg-white/5 group-hover:bg-amber-400 group-hover:text-black text-[9px] font-black uppercase tracking-wider transition-all shrink-0">
+                          Log In ➔
+                        </span>
                       </button>
                     ))}
                   </div>
-                  <p className="text-[8px] text-zinc-500 font-mono">
-                    Smart Funnel: 4-5★ routes to Google • 1-3★ opens private feedback
-                  </p>
-                </div>
-              </div>
-            ) : selectedRating >= 4 ? (
-              /* State 2A: 4-5 Stars -> Celebratory Direct Google Redirect Prompt */
-              <div className="space-y-6 animate-in fade-in zoom-in duration-500 w-full text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/30 text-3xl">
-                  🎉
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-center gap-1 text-amber-400">
-                    {Array.from({ length: selectedRating }).map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-amber-400" />
-                    ))}
-                  </div>
-                  <h4 className="text-xl font-black italic text-white tracking-tight">
-                    Thank You for 5 Stars!
-                  </h4>
-                  <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                    Redirecting to the official Google Business review form so your review goes live on Google Maps in 1 click.
-                  </p>
-                </div>
-
-                <a
-                  href="https://www.google.com/search?q=Oasis+Coffee+Bakery+Effingham+NH"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    Post on Google Maps <ExternalLink className="w-4 h-4" />
-                  </span>
-                </a>
-              </div>
-            ) : (
-              /* State 2B: 1-3 Stars -> Private Shield Feedback Form */
-              <div className="space-y-4 animate-in fade-in zoom-in duration-500 w-full text-left">
-                <div className="flex items-center gap-2 p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-300">
-                  <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span className="text-[9px] font-bold uppercase tracking-wider">
-                    Rating Shield Active: Private Manager Feedback
-                  </span>
-                </div>
-
-                <div className="space-y-1">
-                  <h4 className="text-sm font-black text-white">
-                    We appreciate your honest feedback
-                  </h4>
-                  <p className="text-xs text-zinc-400">
-                    How can our manager make this right for you?
-                  </p>
-                </div>
-
-                {!feedbackSent ? (
-                  <div className="space-y-3">
-                    <textarea
-                      value={feedbackText}
-                      onChange={(e) => setFeedbackText(e.target.value)}
-                      placeholder="Tell the store manager what happened..."
-                      className="w-full h-20 bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-400 resize-none"
-                    />
-                    <button
-                      onClick={() => setFeedbackSent(true)}
-                      className="w-full py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-500 transition-all"
-                    >
-                      Submit Directly to Store Manager
-                    </button>
-                  </div>
-                ) : (
-                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center space-y-2">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-                    <p className="text-xs font-bold text-emerald-300">Feedback dispatched privately.</p>
-                    <p className="text-[10px] text-zinc-400">Your Google profile rating remains protected.</p>
-                  </div>
                 )}
+
+                {/* Tab 2: Custom Sign In Form */}
+                {activeTab === 'custom_login' && (
+                  <form onSubmit={handleCustomLogin} className="space-y-3 text-left">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase text-zinc-400">Your Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={customName}
+                        onChange={(e) => setCustomName(e.target.value)}
+                        placeholder="e.g. Sarah Jenkins"
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase text-zinc-400">Phone Number</label>
+                        <input
+                          type="tel"
+                          value={customPhone}
+                          onChange={(e) => setCustomPhone(e.target.value)}
+                          placeholder="(603) 555-0199"
+                          className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase text-zinc-400">Town Node</label>
+                        <select
+                          value={customTown}
+                          onChange={(e) => setCustomTown(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                        >
+                          <option value="Effingham">Effingham, NH</option>
+                          <option value="Ossipee">Ossipee, NH</option>
+                          <option value="Freedom">Freedom, NH</option>
+                          <option value="Wolfeboro">Wolfeboro, NH</option>
+                          <option value="Conway">Conway, NH</option>
+                          <option value="Tamworth">Tamworth, NH</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase text-zinc-400">Your Primary Role</label>
+                      <select
+                        value={customRole}
+                        onChange={(e) => setCustomRole(e.target.value as UserRole)}
+                        className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                      >
+                        <option value="resident">🌲 Resident & Scavenger Hunter</option>
+                        <option value="merchant">🏪 Storefront & Restaurant Owner</option>
+                        <option value="contractor">🛠️ Trade Contractor & Builder</option>
+                        <option value="driver">🚚 Community Courier Driver (4x4)</option>
+                      </select>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-wider rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Create Account & Log In</span>
+                    </button>
+                  </form>
+                )}
+
+                {currentUser && (
+                  <button
+                    onClick={() => setIsSwitching(false)}
+                    className="w-full py-1.5 text-center text-xs font-mono text-zinc-400 hover:text-white"
+                  >
+                    ← Back to Active Profile ({currentUser.name})
+                  </button>
+                )}
+
               </div>
             )}
+
           </div>
 
-          {/* Reset / Demo controller footer */}
-          <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-            <span className="text-[8px] font-mono text-zinc-500">TAP SIMULATOR v2.4</span>
-            {isTapped && (
-              <button
-                onClick={handleReset}
-                className="text-[9px] font-bold text-amber-400 hover:text-white uppercase tracking-widest flex items-center gap-1 transition-colors"
-              >
-                <RotateCcw className="w-3 h-3" /> Reset Demo
-              </button>
-            )}
+          {/* Device Footer Information */}
+          <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[9px] font-mono text-zinc-500">
+            <span>TOWNRAISE DECENTRALIZED IDENTITY</span>
+            <span className="text-amber-400/80 font-bold">LIVE PASS</span>
           </div>
+
         </div>
       </div>
     </div>
