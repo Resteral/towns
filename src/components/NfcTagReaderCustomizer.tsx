@@ -574,9 +574,9 @@ export default function NfcTagReaderCustomizer() {
   // BATCH 100-CARD PROGRAMMER STATE
   // ========================================================
   const [batchTargetCount, setBatchTargetCount] = useState<number>(100);
-  const [batchPreset, setBatchPreset] = useState<'oasis_community' | 'courier_lifeline' | 'biz_review_sample' | 'event_door_pass' | 'custom_sequence'>('oasis_community');
+  const [batchPreset, setBatchPreset] = useState<'oasis_community' | 'courier_lifeline' | 'biz_review_sample' | 'event_door_pass' | 'tourist_landmark' | 'custom_sequence'>('oasis_community');
   const [batchPrefix, setBatchPrefix] = useState('OASIS-PASS-');
-  const [batchCustomBaseUrl, setBatchCustomBaseUrl] = useState('https://oasistap.local/rewards?pass=');
+  const [batchCustomBaseUrl, setBatchCustomBaseUrl] = useState('https://oasistap.local/claim?pass=');
   const [isBatchConveyorActive, setIsBatchConveyorActive] = useState(false);
   const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
   const [isAutoTurboFlashing, setIsAutoTurboFlashing] = useState(false);
@@ -603,6 +603,9 @@ export default function NfcTagReaderCustomizer() {
       } else if (preset === 'event_door_pass') {
         payload = `https://oasistap.local/events?ticket=${serial}`;
         typeLabel = 'Carroll County Event VIP Pass';
+      } else if (preset === 'tourist_landmark') {
+        payload = `https://oasistap.local/tourist-hunts?checkin=${serial}`;
+        typeLabel = 'Tourist Attraction Landmark Tag';
       } else {
         payload = `${baseUrl}${serial}`;
         typeLabel = 'Custom Serial Sequence';
@@ -639,6 +642,9 @@ export default function NfcTagReaderCustomizer() {
     } else if (newPreset === 'event_door_pass') {
       pfx = 'VIP-DOOR-';
       base = 'https://oasistap.local/events?ticket=';
+    } else if (newPreset === 'tourist_landmark') {
+      pfx = 'LANDMARK-NH-';
+      base = 'https://oasistap.local/tourist-hunts?checkin=';
     }
     setBatchPrefix(pfx);
     setBatchCustomBaseUrl(base);
@@ -1212,6 +1218,14 @@ export default function NfcTagReaderCustomizer() {
                       icon: '🎟️',
                       badge: 'Event Check-In',
                       sampleUrl: 'https://oasistap.local/events?ticket=VIP-001'
+                    },
+                    {
+                      id: 'tourist_landmark',
+                      title: 'Tourist Attraction & Scavenger Checkpoint Tag',
+                      desc: 'Flash waterproof NFC stickers for covered bridges, historic depots, scenic trailheads & local breweries.',
+                      icon: '🧭',
+                      badge: 'Tourist Hunt Checkpoint',
+                      sampleUrl: 'https://oasistap.local/tourist-hunts?checkin=LANDMARK-NH-001'
                     },
                   ].map(preset => (
                     <button

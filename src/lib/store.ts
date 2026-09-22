@@ -12,7 +12,8 @@ import {
   DirectoryListing, DirectoryCategory, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet,
   TownEvent, DineInTableTicket, LocalConditionsReport,
   SmsAutomationWorkflow, SmsLogMessage, SmsSubscriberContact, SmsWorkflowCategory,
-  UserProfile, DeliveryDriverMember, AuthSession, UserRole
+  UserProfile, DeliveryDriverMember, AuthSession, UserRole,
+  TouristHunt, PassportStamp, HuntCheckpoint
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
@@ -24,6 +25,7 @@ import {
   INITIAL_EVENTS, INITIAL_TABLE_TICKETS, DEFAULT_LOCAL_CONDITIONS,
   INITIAL_SMS_WORKFLOWS, INITIAL_SMS_LOGS, INITIAL_SMS_SUBSCRIBERS
 } from './mock-data';
+import { INITIAL_TOURIST_HUNTS, INITIAL_USER_STAMPS } from './tourist-hunts-data';
 
 const STORAGE_KEYS = {
   CARDS: 'pulpulse_cards_v1',
@@ -60,6 +62,8 @@ const STORAGE_KEYS = {
   SMS_SUBSCRIBERS: 'pulpulse_sms_subscribers_v1',
   AUTH_USER: 'pulpulse_auth_user_v2',
   DELIVERY_DRIVERS: 'pulpulse_delivery_drivers_v2',
+  TOURIST_HUNTS: 'pulpulse_tourist_hunts_v1',
+  PASSPORT_STAMPS: 'pulpulse_passport_stamps_v1',
 };
 
 export const INITIAL_DELIVERY_DRIVERS: DeliveryDriverMember[] = [
@@ -2013,11 +2017,29 @@ export function useNfcStore() {
   const [smsSubscribers, setSmsSubscribers] = useState<SmsSubscriberContact[]>(INITIAL_SMS_SUBSCRIBERS);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(PRESET_USERS[0]);
   const [deliveryDrivers, setDeliveryDrivers] = useState<DeliveryDriverMember[]>(INITIAL_DELIVERY_DRIVERS);
+  const [touristHunts, setTouristHunts] = useState<TouristHunt[]>(INITIAL_TOURIST_HUNTS);
+  const [passportStamps, setPassportStamps] = useState<PassportStamp[]>(INITIAL_USER_STAMPS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
     try {
+      const storedHunts = localStorage.getItem(STORAGE_KEYS.TOURIST_HUNTS);
+      if (storedHunts) {
+        const parsed: TouristHunt[] = JSON.parse(storedHunts);
+        const existingIds = new Set(parsed.map(h => h.id));
+        setTouristHunts([...parsed, ...INITIAL_TOURIST_HUNTS.filter(h => !existingIds.has(h.id))]);
+      } else {
+        setTouristHunts(INITIAL_TOURIST_HUNTS);
+      }
+
+      const storedStamps = localStorage.getItem(STORAGE_KEYS.PASSPORT_STAMPS);
+      if (storedStamps) {
+        setPassportStamps(JSON.parse(storedStamps));
+      } else {
+        setPassportStamps(INITIAL_USER_STAMPS);
+      }
+
       const storedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
       if (storedUser) {
         setCurrentUser(JSON.parse(storedUser));
@@ -3638,6 +3660,75 @@ export function useNfcStore() {
     return newDriver;
   };
 
+  const checkInCheckpoint = (huntId: string, checkpointId: string, method: 'nfc' | 'qr' | 'gps_simulator' = 'nfc') => {
+    const hunt = touristHunts.find(h => h.id === huntId);
+    if (!hunt) return { success: false, message: 'Hunt not found' };
+
+    const checkpoint = hunt.checkpoints.find(c => c.id === checkpointId);
+    if (!checkpoint) return { success: false, message: 'Checkpoint not found' };
+
+    const alreadyStamped = passportStamps.some(s => s.checkpointId === checkpointId);
+    if (alreadyStamped) {
+      return { success: false, message: 'Already stamped in your Explorer Passport!', alreadyStamped: true };
+    }
+
+    const newStamp: PassportStamp = {
+      checkpointId: checkpoint.id,
+      checkpointName: checkpoint.name,
+      huntId: hunt.id,
+      town: checkpoint.town,
+      timestamp: new Date().toISOString(),
+      badgeIcon: hunt.badgeIcon,
+      pointsEarned: checkpoint.pointsReward,
+      verifiedVia: method,
+    };
+
+    const updatedStamps = [newStamp, ...passportStamps];
+    setPassportStamps(updatedStamps);
+    localStorage.setItem(STORAGE_KEYS.PASSPORT_STAMPS, JSON.stringify(updatedStamps));
+
+    // Award loyalty points
+    awardLoyaltyPoints(checkpoint.pointsReward, `Explorer Check-in: ${checkpoint.name} (${checkpoint.town})`);
+    playDeliveryChime();
+
+    // Check if entire hunt completed
+    const huntCheckpoints = hunt.checkpoints.map(c => c.id);
+    const checkedCheckpoints = updatedStamps.filter(s => s.huntId === huntId).map(s => s.checkpointId);
+    const isCompleted = huntCheckpoints.every(id => checkedCheckpoints.includes(id));
+
+    if (isCompleted) {
+      const updatedHunts = touristHunts.map(h => {
+        if (h.id === huntId) {
+          return { ...h, completedCount: h.completedCount + 1 };
+        }
+        return h;
+      });
+      setTouristHunts(updatedHunts);
+      localStorage.setItem(STORAGE_KEYS.TOURIST_HUNTS, JSON.stringify(updatedHunts));
+      awardLoyaltyPoints(100, `Completed Quest: ${hunt.title}! (+100 Bonus Points)`);
+    }
+
+    return { 
+      success: true, 
+      message: `Verified at ${checkpoint.name}! +${checkpoint.pointsReward} Points Earned.`,
+      isCompleted,
+      pointsEarned: checkpoint.pointsReward
+    };
+  };
+
+  const addTouristHunt = (huntData: Omit<TouristHunt, 'id' | 'participatingCount' | 'completedCount'>) => {
+    const newHunt: TouristHunt = {
+      ...huntData,
+      id: `hunt-${Date.now()}`,
+      participatingCount: 1,
+      completedCount: 0,
+    };
+    const updated = [newHunt, ...touristHunts];
+    setTouristHunts(updated);
+    localStorage.setItem(STORAGE_KEYS.TOURIST_HUNTS, JSON.stringify(updated));
+    return newHunt;
+  };
+
   return {
     towns,
     activeTown,
@@ -3676,6 +3767,8 @@ export function useNfcStore() {
     smsSubscribers,
     currentUser,
     deliveryDrivers,
+    touristHunts,
+    passportStamps,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -3749,5 +3842,7 @@ export function useNfcStore() {
     registerUser,
     toggleDriverStatus,
     registerAsDriver,
+    checkInCheckpoint,
+    addTouristHunt,
   };
 }

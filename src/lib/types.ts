@@ -768,8 +768,53 @@ export interface AuthSession {
   isAuthenticated: boolean;
 }
 
+export interface HuntCheckpoint {
+  id: string;
+  name: string;
+  town: string;
+  category: 'historic' | 'scenic' | 'food_drink' | 'bridge' | 'nature' | 'artisan';
+  description: string;
+  historicalNote: string;
+  clue: string;
+  address: string;
+  coordinates?: { lat: number; lng: number };
+  pointsReward: number;
+  nfcTagId: string;
+  qrPayloadUrl: string;
+  photoUrl: string;
+  sponsorName?: string;
+  sponsorOffer?: string;
+}
 
+export interface TouristHunt {
+  id: string;
+  title: string;
+  slug: string;
+  town: string;
+  region: string;
+  badgeName: string;
+  badgeIcon: string;
+  difficulty: 'Easy' | 'Moderate' | 'Adventurous';
+  estimatedDuration: string;
+  description: string;
+  theme: string;
+  coverImage: string;
+  totalPoints: number;
+  bonusVoucherTitle: string;
+  bonusVoucherCode: string;
+  bonusVoucherDiscount: string;
+  checkpoints: HuntCheckpoint[];
+  participatingCount: number;
+  completedCount: number;
+}
 
-
-
-
+export interface PassportStamp {
+  checkpointId: string;
+  checkpointName: string;
+  huntId: string;
+  town: string;
+  timestamp: string;
+  badgeIcon: string;
+  pointsEarned: number;
+  verifiedVia: 'nfc' | 'qr' | 'gps_simulator';
+}
