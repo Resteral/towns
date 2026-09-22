@@ -818,3 +818,96 @@ export interface PassportStamp {
   pointsEarned: number;
   verifiedVia: 'nfc' | 'qr' | 'gps_simulator';
 }
+
+export interface StoreMysteryPerk {
+  discountLabel: string;
+  discountDescription: string;
+  voucherCode: string;
+  minimumSpend?: string;
+  expiresInDays: number;
+}
+
+export interface StoreHuntSpot {
+  id: string;
+  storeName: string;
+  town: string;
+  category: 'antiques' | 'farmstand' | 'bakery' | 'crafts' | 'outfitter' | 'cafe' | 'mercantile';
+  categoryLabel: string;
+  address: string;
+  phone: string;
+  hours: string;
+  tagline: string;
+  description: string;
+  coverImage: string;
+  nfcTagId: string;
+  qrPayloadUrl: string;
+  mysteryPerk: StoreMysteryPerk;
+  pointsReward: number;
+  isCourierAvailable: boolean;
+  courierLeadTime?: string;
+  ownerName: string;
+}
+
+export interface StoreHuntCircuit {
+  id: string;
+  title: string;
+  slug: string;
+  category: 'antiques' | 'farmstands' | 'trades_outfitters' | 'sweets_coffee' | 'mercantile';
+  categoryLabel: string;
+  region: string;
+  townsCovered: string[];
+  badgeName: string;
+  badgeIcon: string;
+  description: string;
+  theme: string;
+  coverImage: string;
+  totalPoints: number;
+  circuitBonusReward: string;
+  circuitBonusCode: string;
+  circuitBonusDiscount: string;
+  spots: StoreHuntSpot[];
+  activeHuntersCount: number;
+  completedHuntersCount: number;
+}
+
+export interface StoreHunterStamp {
+  spotId: string;
+  storeName: string;
+  circuitId: string;
+  town: string;
+  timestamp: string;
+  badgeIcon: string;
+  pointsEarned: number;
+  unlockedPerk: StoreMysteryPerk;
+  verifiedVia: 'nfc' | 'qr' | 'in_store_sim';
+}
+
+export interface CardLevelProgression {
+  currentLevel: number;
+  levelTitle: string;
+  badgeIcon: string;
+  currentXp: number;
+  xpForNextLevel: number;
+  xpProgressPercent: number;
+  multiplier: number;
+  cardSkin: 'bronze' | 'emerald' | 'gold' | 'sapphire' | 'holographic_diamond';
+  tierColor: string;
+  perksUnlocked: string[];
+  nextPerkPreview: string;
+  storeStreakCount: number;
+  streakMultiplier: number;
+  totalStoresVisited: number;
+  townsVisited: string[];
+}
+
+export interface LevelTierConfig {
+  level: number;
+  title: string;
+  badgeIcon: string;
+  minXp: number;
+  maxXp: number;
+  multiplier: number;
+  cardSkin: 'bronze' | 'emerald' | 'gold' | 'sapphire' | 'holographic_diamond';
+  tierColor: string;
+  perks: string[];
+}

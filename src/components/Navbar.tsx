@@ -20,14 +20,21 @@ import {
   User,
   ShieldCheck
 } from 'lucide-react';
+import { calculateCardProgression } from '@/lib/card-leveling';
+import NfcCardLevelWidget from '@/components/NfcCardLevelWidget';
+import { useMemo } from 'react';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { cart, userMembership, currentUser, deliveryDrivers } = useNfcStore();
+  const { cart, userMembership, currentUser, deliveryDrivers, storeHunterStamps, passportStamps } = useNfcStore();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const onlineDrivers = deliveryDrivers.filter(d => d.isOnline && d.status !== 'off_duty');
+
+  const cardProgression = useMemo(() => {
+    return calculateCardProgression(storeHunterStamps, passportStamps);
+  }, [storeHunterStamps, passportStamps]);
 
   if (pathname?.startsWith('/tap/')) {
     return null;
@@ -149,6 +156,16 @@ export default function Navbar() {
               </span>
             </Link>
             <Link
+              href="/store-hunting"
+              className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+                pathname?.startsWith('/store-hunting') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'
+              }`}
+            >
+              <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-bold flex items-center gap-1">
+                <span>🛍️ Store Hunting</span>
+              </span>
+            </Link>
+            <Link
               href="/marketplace"
               className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${
                 pathname === '/marketplace' ? 'text-amber-400' : 'text-white/60 hover:text-white'
@@ -198,6 +215,11 @@ export default function Navbar() {
               <span>Search</span>
               <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[8px] font-mono">⌘K</kbd>
             </button>
+
+            {/* Card Level Badge */}
+            <div className="hidden lg:block">
+              <NfcCardLevelWidget progression={cardProgression} compact={true} />
+            </div>
 
             {/* Town Selector Component */}
             <TownSelector />

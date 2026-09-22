@@ -574,7 +574,7 @@ export default function NfcTagReaderCustomizer() {
   // BATCH 100-CARD PROGRAMMER STATE
   // ========================================================
   const [batchTargetCount, setBatchTargetCount] = useState<number>(100);
-  const [batchPreset, setBatchPreset] = useState<'oasis_community' | 'courier_lifeline' | 'biz_review_sample' | 'event_door_pass' | 'tourist_landmark' | 'custom_sequence'>('oasis_community');
+  const [batchPreset, setBatchPreset] = useState<'oasis_community' | 'courier_lifeline' | 'biz_review_sample' | 'event_door_pass' | 'tourist_landmark' | 'store_hunt_beacon' | 'custom_sequence'>('oasis_community');
   const [batchPrefix, setBatchPrefix] = useState('OASIS-PASS-');
   const [batchCustomBaseUrl, setBatchCustomBaseUrl] = useState('https://oasistap.local/claim?pass=');
   const [isBatchConveyorActive, setIsBatchConveyorActive] = useState(false);
@@ -606,6 +606,9 @@ export default function NfcTagReaderCustomizer() {
       } else if (preset === 'tourist_landmark') {
         payload = `https://oasistap.local/tourist-hunts?checkin=${serial}`;
         typeLabel = 'Tourist Attraction Landmark Tag';
+      } else if (preset === 'store_hunt_beacon') {
+        payload = `https://oasistap.local/store-hunting?spot=${serial}`;
+        typeLabel = 'In-Store Mystery Perk NFC Beacon';
       } else {
         payload = `${baseUrl}${serial}`;
         typeLabel = 'Custom Serial Sequence';
@@ -645,6 +648,9 @@ export default function NfcTagReaderCustomizer() {
     } else if (newPreset === 'tourist_landmark') {
       pfx = 'LANDMARK-NH-';
       base = 'https://oasistap.local/tourist-hunts?checkin=';
+    } else if (newPreset === 'store_hunt_beacon') {
+      pfx = 'STORE-HUNT-';
+      base = 'https://oasistap.local/store-hunting?spot=';
     }
     setBatchPrefix(pfx);
     setBatchCustomBaseUrl(base);
@@ -1226,6 +1232,14 @@ export default function NfcTagReaderCustomizer() {
                       icon: '🧭',
                       badge: 'Tourist Hunt Checkpoint',
                       sampleUrl: 'https://oasistap.local/tourist-hunts?checkin=LANDMARK-NH-001'
+                    },
+                    {
+                      id: 'store_hunt_beacon',
+                      title: 'In-Store Treasure Hunt & Mystery Discount Beacon',
+                      desc: 'Program checkout counter NFC stands to reveal secret in-store discounts, free tastings & store stamps.',
+                      icon: '🛍️',
+                      badge: 'Store Hunting Beacon',
+                      sampleUrl: 'https://oasistap.local/store-hunting?spot=STORE-HUNT-001'
                     },
                   ].map(preset => (
                     <button

@@ -13,7 +13,8 @@ import {
   TownEvent, DineInTableTicket, LocalConditionsReport,
   SmsAutomationWorkflow, SmsLogMessage, SmsSubscriberContact, SmsWorkflowCategory,
   UserProfile, DeliveryDriverMember, AuthSession, UserRole,
-  TouristHunt, PassportStamp, HuntCheckpoint
+  TouristHunt, PassportStamp, HuntCheckpoint,
+  StoreHuntCircuit, StoreHuntSpot, StoreHunterStamp, StoreMysteryPerk
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
@@ -26,6 +27,7 @@ import {
   INITIAL_SMS_WORKFLOWS, INITIAL_SMS_LOGS, INITIAL_SMS_SUBSCRIBERS
 } from './mock-data';
 import { INITIAL_TOURIST_HUNTS, INITIAL_USER_STAMPS } from './tourist-hunts-data';
+import { INITIAL_STORE_CIRCUITS, INITIAL_STORE_HUNTER_STAMPS } from './store-hunting-data';
 
 const STORAGE_KEYS = {
   CARDS: 'pulpulse_cards_v1',
@@ -64,6 +66,8 @@ const STORAGE_KEYS = {
   DELIVERY_DRIVERS: 'pulpulse_delivery_drivers_v2',
   TOURIST_HUNTS: 'pulpulse_tourist_hunts_v1',
   PASSPORT_STAMPS: 'pulpulse_passport_stamps_v1',
+  STORE_CIRCUITS: 'pulpulse_store_circuits_v1',
+  STORE_HUNTER_STAMPS: 'pulpulse_store_hunter_stamps_v1',
 };
 
 export const INITIAL_DELIVERY_DRIVERS: DeliveryDriverMember[] = [
@@ -2019,11 +2023,29 @@ export function useNfcStore() {
   const [deliveryDrivers, setDeliveryDrivers] = useState<DeliveryDriverMember[]>(INITIAL_DELIVERY_DRIVERS);
   const [touristHunts, setTouristHunts] = useState<TouristHunt[]>(INITIAL_TOURIST_HUNTS);
   const [passportStamps, setPassportStamps] = useState<PassportStamp[]>(INITIAL_USER_STAMPS);
+  const [storeHuntCircuits, setStoreHuntCircuits] = useState<StoreHuntCircuit[]>(INITIAL_STORE_CIRCUITS);
+  const [storeHunterStamps, setStoreHunterStamps] = useState<StoreHunterStamp[]>(INITIAL_STORE_HUNTER_STAMPS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
     try {
+      const storedCircuits = localStorage.getItem(STORAGE_KEYS.STORE_CIRCUITS);
+      if (storedCircuits) {
+        const parsed: StoreHuntCircuit[] = JSON.parse(storedCircuits);
+        const existingIds = new Set(parsed.map(c => c.id));
+        setStoreHuntCircuits([...parsed, ...INITIAL_STORE_CIRCUITS.filter(c => !existingIds.has(c.id))]);
+      } else {
+        setStoreHuntCircuits(INITIAL_STORE_CIRCUITS);
+      }
+
+      const storedStoreStamps = localStorage.getItem(STORAGE_KEYS.STORE_HUNTER_STAMPS);
+      if (storedStoreStamps) {
+        setStoreHunterStamps(JSON.parse(storedStoreStamps));
+      } else {
+        setStoreHunterStamps(INITIAL_STORE_HUNTER_STAMPS);
+      }
+
       const storedHunts = localStorage.getItem(STORAGE_KEYS.TOURIST_HUNTS);
       if (storedHunts) {
         const parsed: TouristHunt[] = JSON.parse(storedHunts);
@@ -3729,6 +3751,100 @@ export function useNfcStore() {
     return newHunt;
   };
 
+  const tapInStoreBeacon = (circuitId: string, spotId: string, method: 'nfc' | 'qr' | 'in_store_sim' = 'nfc') => {
+    const circuit = storeHuntCircuits.find(c => c.id === circuitId);
+    if (!circuit) return { success: false, message: 'Store circuit not found' };
+
+    const spot = circuit.spots.find(s => s.id === spotId);
+    if (!spot) return { success: false, message: 'Store spot not found' };
+
+    const alreadyStamped = storeHunterStamps.some(s => s.spotId === spotId);
+    if (alreadyStamped) {
+      return { 
+        success: true, 
+        alreadyStamped: true, 
+        message: `Already visited ${spot.storeName}! Mystery deal: ${spot.mysteryPerk.discountLabel}`,
+        perk: spot.mysteryPerk,
+        pointsEarned: 0
+      };
+    }
+
+    const newStamp: StoreHunterStamp = {
+      spotId: spot.id,
+      storeName: spot.storeName,
+      circuitId: circuit.id,
+      town: spot.town,
+      timestamp: new Date().toISOString(),
+      badgeIcon: circuit.badgeIcon,
+      pointsEarned: spot.pointsReward,
+      unlockedPerk: spot.mysteryPerk,
+      verifiedVia: method,
+    };
+
+    const updatedStamps = [newStamp, ...storeHunterStamps];
+    setStoreHunterStamps(updatedStamps);
+    localStorage.setItem(STORAGE_KEYS.STORE_HUNTER_STAMPS, JSON.stringify(updatedStamps));
+
+    // Award loyalty points
+    awardLoyaltyPoints(spot.pointsReward, `Store Hunter In-Store Beacon: ${spot.storeName} (${spot.town})`);
+    playDeliveryChime();
+
+    // Check if entire circuit completed
+    const circuitSpotIds = circuit.spots.map(s => s.id);
+    const checkedSpotIds = updatedStamps.filter(s => s.circuitId === circuitId).map(s => s.spotId);
+    const isCompleted = circuitSpotIds.every(id => checkedSpotIds.includes(id));
+
+    if (isCompleted) {
+      const updatedCircuits = storeHuntCircuits.map(c => {
+        if (c.id === circuitId) {
+          return { ...c, completedHuntersCount: c.completedHuntersCount + 1 };
+        }
+        return c;
+      });
+      setStoreHuntCircuits(updatedCircuits);
+      localStorage.setItem(STORAGE_KEYS.STORE_CIRCUITS, JSON.stringify(updatedCircuits));
+      awardLoyaltyPoints(100, `Completed Store Trail: ${circuit.title}! (+100 Bonus Points)`);
+    }
+
+    return {
+      success: true,
+      alreadyStamped: false,
+      message: `Mystery Deal Unlocked at ${spot.storeName}! +${spot.pointsReward} Points Earned.`,
+      perk: spot.mysteryPerk,
+      isCompleted,
+      pointsEarned: spot.pointsReward
+    };
+  };
+
+  const enrollMerchantInStoreHunt = (circuitId: string, spotData: Omit<StoreHuntSpot, 'id' | 'nfcTagId' | 'qrPayloadUrl' | 'pointsReward'>) => {
+    const spotId = `spot-${Date.now()}`;
+    const nfcTagId = `NFC-STORE-${Date.now()}`;
+    const newSpot: StoreHuntSpot = {
+      ...spotData,
+      id: spotId,
+      nfcTagId,
+      qrPayloadUrl: `https://oasistap.local/store-hunting?circuit=${circuitId}&spot=${spotId}`,
+      pointsReward: 35
+    };
+
+    const updated = storeHuntCircuits.map(c => {
+      if (c.id === circuitId) {
+        return {
+          ...c,
+          spots: [...c.spots, newSpot],
+          activeHuntersCount: c.activeHuntersCount + 1
+        };
+      }
+      return c;
+    });
+
+    setStoreHuntCircuits(updated);
+    localStorage.setItem(STORAGE_KEYS.STORE_CIRCUITS, JSON.stringify(updated));
+    awardLoyaltyPoints(50, `Enrolled ${newSpot.storeName} in Carroll County Store Hunt Network`);
+    playDeliveryChime();
+    return newSpot;
+  };
+
   return {
     towns,
     activeTown,
@@ -3769,6 +3885,8 @@ export function useNfcStore() {
     deliveryDrivers,
     touristHunts,
     passportStamps,
+    storeHuntCircuits,
+    storeHunterStamps,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -3844,5 +3962,7 @@ export function useNfcStore() {
     registerAsDriver,
     checkInCheckpoint,
     addTouristHunt,
+    tapInStoreBeacon,
+    enrollMerchantInStoreHunt,
   };
 }
