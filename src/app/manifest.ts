@@ -2,15 +2,41 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Oasis Courier | Driver App',
-    short_name: 'Driver App',
-    description: 'Real-Time Food Delivery Dispatch, Live GPS Telemetry & Shift Console for Sean Martin and couriers.',
-    start_url: '/driver',
+    name: 'Townraise | Sovereign Local Network & Courier HUD',
+    short_name: 'Townraise',
+    description: 'Sovereign local commerce network, programmable NFC hardware, real-time courier dispatch, and interactive scavenger hunts across Carroll County & Western Maine.',
+    start_url: '/',
+    id: '/',
+    scope: '/',
     display: 'standalone',
     background_color: '#070709',
     theme_color: '#070709',
-    orientation: 'portrait',
+    orientation: 'portrait-primary',
+    categories: ['business', 'shopping', 'lifestyle', 'productivity', 'food'],
     icons: [
+      {
+        src: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-maskable.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/apple-touch-icon.png',
+        sizes: '180x180',
+        type: 'image/png',
+      },
       {
         src: '/favicon.ico',
         sizes: 'any',
@@ -19,22 +45,34 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     shortcuts: [
       {
-        name: 'Open Driver Console',
-        short_name: 'Console',
-        description: 'Open in-vehicle delivery driver HUD',
+        name: '🚚 Courier Driver HUD',
+        short_name: 'Driver Console',
+        description: 'Open in-vehicle delivery driver HUD and live shift telemetry',
         url: '/driver',
       },
       {
-        name: 'Shift Earnings',
-        short_name: 'Earnings',
-        description: 'View current shift delivery balance and tips',
-        url: '/driver?tab=earnings',
+        name: '🥪 Local Eats & Menus',
+        short_name: 'Local Eats',
+        description: 'Browse local restaurant specials and order food delivery',
+        url: '/eats',
       },
       {
-        name: 'Oasis Eats Menu',
-        short_name: 'Menu',
-        description: 'Browse local restaurant & store menu',
-        url: '/eats',
+        name: '👑 Vanguard Admin Studio',
+        short_name: 'Admin',
+        description: 'Master automation suite and platform command center',
+        url: '/dashboard/admin',
+      },
+      {
+        name: '⚡ NFC Hardware Lab',
+        short_name: 'NFC Lab',
+        description: 'Manage NFC cards, review funnels, and contactless beacons',
+        url: '/dashboard',
+      },
+      {
+        name: '🧭 Tourist Hunts & Passports',
+        short_name: 'Scavenger Hunt',
+        description: 'Explore Carroll County trail checkpoints and stamp your passport',
+        url: '/tourist-hunts',
       },
     ],
   };

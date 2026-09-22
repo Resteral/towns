@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { ShieldCheck, Zap, Smartphone, Cpu, Store, Wrench, Compass, Trophy } from 'lucide-react';
 
@@ -116,7 +118,19 @@ export default function Footer() {
                   <span>frijj555@gmail.com</span>
                 </a>
               </div>
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col gap-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      sessionStorage.removeItem('townraise_install_banner_dismissed');
+                      window.location.reload();
+                    }
+                  }}
+                  className="inline-flex items-center justify-center w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-black text-[10px] font-black uppercase tracking-wider transition-all text-center cursor-pointer shadow-md shadow-amber-500/20"
+                >
+                  📲 Install to Phone Home Screen
+                </button>
                 <Link 
                   href="/contact" 
                   className="inline-flex items-center justify-center w-full py-2 px-3 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 text-[10px] font-black uppercase tracking-wider border border-amber-400/30 transition-all text-center"
