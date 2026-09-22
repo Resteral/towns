@@ -179,6 +179,7 @@ export interface NfcCardConfig {
 
   // Custom Direct Target URL
   directTargetUrl?: string;
+  customDestinationUrl?: string;
 
   // Presentation & Operations
   customHeadline?: string;
@@ -188,6 +189,7 @@ export interface NfcCardConfig {
   assignedStaff?: string;
   active: boolean;
   totalTaps: number;
+  tapsCount?: number;
   googleConversions: number;
   privateFeedbacksCount: number;
   createdAt: string;

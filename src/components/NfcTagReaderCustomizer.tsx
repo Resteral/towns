@@ -54,7 +54,13 @@ import {
   Printer,
   ListFilter,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Edit2,
+  Trash2,
+  Save,
+  Search,
+  Eye,
+  CreditCard
 } from 'lucide-react';
 
 export type NfcActionType = 
@@ -503,11 +509,17 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
 ];
 
 export default function NfcTagReaderCustomizer() {
-  const { addCard, playDeliveryChime, products, addToCart, currentUser } = useNfcStore();
+  const { cards, addCard, updateCard, deleteCard, playDeliveryChime, products, addToCart, currentUser } = useNfcStore();
 
-  // Active Main Tab: Capabilities vs Customizer vs Batch vs Reader vs Export
-  const [activeTab, setActiveTab] = useState<'capabilities' | 'customizer' | 'batch' | 'reader' | 'export'>('batch');
+  // Active Main Tab: Fleet/Edit vs Customizer vs Batch vs Capabilities vs Reader vs Export
+  const [activeTab, setActiveTab] = useState<'fleet' | 'customizer' | 'batch' | 'capabilities' | 'reader' | 'export'>('fleet');
   const [capabilitiesFilter, setCapabilitiesFilter] = useState<'all' | 'growth' | 'contact' | 'courier' | 'cashless' | 'trades' | 'automation' | 'community'>('all');
+
+  // --- CARD EDITING & FLEET STATE ---
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [cardSearchQuery, setCardSearchQuery] = useState<string>('');
+  const [activeQrModalCard, setActiveQrModalCard] = useState<NfcCardConfig | null>(null);
+  const [activeCardQrDataUrl, setActiveCardQrDataUrl] = useState<string | null>(null);
 
   // --- NFC READER STATE ---
   const [isWebNfcScanning, setIsWebNfcScanning] = useState(false);
@@ -530,7 +542,7 @@ export default function NfcTagReaderCustomizer() {
   // Payload Content State
   const [businessName, setBusinessName] = useState(currentUser?.name ? `${currentUser.name}'s Oasis Community Pass` : 'Oasis Carroll County Regional Pass');
   const [headline, setHeadline] = useState('Tap phone for instant Carroll County perks & 1-tap courier dispatch!');
-  const [googleReviewUrl, setGoogleReviewUrl] = useState('https://search.google.com/local/writereview?placeid=ChIJb6eBq9f94okRGb_SmokeWorldOss');
+  const [googleReviewUrl, setGoogleReviewUrl] = useState('https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4');
   const [customUrl, setCustomUrl] = useState('https://townraise.org');
   const [paypalUsername, setPaypalUsername] = useState('seanhse97');
   const [paypalEmail, setPaypalEmail] = useState('seanhse97@gmail.com');
@@ -983,25 +995,194 @@ export default function NfcTagReaderCustomizer() {
     }
   };
 
-  // Save to Fleet in store
-  const handleSaveToFleet = () => {
-    const newBeacon = addCard({
-      cardName: `${businessName} (${formFactor.toUpperCase()})`,
+  // Load existing card from Fleet for live editing
+  const handleEditCard = (card: NfcCardConfig) => {
+    setEditingCardId(card.id);
+    setBusinessName(card.businessName || '');
+    setHeadline(card.customHeadline || 'Tap phone for instant Carroll County perks!');
+    if (card.googleReviewUrl) setGoogleReviewUrl(card.googleReviewUrl);
+    if (card.customDestinationUrl) setCustomUrl(card.customDestinationUrl);
+    
+    setVCardData({
+      name: card.contactFullName || card.businessName || '',
+      title: card.contactTitle || 'Lead Operator',
+      phone: card.contactPhone || '(508) 507-0305',
+      email: card.contactEmail || 'frijj555@gmail.com',
+      town: card.contactAddress || card.town || 'Effingham, NH'
+    });
+
+    if (card.primaryColor) setSelectedColor(card.primaryColor);
+    if (card.logoUrl) {
+      if (card.logoUrl.startsWith('http') || card.logoUrl.startsWith('data:')) {
+        setCustomLogoUrl(card.logoUrl);
+      } else {
+        setSelectedEmoji(card.logoUrl);
+        setCustomLogoUrl('');
+      }
+    }
+
+    if (card.hardwareFormFactor) {
+      if (card.hardwareFormFactor === 'acrylic_stand') setFormFactor('stand');
+      else if (card.hardwareFormFactor === 'disc_sticker') setFormFactor('sticker');
+      else if (card.hardwareFormFactor === 'wood_plaque') setFormFactor('wood_puck');
+      else if (card.hardwareFormFactor === 'keychain_fob') setFormFactor('keychain');
+      else setFormFactor('card');
+    }
+
+    if (card.profileType) {
+      if (card.profileType === 'google_review_booster') setActionType('google_review');
+      else if (card.profileType === 'menu_tap_to_order') setActionType('menu');
+      else if (card.profileType === 'digital_biz_card') setActionType('vcard');
+      else if (card.profileType === 'loyalty_rewards') setActionType('loyalty_pass');
+      else if (card.profileType === 'event_vip_pass') setActionType('event_ticket');
+      else if (card.profileType === 'airbnb_wifi_plaque') setActionType('wifi');
+      else setActionType('url');
+    }
+
+    setActiveTab('customizer');
+    setWriteSuccessMsg(`Loaded card "${card.cardName}" for live editing!`);
+    playDeliveryChime();
+    setTimeout(() => setWriteSuccessMsg(null), 3000);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCardId(null);
+    setWriteSuccessMsg('Switched to creating a new card.');
+    setTimeout(() => setWriteSuccessMsg(null), 2000);
+  };
+
+  const handleDuplicateCard = () => {
+    const hardwareMap: Record<NfcFormFactorType, NfcCardConfig['hardwareFormFactor']> = {
+      card: 'pvc_card',
+      stand: 'acrylic_stand',
+      sticker: 'disc_sticker',
+      wood_puck: 'wood_plaque',
+      keychain: 'keychain_fob'
+    };
+
+    const profileMap: Partial<Record<NfcActionType, NfcCardConfig['profileType']>> = {
+      google_review: 'google_review_booster',
+      menu: 'menu_tap_to_order',
+      vcard: 'digital_biz_card',
+      loyalty_pass: 'loyalty_rewards',
+      event_ticket: 'event_vip_pass',
+      wifi: 'airbnb_wifi_plaque'
+    };
+
+    const newCard = addCard({
+      cardName: `${businessName} (Copy - ${formFactor.toUpperCase()})`,
       businessName,
       googleReviewUrl: actionType === 'google_review' ? googleReviewUrl : getComputedPayloadUrl(),
       mode: 'smart_funnel',
       thresholdStars: 4,
       customHeadline: headline,
+      customDestinationUrl: getComputedPayloadUrl(),
       logoUrl: customLogoUrl || selectedEmoji,
       primaryColor: selectedColor,
       active: true,
-      assignedLocation: 'Main Counter'
+      assignedLocation: 'Main Counter',
+      contactFullName: vCardData.name,
+      contactTitle: vCardData.title,
+      contactPhone: vCardData.phone,
+      contactEmail: vCardData.email,
+      contactAddress: vCardData.town,
+      hardwareFormFactor: hardwareMap[formFactor],
+      profileType: profileMap[actionType] || 'custom_url',
     });
 
+    setEditingCardId(newCard.id);
     playDeliveryChime();
     confetti({ particleCount: 50, spread: 70 });
-    setWriteSuccessMsg(`Saved "${businessName}" to your active Beacon Fleet! Tap ID: ${newBeacon.id}`);
+    setWriteSuccessMsg(`Duplicated as new Card! Tap ID: ${newCard.id}`);
     setTimeout(() => setWriteSuccessMsg(null), 4000);
+  };
+
+  // Open QR modal for any card in the fleet
+  const handleOpenCardQrModal = async (card: NfcCardConfig) => {
+    setActiveQrModalCard(card);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://townraise.org';
+    const tapUrl = `${origin}/tap/${card.id}`;
+    try {
+      const qrUrl = await QRCode.toDataURL(tapUrl, {
+        width: 320,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
+      });
+      setActiveCardQrDataUrl(qrUrl);
+    } catch {
+      setActiveCardQrDataUrl(null);
+    }
+  };
+
+  // Save or Update Card in store
+  const handleSaveToFleet = () => {
+    const hardwareMap: Record<NfcFormFactorType, NfcCardConfig['hardwareFormFactor']> = {
+      card: 'pvc_card',
+      stand: 'acrylic_stand',
+      sticker: 'disc_sticker',
+      wood_puck: 'wood_plaque',
+      keychain: 'keychain_fob'
+    };
+
+    const profileMap: Partial<Record<NfcActionType, NfcCardConfig['profileType']>> = {
+      google_review: 'google_review_booster',
+      menu: 'menu_tap_to_order',
+      vcard: 'digital_biz_card',
+      loyalty_pass: 'loyalty_rewards',
+      event_ticket: 'event_vip_pass',
+      wifi: 'airbnb_wifi_plaque'
+    };
+
+    if (editingCardId) {
+      updateCard(editingCardId, {
+        cardName: `${businessName} (${formFactor.toUpperCase()})`,
+        businessName,
+        googleReviewUrl: actionType === 'google_review' ? googleReviewUrl : getComputedPayloadUrl(),
+        customHeadline: headline,
+        customDestinationUrl: getComputedPayloadUrl(),
+        logoUrl: customLogoUrl || selectedEmoji,
+        primaryColor: selectedColor,
+        contactFullName: vCardData.name,
+        contactTitle: vCardData.title,
+        contactPhone: vCardData.phone,
+        contactEmail: vCardData.email,
+        contactAddress: vCardData.town,
+        hardwareFormFactor: hardwareMap[formFactor],
+        profileType: profileMap[actionType] || 'custom_url',
+      });
+
+      playDeliveryChime();
+      confetti({ particleCount: 50, spread: 70 });
+      setWriteSuccessMsg(`Updated card "${businessName}" successfully!`);
+      setTimeout(() => setWriteSuccessMsg(null), 4000);
+    } else {
+      const newBeacon = addCard({
+        cardName: `${businessName} (${formFactor.toUpperCase()})`,
+        businessName,
+        googleReviewUrl: actionType === 'google_review' ? googleReviewUrl : getComputedPayloadUrl(),
+        mode: 'smart_funnel',
+        thresholdStars: 4,
+        customHeadline: headline,
+        customDestinationUrl: getComputedPayloadUrl(),
+        logoUrl: customLogoUrl || selectedEmoji,
+        primaryColor: selectedColor,
+        active: true,
+        assignedLocation: 'Main Counter',
+        contactFullName: vCardData.name,
+        contactTitle: vCardData.title,
+        contactPhone: vCardData.phone,
+        contactEmail: vCardData.email,
+        contactAddress: vCardData.town,
+        hardwareFormFactor: hardwareMap[formFactor],
+        profileType: profileMap[actionType] || 'custom_url',
+      });
+
+      setEditingCardId(newBeacon.id);
+      playDeliveryChime();
+      confetti({ particleCount: 50, spread: 70 });
+      setWriteSuccessMsg(`Saved "${businessName}" to your active Beacon Fleet! Tap ID: ${newBeacon.id}`);
+      setTimeout(() => setWriteSuccessMsg(null), 4000);
+    }
   };
 
   // Add custom physical hardware order to Cart
@@ -1088,29 +1269,24 @@ export default function NfcTagReaderCustomizer() {
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-white/10 w-full lg:w-auto">
+          <div className="flex flex-wrap items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-white/10 w-full lg:w-auto">
             <button
-              onClick={() => setActiveTab('batch')}
+              onClick={() => setActiveTab('fleet')}
               className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                activeTab === 'batch'
+                activeTab === 'fleet'
                   ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <Zap className="w-4 h-4" />
-              <span>1. Batch 100 Flasher</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('capabilities')}
-              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                activeTab === 'capabilities'
-                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>2. All 15 Capabilities</span>
+              <CreditCard className="w-4 h-4" />
+              <span>0. My Fleet & Edit Cards</span>
+              {cards && cards.length > 0 && (
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                  activeTab === 'fleet' ? 'bg-black text-amber-400' : 'bg-white/10 text-zinc-300'
+                }`}>
+                  {cards.length}
+                </span>
+              )}
             </button>
 
             <button
@@ -1122,7 +1298,34 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Palette className="w-4 h-4" />
-              <span>3. Single Canvas</span>
+              <span>1. Design & Edit Canvas</span>
+              {editingCardId && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('batch')}
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'batch'
+                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Zap className="w-4 h-4" />
+              <span>2. Batch 100 Flasher</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('capabilities')}
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'capabilities'
+                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>3. All 15 Capabilities</span>
             </button>
 
             <button
@@ -1163,6 +1366,343 @@ export default function NfcTagReaderCustomizer() {
             <span>Manage Beacon Fleet ({batchCards.filter(c => c.status === 'completed').length} active)</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 0: MY CARDS FLEET & LIVE CARD EDITOR                */}
+      {/* ======================================================== */}
+      {activeTab === 'fleet' && (
+        <div className="space-y-8 animate-in fade-in duration-300">
+          
+          {/* Fleet Header & Metrics Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="p-5 rounded-3xl bg-[#0e0f15] border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Total Fleet Cards</span>
+                <span className="text-2xl font-black text-white">{cards?.length || 0}</span>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                <CreditCard className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-[#0e0f15] border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Active Tappable</span>
+                <span className="text-2xl font-black text-emerald-400">
+                  {cards?.filter(c => c.active !== false).length || 0}
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
+                <Radio className="w-5 h-5 animate-pulse" />
+              </div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-[#0e0f15] border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Total Taps Logged</span>
+                <span className="text-2xl font-black text-indigo-400">
+                  {cards?.reduce((acc, c) => acc + (c.tapsCount || 0), 0) || 0}
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-indigo-400/10 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
+                <Scan className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-400/40 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono text-amber-300 font-bold uppercase tracking-wider block">Ready to Create?</span>
+                <button
+                  onClick={() => {
+                    handleCancelEdit();
+                    setActiveTab('customizer');
+                  }}
+                  className="mt-1 px-3 py-1 bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md shadow-amber-500/20 flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Design New Card</span>
+                </button>
+              </div>
+              <Sparkles className="w-7 h-7 text-amber-400 opacity-80" />
+            </div>
+          </div>
+
+          {/* Search & Actions Bar */}
+          <div className="p-4 rounded-3xl bg-[#0c0c12] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="relative w-full sm:max-w-md">
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={cardSearchQuery}
+                onChange={e => setCardSearchQuery(e.target.value)}
+                placeholder="Search cards by name, business, location, or tag URL..."
+                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-white text-xs placeholder:text-zinc-500 focus:outline-none focus:border-amber-400 transition-all font-mono"
+              />
+              {cardSearchQuery && (
+                <button
+                  onClick={() => setCardSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white text-xs font-mono"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <span className="text-[11px] font-mono text-zinc-400">
+                Showing {
+                  (cards || []).filter(c => {
+                    if (!cardSearchQuery.trim()) return true;
+                    const q = cardSearchQuery.toLowerCase();
+                    return (
+                      c.cardName?.toLowerCase().includes(q) ||
+                      c.businessName?.toLowerCase().includes(q) ||
+                      c.assignedLocation?.toLowerCase().includes(q) ||
+                      c.contactFullName?.toLowerCase().includes(q) ||
+                      c.profileType?.toLowerCase().includes(q) ||
+                      c.customDestinationUrl?.toLowerCase().includes(q) ||
+                      c.googleReviewUrl?.toLowerCase().includes(q)
+                    );
+                  }).length
+                } of {cards?.length || 0} Cards
+              </span>
+            </div>
+          </div>
+
+          {/* Cards Fleet Grid */}
+          {(!cards || cards.length === 0) ? (
+            <div className="p-12 rounded-3xl bg-[#0c0c12] border border-white/10 text-center space-y-4">
+              <div className="w-16 h-16 rounded-3xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-3xl mx-auto">
+                📇
+              </div>
+              <div className="space-y-1 max-w-md mx-auto">
+                <h3 className="text-lg font-black text-white uppercase italic">Your NFC Card Fleet is Empty</h3>
+                <p className="text-xs text-zinc-400 font-mono">
+                  Create your first custom business card, Google Review booster, or 4x4 dispatch beacon to start managing and flashing physical tags.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  handleCancelEdit();
+                  setActiveTab('customizer');
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/20 inline-flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Your First NFC Card</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(cards || [])
+                .filter(c => {
+                  if (!cardSearchQuery.trim()) return true;
+                  const q = cardSearchQuery.toLowerCase();
+                  return (
+                    c.cardName?.toLowerCase().includes(q) ||
+                    c.businessName?.toLowerCase().includes(q) ||
+                    c.assignedLocation?.toLowerCase().includes(q) ||
+                    c.contactFullName?.toLowerCase().includes(q) ||
+                    c.profileType?.toLowerCase().includes(q) ||
+                    c.customDestinationUrl?.toLowerCase().includes(q) ||
+                    c.googleReviewUrl?.toLowerCase().includes(q)
+                  );
+                })
+                .map((card) => {
+                  const formFactorLabels: Record<string, { label: string; icon: string }> = {
+                    pvc_card: { label: 'PVC Card', icon: '💳' },
+                    acrylic_stand: { label: 'Acrylic Stand', icon: '🏛️' },
+                    disc_sticker: { label: 'Disc Sticker', icon: '🏷️' },
+                    wood_plaque: { label: 'Wood Plaque', icon: '🪵' },
+                    keychain_fob: { label: 'Keychain Fob', icon: '🛡️' }
+                  };
+
+                  const profileLabels: Record<string, { label: string; badgeColor: string }> = {
+                    google_review_booster: { label: '⭐ Google Reviews', badgeColor: 'bg-amber-400/10 text-amber-300 border-amber-400/30' },
+                    digital_biz_card: { label: '📇 Digital vCard', badgeColor: 'bg-blue-400/10 text-blue-300 border-blue-400/30' },
+                    menu_tap_to_order: { label: '🍔 Menu Tap-to-Order', badgeColor: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/30' },
+                    loyalty_rewards: { label: '🎁 Loyalty Rewards', badgeColor: 'bg-purple-400/10 text-purple-300 border-purple-400/30' },
+                    event_vip_pass: { label: '🎟️ Event VIP Pass', badgeColor: 'bg-pink-400/10 text-pink-300 border-pink-400/30' },
+                    airbnb_wifi_plaque: { label: '📡 Wi-Fi Auto-Connect', badgeColor: 'bg-cyan-400/10 text-cyan-300 border-cyan-400/30' },
+                    custom_url: { label: '🔗 Custom URL', badgeColor: 'bg-zinc-400/10 text-zinc-300 border-zinc-400/30' }
+                  };
+
+                  const ffInfo = formFactorLabels[card.hardwareFormFactor || 'pvc_card'] || { label: 'NFC Card', icon: '💳' };
+                  const pfInfo = profileLabels[card.profileType || 'custom_url'] || { label: 'Custom URL', badgeColor: 'bg-white/10 text-white border-white/10' };
+                  const isCurrentlyEditing = editingCardId === card.id;
+
+                  return (
+                    <div
+                      key={card.id}
+                      className={`relative rounded-3xl p-5 bg-[#0e0f14] border transition-all duration-300 flex flex-col justify-between space-y-4 group hover:shadow-2xl hover:shadow-amber-500/10 ${
+                        isCurrentlyEditing
+                          ? 'border-amber-400 ring-2 ring-amber-400/30 bg-amber-500/[0.03]'
+                          : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      {/* Top Bar with Form Factor & Active Status Toggle */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base">{ffInfo.icon}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono font-bold text-zinc-300 uppercase">
+                            {ffInfo.label}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateCard(card.id, { active: card.active === false ? true : false })}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase transition-all flex items-center gap-1 border ${
+                              card.active !== false
+                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                            }`}
+                            title="Toggle active status"
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${card.active !== false ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`}></span>
+                            <span>{card.active !== false ? 'Active' : 'Paused'}</span>
+                          </button>
+
+                          {isCurrentlyEditing && (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black text-[9px] font-black uppercase tracking-wider">
+                              Editing
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Card Mini Preview Banner */}
+                      <div 
+                        className="rounded-2xl p-4 border flex items-center justify-between gap-3 relative overflow-hidden transition-all group-hover:scale-[1.01]"
+                        style={{
+                          backgroundColor: card.primaryColor || '#0f172a',
+                          borderColor: 'rgba(255,255,255,0.15)'
+                        }}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 z-10">
+                          {card.logoUrl && card.logoUrl.startsWith('http') ? (
+                            <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/40 border border-white/20 shrink-0">
+                              <img src={card.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl shrink-0">
+                              {card.logoUrl || '🌲'}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <h4 className="text-white font-black italic text-sm tracking-tight truncate">
+                              {card.businessName || card.cardName}
+                            </h4>
+                            <p className="text-[10px] text-white/70 font-mono truncate">
+                              {card.assignedLocation || 'Main Terminal'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 z-10">
+                          <Radio className="w-4 h-4 text-amber-400" />
+                        </div>
+
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+                      </div>
+
+                      {/* Profile Type & Payload Target */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${pfInfo.badgeColor}`}>
+                            {pfInfo.label}
+                          </span>
+                          <span className="text-[10px] font-mono text-zinc-400">
+                            <strong>{card.tapsCount || 0}</strong> taps logged
+                          </span>
+                        </div>
+
+                        {card.customHeadline && (
+                          <p className="text-xs text-zinc-300 line-clamp-1 italic font-medium">
+                            "{card.customHeadline}"
+                          </p>
+                        )}
+
+                        <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-[11px] font-mono text-zinc-400 truncate">
+                          <span className="text-amber-400 font-bold">Target: </span>
+                          <span className="text-zinc-300">
+                            {card.customDestinationUrl || card.googleReviewUrl || `https://townraise.org/tap/${card.id}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons for this Card */}
+                      <div className="pt-3 border-t border-white/10 grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => handleEditCard(card)}
+                          className={`py-2 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${
+                            isCurrentlyEditing
+                              ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20'
+                              : 'bg-amber-400/20 hover:bg-amber-400 text-amber-300 hover:text-black border border-amber-400/40'
+                          }`}
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>{isCurrentlyEditing ? 'Now Editing' : 'Edit in Studio'}</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenCardQrModal(card)}
+                          className="py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <QrCode className="w-3.5 h-3.5 text-amber-400" />
+                          <span>QR & Tap</span>
+                        </button>
+
+                        <button
+                          onClick={async () => {
+                            if (!('NDEFReader' in window)) {
+                              alert(`Web NFC requires Chrome on Android. You can test or copy payload link: https://townraise.org/tap/${card.id}`);
+                              return;
+                            }
+                            try {
+                              const ndef = new (window as any).NDEFReader();
+                              await ndef.write({
+                                records: [{ recordType: 'url', data: `https://townraise.org/tap/${card.id}` }]
+                              });
+                              playDeliveryChime();
+                              confetti({ particleCount: 30, spread: 50 });
+                              setWriteSuccessMsg(`✅ Physical tag flashed for "${card.cardName}"!`);
+                              setTimeout(() => setWriteSuccessMsg(null), 4000);
+                            } catch (err: any) {
+                              alert(`NFC write error: ${err.message || err}`);
+                            }
+                          }}
+                          className="py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-[11px] font-mono font-bold transition-all flex items-center justify-center gap-1"
+                        >
+                          <Radio className="w-3 h-3 text-emerald-400" />
+                          <span>Flash Tag</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete card "${card.cardName || card.businessName}" from your fleet?`)) {
+                              deleteCard(card.id);
+                              if (editingCardId === card.id) {
+                                setEditingCardId(null);
+                              }
+                              setWriteSuccessMsg(`Deleted card from fleet.`);
+                              setTimeout(() => setWriteSuccessMsg(null), 3000);
+                            }
+                          }}
+                          className="py-2 px-3 bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-300 border border-white/5 hover:border-red-500/30 rounded-xl text-[11px] font-mono font-bold transition-all flex items-center justify-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+
         </div>
       )}
 
@@ -1660,10 +2200,90 @@ export default function NfcTagReaderCustomizer() {
       {/* TAB 3: CUSTOMIZER & VISUAL CARD CANVAS                  */}
       {/* ======================================================== */}
       {activeTab === 'customizer' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
           
           {/* Left 6 Cols: Live Interactive Visualizer Canvas */}
-          <div className="lg:col-span-6 space-y-6 sticky top-28">
+          <div className="lg:col-span-6 space-y-4 sticky top-28">
+
+            {/* Quick Card Fleet Switcher & New Button */}
+            {cards && cards.length > 0 && (
+              <div className="p-3 bg-[#0e0f14] border border-white/10 rounded-2xl flex items-center justify-between gap-3 text-xs font-mono">
+                <div className="flex items-center gap-2 shrink-0">
+                  <CreditCard className="w-4 h-4 text-amber-400" />
+                  <span className="text-zinc-400 text-[11px] font-bold uppercase">Card:</span>
+                </div>
+                <select
+                  value={editingCardId || 'new'}
+                  onChange={(e) => {
+                    if (e.target.value === 'new') {
+                      handleCancelEdit();
+                    } else {
+                      const target = cards.find(c => c.id === e.target.value);
+                      if (target) handleEditCard(target);
+                    }
+                  }}
+                  className="bg-black/60 text-white border border-white/15 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-amber-400 w-full truncate"
+                >
+                  <option value="new">➕ + Create New Card</option>
+                  {cards.map(c => (
+                    <option key={c.id} value={c.id}>
+                      📇 {c.cardName || c.businessName} ({c.hardwareFormFactor?.toUpperCase() || 'PVC'})
+                    </option>
+                  ))}
+                </select>
+                {editingCardId && (
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-xl text-[11px] font-bold shrink-0 transition-all"
+                    title="Start fresh with a new blank card"
+                  >
+                    + New
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Active Edit Mode Banner */}
+            {editingCardId && (
+              <div className="p-4 rounded-2xl bg-amber-400/15 border border-amber-400/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in zoom-in-95 duration-200 shadow-lg shadow-amber-500/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-3 h-3 rounded-full bg-amber-400 animate-pulse shrink-0"></div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300 font-bold block">
+                      Active Live Editing Mode
+                    </span>
+                    <p className="text-xs font-black text-white line-clamp-1">
+                      {businessName} ({formFactor.toUpperCase()})
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  <button
+                    onClick={handleSaveToFleet}
+                    className="flex-1 sm:flex-initial px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-black text-[11px] font-black uppercase tracking-wider rounded-xl transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Save</span>
+                  </button>
+                  <button
+                    onClick={handleDuplicateCard}
+                    className="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-zinc-200 text-[11px] font-bold rounded-xl transition-all"
+                    title="Duplicate as new card"
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-2.5 py-1.5 bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-300 text-[11px] font-bold rounded-xl transition-all"
+                    title="Exit editing mode"
+                  >
+                    ✕ Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="p-6 md:p-8 rounded-3xl bg-[#0b0b10] border border-white/10 space-y-6 text-center">
               <div className="flex justify-between items-center text-xs font-mono">
                 <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
@@ -1800,13 +2420,34 @@ export default function NfcTagReaderCustomizer() {
 
               {/* Action Buttons underneath preview */}
               <div className="pt-2 flex flex-wrap sm:flex-nowrap items-center gap-3">
-                <button
-                  onClick={handleSaveToFleet}
-                  className="flex-1 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Save to Active Fleet</span>
-                </button>
+                {editingCardId ? (
+                  <>
+                    <button
+                      onClick={handleSaveToFleet}
+                      className="flex-1 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Save Changes to Card</span>
+                    </button>
+
+                    <button
+                      onClick={handleDuplicateCard}
+                      className="py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5"
+                      title="Duplicate card as a new copy in fleet"
+                    >
+                      <Plus className="w-4 h-4 text-amber-400" />
+                      <span>Duplicate</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleSaveToFleet}
+                    className="flex-1 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Save to Active Fleet</span>
+                  </button>
+                )}
 
                 <button
                   onClick={handleOrderPhysicalTag}
@@ -2630,6 +3271,123 @@ export default function NfcTagReaderCustomizer() {
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Sticker Labels</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CARD QR CODE & TAP FUNNEL MODAL */}
+      {activeQrModalCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="bg-[#0e0f14] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-lg w-full flex flex-col justify-between space-y-6 shadow-2xl relative">
+            <div className="flex justify-between items-start pb-3 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl border shadow-inner"
+                  style={{
+                    backgroundColor: activeQrModalCard.primaryColor || '#0f172a',
+                    borderColor: 'rgba(255,255,255,0.2)'
+                  }}
+                >
+                  {activeQrModalCard.logoUrl && activeQrModalCard.logoUrl.startsWith('http') ? (
+                    <img src={activeQrModalCard.logoUrl} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
+                  ) : (
+                    activeQrModalCard.logoUrl || '🌲'
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white uppercase italic leading-tight">
+                    {activeQrModalCard.businessName || activeQrModalCard.cardName}
+                  </h3>
+                  <p className="text-[11px] text-zinc-400 font-mono">
+                    NFC Hardware: {activeQrModalCard.hardwareFormFactor?.toUpperCase() || 'PVC CARD'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setActiveQrModalCard(null);
+                  setActiveCardQrDataUrl(null);
+                }}
+                className="text-zinc-400 hover:text-white text-sm font-mono px-2 py-1 rounded-lg hover:bg-white/5"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* QR Code Canvas Display */}
+            <div className="p-6 bg-white rounded-3xl text-center shadow-inner max-w-xs mx-auto w-full space-y-3">
+              <div className="w-48 h-48 mx-auto flex items-center justify-center">
+                {activeCardQrDataUrl ? (
+                  <img src={activeCardQrDataUrl} alt="NFC QR" className="w-full h-full object-contain" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-zinc-100 rounded-2xl text-zinc-400 font-mono text-xs">
+                    Generating QR...
+                  </div>
+                )}
+              </div>
+              <div className="border-t border-zinc-200 pt-2">
+                <p className="text-[10px] font-mono font-bold text-zinc-600 uppercase">
+                  Instant Dual-Mode Tap & Scan
+                </p>
+                <p className="text-xs font-black tracking-tight text-zinc-900 truncate">
+                  /tap/{activeQrModalCard.id}
+                </p>
+              </div>
+            </div>
+
+            {/* Target & Tap Link Info */}
+            <div className="space-y-2 p-3 bg-white/5 rounded-2xl border border-white/5 text-xs font-mono">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span className="text-[10px] uppercase font-bold text-amber-400">Tap Endpoint URL:</span>
+                <span className="text-[10px] text-zinc-400">Universal Dynamic Funnel</span>
+              </div>
+              <p className="text-white font-bold truncate">
+                https://townraise.org/tap/{activeQrModalCard.id}
+              </p>
+              {activeQrModalCard.customDestinationUrl && (
+                <div className="pt-1 border-t border-white/5 text-[11px] text-zinc-400 truncate">
+                  <span className="text-zinc-500">Redirects to: </span>
+                  <span className="text-zinc-300">{activeQrModalCard.customDestinationUrl}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://townraise.org/tap/${activeQrModalCard.id}`);
+                  setWriteSuccessMsg('Copied Tap URL to clipboard!');
+                  setTimeout(() => setWriteSuccessMsg(null), 3000);
+                }}
+                className="py-2.5 px-3 bg-white/10 hover:bg-white/15 text-white text-xs font-bold font-mono rounded-xl transition-all flex items-center justify-center gap-1.5"
+              >
+                <Copy className="w-3.5 h-3.5 text-amber-400" />
+                <span>Copy Tap Link</span>
+              </button>
+
+              <a
+                href={`/tap/${activeQrModalCard.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="py-2.5 px-3 bg-white/10 hover:bg-white/15 text-white text-xs font-bold font-mono rounded-xl transition-all flex items-center justify-center gap-1.5"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+                <span>Test Live Tap</span>
+              </a>
+
+              <button
+                onClick={() => {
+                  handleEditCard(activeQrModalCard);
+                  setActiveQrModalCard(null);
+                }}
+                className="col-span-2 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+              >
+                <Edit2 className="w-4 h-4" />
+                <span>Open in Visual Customizer to Edit</span>
               </button>
             </div>
           </div>
