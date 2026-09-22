@@ -135,7 +135,7 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     chipRecommendation: 'NTAG213 (Compact URL)',
     sampleHeadline: 'Tap table to browse live menu & order!',
     realWorldExample: 'PNB Eats Roadside Grill & Patio (Route 25, Effingham).',
-    defaultPayload: 'https://oasistap.local/site/pnb-eats'
+    defaultPayload: 'https://townraise.org/site/pnb-eats'
   },
   {
     id: 'driver_dispatch',
@@ -166,8 +166,8 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     bestHardware: 'Matte Jet Black Smart PVC Card or Brushed Metal NFC Card',
     chipRecommendation: 'NTAG215 / NTAG216 (High Storage for Contact Records)',
     sampleHeadline: 'Tap phone to save my contact info & card!',
-    realWorldExample: 'Walt Henderson (Walt’s Woodcraft) & Sean Martin (Oasis Founder).',
-    defaultPayload: 'BEGIN:VCARD\nVERSION:3.0\nFN:Sean Martin\nORG:Oasis Towns Network\nTEL:(508) 507-0305\nEMAIL:seanhse97@gmail.com\nADR:;;Effingham;NH;;03882;\nEND:VCARD'
+    realWorldExample: 'Walt Henderson (Walt’s Woodcraft) & Sean Martin (Townraise Lead).',
+    defaultPayload: 'BEGIN:VCARD\nVERSION:3.0\nFN:Sean Martin\nORG:Townraise Network\nTEL:(508) 507-0305\nEMAIL:frijj555@gmail.com\nADR:;;Effingham;NH;;03882;\nEND:VCARD'
   },
   {
     id: 'paypal_pay',
@@ -176,7 +176,7 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     categoryLabel: 'Cashless Payments & Tipping',
     badge: '💳 Instant Settlement',
     icon: '💵',
-    shortDesc: '1-tap opens PayPal (seanhse97@gmail.com / paypal.me/seanhse97) for instant payment or contactless tipping.',
+    shortDesc: '1-tap opens PayPal (frijj555@gmail.com / paypal.me/seanhse97) for instant payment or contactless tipping.',
     fullDesc: 'Perfect for roadside vendors, pop-up craft markets, food trucks, and courier delivery drivers. Customers tap the card or stand to instantly open PayPal, Venmo, or Apple Pay pre-filled to your verified recipient account with custom amounts.',
     howItWorks: 'Directly triggers PayPal / PayPal.me deep links with pre-configured recipient addresses for instant friction-free settlement.',
     bestHardware: 'Countertop Tip Jar Stand or Driver Lanyard Badge',
@@ -199,23 +199,23 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     chipRecommendation: 'NTAG213',
     sampleHeadline: 'Tap to follow our Instagram, TikTok & Facebook!',
     realWorldExample: 'Local boutiques, barber shops, coffee roasters, and artists in Carroll County.',
-    defaultPayload: 'https://instagram.com/oasistap'
+    defaultPayload: 'https://instagram.com/townraise'
   },
   {
     id: 'loyalty_pass',
-    title: 'Oasis Regional Loyalty Passport (+35 Pts per Tap)',
+    title: 'Townraise Regional Loyalty Passport (+35 Pts per Tap)',
     category: 'community',
     categoryLabel: 'Loyalty & Gamification',
     badge: '🏆 Earn Rewards',
     icon: '🎁',
     shortDesc: 'Reward recurring local customers with instant loyalty reward points and unlock secret community perks.',
-    fullDesc: 'Unite surrounding towns into one functional rewards economy. When customers tap the in-store Oasis Loyalty Tag, +25 to +50 points are credited to their regional digital pass. Points can be redeemed for delivery discounts, free coffees, or marketplace coupons.',
-    howItWorks: 'Connects to the Oasis Gamification Engine to authenticate customer wallets and increment town points.',
+    fullDesc: 'Unite surrounding towns into one functional rewards economy. When customers tap the in-store Townraise Loyalty Tag, +25 to +50 points are credited to their regional digital pass. Points can be redeemed for delivery discounts, free coffees, or marketplace coupons.',
+    howItWorks: 'Connects to the Townraise Gamification Engine to authenticate customer wallets and increment town points.',
     bestHardware: 'In-Store Wooden NFC Beacon or Register Tap Disc',
     chipRecommendation: 'NTAG213',
-    sampleHeadline: 'Tap to check in & earn +35 Oasis Loyalty Points!',
+    sampleHeadline: 'Tap to check in & earn +35 Townraise Loyalty Points!',
     realWorldExample: 'All participating merchants across Effingham, Ossipee, Freedom, and Tamworth.',
-    defaultPayload: 'https://oasistap.local/rewards?checkin=store-loyalty'
+    defaultPayload: 'https://townraise.org/rewards?checkin=store-loyalty'
   },
   {
     id: 'event_ticket',
@@ -225,13 +225,13 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     badge: '🎟️ Door Pass',
     icon: '🎪',
     shortDesc: '1-tap event check-in for live music patio nights, autumn craft fairs, brewery tastings, and town meetings.',
-    fullDesc: 'Eliminate paper ticket lines and check-in bottlenecks. Attendees tap their NFC Oasis wristband, keychain, or pass at the entrance to verify their RSVP, unlock VIP access, and collect community attendance badges.',
+    fullDesc: 'Eliminate paper ticket lines and check-in bottlenecks. Attendees tap their NFC Townraise wristband, keychain, or pass at the entrance to verify their RSVP, unlock VIP access, and collect community attendance badges.',
     howItWorks: 'Encodes secure event check-in tokens that authenticate with the live community event calendar.',
     bestHardware: 'Waterproof NFC Silicone Wristband or VIP Badge',
     chipRecommendation: 'NTAG213 / NTAG215',
-    sampleHeadline: 'Tap to check-in with your Oasis Event Pass!',
+    sampleHeadline: 'Tap to check-in with your Townraise Event Pass!',
     realWorldExample: 'Tamworth Distillers Craft Spirits Tasting & North Conway Foliage Craft Fair.',
-    defaultPayload: 'https://oasistap.local/events'
+    defaultPayload: 'https://townraise.org/events'
   },
   {
     id: 'work_quote',
@@ -242,12 +242,12 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     icon: '🪓',
     shortDesc: 'Showcase interactive Before & After craftsmanship proof and let homeowners request instant project quotes.',
     fullDesc: 'Leave behind an NFC magnet or card with homeowners after finishing a job. Neighbors and visitors tap the tag to see high-resolution Before & After transformation photos (roofing, decks, tree removal, stonework) and submit quote requests with one tap.',
-    howItWorks: 'Links directly to the contractor’s visual portfolio and pre-filled estimate request form on the Oasis Work Board.',
+    howItWorks: 'Links directly to the contractor’s visual portfolio and pre-filled estimate request form on the Townraise Work Board.',
     bestHardware: 'Magnetic NFC Job Site Plaque or Smart Business Card',
     chipRecommendation: 'NTAG213',
     sampleHeadline: 'Tap to view Before & After transformations & get quote!',
     realWorldExample: 'Walt Henderson Carpentry, Ossipee Valley Tree Works & Carroll County Trades.',
-    defaultPayload: 'https://oasistap.local/work?tab=gallery'
+    defaultPayload: 'https://townraise.org/work?tab=gallery'
   },
   {
     id: 'wifi',
@@ -295,7 +295,7 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     chipRecommendation: 'NTAG213',
     sampleHeadline: 'Tap to see pet owner contact info & medical details!',
     realWorldExample: 'Carroll County family pets, hunting dogs, and contractor toolkits.',
-    defaultPayload: 'https://oasistap.local/contact?item=pet-tag-max'
+    defaultPayload: 'https://townraise.org/contact?item=pet-tag-max'
   },
   {
     id: 'shortcuts',
@@ -327,7 +327,7 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     chipRecommendation: 'NTAG213',
     sampleHeadline: 'Tap to enter the live Carroll County Town Node!',
     realWorldExample: 'Effingham, Ossipee, Freedom, and Conway town welcome kiosks.',
-    defaultPayload: 'https://oasistap.local/towns?town=Effingham'
+    defaultPayload: 'https://townraise.org/towns?town=Effingham'
   },
   {
     id: 'url',
@@ -343,7 +343,7 @@ export const ALL_NFC_CAPABILITIES: NfcCapabilityItem[] = [
     chipRecommendation: 'NTAG213 / NTAG215 / NTAG216',
     sampleHeadline: 'Tap phone to launch custom experience!',
     realWorldExample: 'Custom brand campaigns and real estate virtual tours.',
-    defaultPayload: 'https://oasistap.local'
+    defaultPayload: 'https://townraise.org'
   }
 ];
 

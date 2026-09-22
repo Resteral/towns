@@ -136,12 +136,12 @@ export default function Navbar() {
               <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[9px] font-bold">🛠️ Work</span>
             </Link>
             <Link
-              href="/custom-nfc"
+              href="/creator"
               className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
-                pathname?.startsWith('/custom-nfc') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'
+                pathname?.startsWith('/creator') || pathname?.startsWith('/custom-nfc') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'
               }`}
             >
-              <span className="px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-300 border border-amber-400/30 text-[9px] font-bold">📡 NFC Studio</span>
+              <span className="px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-300 border border-amber-400/30 text-[9px] font-bold">⚡ NFC Creator</span>
             </Link>
             <Link
               href="/tourist-hunts"

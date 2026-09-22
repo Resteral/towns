@@ -71,12 +71,12 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-300">NFC Review Hardware</h4>
             <ul className="space-y-2.5 text-xs text-zinc-400 font-medium">
-              <li><Link href="/custom-nfc" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">⚡ 100-Card Batch Flasher</Link></li>
+              <li><Link href="/creator" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">⚡ All-in-One NFC Creator</Link></li>
+              <li><Link href="/dashboard/admin" className="hover:text-white transition-colors">📇 Admin Card Database</Link></li>
               <li><Link href="/marketplace?cat=cards" className="hover:text-white transition-colors">Obsidian PVC Smart Cards</Link></li>
               <li><Link href="/marketplace?cat=stands" className="hover:text-white transition-colors">Cyber Glass Table Stands</Link></li>
               <li><Link href="/marketplace?cat=cards" className="hover:text-white transition-colors">Eco-Bamboo Laser Cards</Link></li>
               <li><Link href="/marketplace?cat=stickers" className="hover:text-white transition-colors">3M Weatherproof Stickers</Link></li>
-              <li><Link href="/feedback" className="hover:text-white transition-colors">Public Feedback Center</Link></li>
             </ul>
           </div>
 

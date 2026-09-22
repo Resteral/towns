@@ -1436,6 +1436,14 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto shrink-0">
+              <Link
+                href="/creator"
+                className="px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-400 to-purple-500 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-amber-400/20 active:scale-95 hover:scale-105"
+              >
+                <Sparkles className="w-4 h-4 text-black" />
+                <span>All-in-One NFC Studio ➔</span>
+              </Link>
+
               <button
                 onClick={() => openCreateCardModal('digital_biz_card')}
                 className="px-4 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-amber-400/20 active:scale-95"
