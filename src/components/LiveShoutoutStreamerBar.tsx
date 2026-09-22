@@ -7,7 +7,7 @@ import { ShoutoutPost } from '@/lib/types';
 import { playChimeSound } from '@/lib/push-notifications';
 import { 
   Radio, Video, Eye, Volume2, VolumeX, Maximize2, 
-  Sparkles, ExternalLink, Play, X, Zap, Flame, Heart, MessageSquare
+  Sparkles, ExternalLink, Play, X, Zap, Flame, Heart, MessageSquare, Glasses
 } from 'lucide-react';
 
 export default function LiveShoutoutStreamerBar() {
@@ -81,10 +81,14 @@ export default function LiveShoutoutStreamerBar() {
           
           {/* Left: Live Broadcaster Status Indicator */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="flex items-center gap-2 px-3 py-1 bg-red-600/20 border border-red-500/40 rounded-full text-red-400 text-[10px] font-mono font-black uppercase tracking-wider animate-pulse shadow-lg shadow-red-500/20">
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-wider animate-pulse shadow-lg ${
+              currentStream?.isMetaGlassesPov
+                ? 'bg-purple-600/30 border border-purple-500/50 text-purple-300 shadow-purple-500/20'
+                : 'bg-red-600/20 border border-red-500/40 text-red-400 shadow-red-500/20'
+            }`}>
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              <Radio className="w-3.5 h-3.5" />
-              <span>LIVE STREAMER</span>
+              {currentStream?.isMetaGlassesPov ? <Glasses className="w-3.5 h-3.5 text-purple-300" /> : <Radio className="w-3.5 h-3.5" />}
+              <span>{currentStream?.isMetaGlassesPov ? '🕶️ GLASSES POV' : 'LIVE STREAMER'}</span>
             </div>
 
             {currentStream && (
@@ -168,16 +172,20 @@ export default function LiveShoutoutStreamerBar() {
             {/* Header */}
             <div className="flex justify-between items-center pb-3 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <div className="px-3 py-1 bg-red-600 text-white font-mono font-black text-[10px] rounded-full uppercase flex items-center gap-1.5 animate-pulse">
-                  <Radio className="w-3 h-3" />
-                  <span>LIVE TRANSMISSION</span>
+                <div className={`px-3 py-1 font-mono font-black text-[10px] rounded-full uppercase flex items-center gap-1.5 animate-pulse text-white ${
+                  selectedStream.isMetaGlassesPov 
+                    ? 'bg-purple-600 shadow-md shadow-purple-600/30' 
+                    : 'bg-red-600'
+                }`}>
+                  {selectedStream.isMetaGlassesPov ? <Glasses className="w-3 h-3 text-purple-200" /> : <Radio className="w-3 h-3" />}
+                  <span>{selectedStream.isMetaGlassesPov ? '🕶️ META GLASSES POV' : 'LIVE TRANSMISSION'}</span>
                 </div>
                 <div>
                   <h3 className="text-lg font-black italic text-white uppercase leading-tight">
                     {selectedStream.streamTitle || `${selectedStream.authorName}'s Live Broadcast`}
                   </h3>
                   <p className="text-[11px] font-mono text-zinc-400">
-                    Host: <strong className="text-amber-400">{selectedStream.authorName}</strong> ({selectedStream.authorHandle}) • {selectedStream.streamPlatform || 'Oasis Live Stream'}
+                    Host: <strong className="text-amber-400">{selectedStream.authorName}</strong> ({selectedStream.authorHandle}) • {selectedStream.povDeviceName || selectedStream.streamPlatform || 'Oasis Live Stream'}
                   </p>
                 </div>
               </div>
@@ -192,6 +200,20 @@ export default function LiveShoutoutStreamerBar() {
 
             {/* Video Player Display Container */}
             <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 relative group">
+              {selectedStream.isMetaGlassesPov && (
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-black/75 backdrop-blur-md rounded-full border border-purple-500/40 text-[9px] font-mono text-purple-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span>{selectedStream.povTelemetry?.townNode || selectedStream.town || 'Effingham Hub'} • {selectedStream.povTelemetry?.speedMph || 24} MPH</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/75 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-mono text-emerald-300">
+                    <span>AWD 4x4</span>
+                    <span>•</span>
+                    <span>5-MIC 360° AUDIO</span>
+                  </div>
+                </div>
+              )}
+
               {selectedStream.streamUrl ? (
                 (() => {
                   const embedUrl = getEmbedUrl(selectedStream.streamUrl, selectedStream.streamPlatform);
@@ -221,12 +243,12 @@ export default function LiveShoutoutStreamerBar() {
               ) : (
                 /* Fallback Stream Simulation Screen */
                 <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-950/60 via-[#0a0a14] to-black p-8 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-3xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-3xl animate-bounce">
-                    📡
+                  <div className="w-16 h-16 rounded-3xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-3xl animate-bounce">
+                    {selectedStream.isMetaGlassesPov ? '🕶️' : '📡'}
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-xl font-black italic uppercase text-white">
-                      {selectedStream.authorName} Vanguard Live Dispatch
+                      {selectedStream.authorName} {selectedStream.isMetaGlassesPov ? 'Meta Ray-Ban POV Wire' : 'Vanguard Live Dispatch'}
                     </h4>
                     <p className="text-xs text-zinc-400 max-w-md font-mono">
                       {selectedStream.content}
@@ -234,7 +256,7 @@ export default function LiveShoutoutStreamerBar() {
                   </div>
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono text-xs">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                    Townraise Audio Wire Transmitting Active Dispatch
+                    Townraise POV Broadcast Transmitting Live Telemetry
                   </div>
                 </div>
               )}

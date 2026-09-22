@@ -10,8 +10,9 @@ import LiveShoutoutStreamerBar from '@/components/LiveShoutoutStreamerBar';
 import { 
   Radio, Sparkles, MessageSquare, Flame, Zap, Heart, 
   Send, Plus, ShoppingBag, Truck, Star, ArrowRight, ShieldCheck, 
-  User, UserCheck, CheckCircle2, Video, Eye, Play, Volume2, Maximize2
+  User, UserCheck, CheckCircle2, Video, Eye, Play, Volume2, Maximize2, Glasses
 } from 'lucide-react';
+import MetaGlassesLiveStreamModal from '@/components/MetaGlassesLiveStreamModal';
 
 export default function CommunityFeedPage() {
   const { shoutouts, sellers, addShoutout, reactToShoutout, currentUser } = useNfcStore();
@@ -27,9 +28,10 @@ export default function CommunityFeedPage() {
 
   // Live Streamer Broadcast State
   const [isLiveStream, setIsLiveStream] = useState(false);
-  const [streamPlatform, setStreamPlatform] = useState<'youtube' | 'twitch' | 'kick' | 'custom' | 'audio'>('youtube');
+  const [streamPlatform, setStreamPlatform] = useState<'youtube' | 'twitch' | 'kick' | 'custom' | 'audio' | 'meta_glasses' | 'instagram' | 'facebook'>('meta_glasses');
   const [streamUrl, setStreamUrl] = useState('');
   const [streamTitle, setStreamTitle] = useState('');
+  const [isMetaGlassesModalOpen, setIsMetaGlassesModalOpen] = useState(false);
 
   const liveStreamsCount = shoutouts.filter(s => s.isLiveStream || s.tag === 'stream' || s.streamUrl).length;
 
@@ -140,6 +142,13 @@ export default function CommunityFeedPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setIsMetaGlassesModalOpen(true)}
+              className="px-6 py-3.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-purple-600/30 flex items-center gap-2 border border-purple-400/30 animate-pulse"
+            >
+              <Glasses className="w-4 h-4 text-purple-200" />
+              <span>🕶️ Meta Glasses POV</span>
+            </button>
             <button
               onClick={() => {
                 if (currentUser) setAuthorName(currentUser.name);
@@ -444,6 +453,12 @@ export default function CommunityFeedPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {post.isMetaGlassesPov && (
+                        <span className="px-2.5 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full text-[9px] font-mono uppercase font-black tracking-wider flex items-center gap-1.5 shadow-md shadow-purple-600/30 border border-purple-400/40">
+                          <Glasses className="w-3 h-3 text-purple-200" />
+                          <span>🕶️ META RAY-BAN POV</span>
+                        </span>
+                      )}
                       {isStream && (
                         <span className="px-2.5 py-1 bg-red-600 text-white rounded-full text-[9px] font-mono uppercase font-black tracking-wider flex items-center gap-1.5 animate-pulse shadow-md shadow-red-600/30">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
@@ -459,12 +474,20 @@ export default function CommunityFeedPage() {
                   {/* Stream Title & Embedded Player if Live Stream */}
                   {isStream && (
                     <div className="space-y-3 pt-1">
-                      {post.streamTitle && (
-                        <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        {post.streamTitle && (
                           <h4 className="text-base font-black italic uppercase text-amber-300 flex items-center gap-2">
                             <Radio className="w-4 h-4 text-red-400" />
                             <span>{post.streamTitle}</span>
                           </h4>
+                        )}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {post.povDeviceName && (
+                            <span className="text-[9px] font-mono text-purple-300 flex items-center gap-1 px-2 py-0.5 bg-purple-950/40 rounded-lg border border-purple-500/30">
+                              <Glasses className="w-2.5 h-2.5" />
+                              <span>{post.povDeviceName}</span>
+                            </span>
+                          )}
                           {post.streamViewerCount && (
                             <span className="text-[10px] font-mono text-zinc-400 flex items-center gap-1 px-2 py-0.5 bg-white/5 rounded-lg border border-white/10">
                               <Eye className="w-3 h-3 text-red-400" />
@@ -472,7 +495,7 @@ export default function CommunityFeedPage() {
                             </span>
                           )}
                         </div>
-                      )}
+                      </div>
 
                       {/* Embedded Player Container */}
                       <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black border border-red-500/30 relative">
@@ -495,14 +518,31 @@ export default function CommunityFeedPage() {
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-950/40 via-black to-indigo-950/40 p-6 text-center space-y-3">
                             <div className="w-12 h-12 rounded-2xl bg-red-600/20 border border-red-500/40 flex items-center justify-center text-2xl animate-bounce">
-                              📡
+                              {post.isMetaGlassesPov ? '🕶️' : '📡'}
                             </div>
                             <p className="text-sm font-bold text-white uppercase font-mono">
-                              Live Stream Broadcaster Channel
+                              {post.isMetaGlassesPov ? 'Meta Glasses POV Stream Channel' : 'Live Stream Broadcaster Channel'}
                             </p>
                             <p className="text-xs text-zinc-400 max-w-sm">
-                              Host is broadcasting active Carroll County updates and dispatch logs.
+                              {post.isMetaGlassesPov 
+                                ? 'Broadcasting live first-person field camera & 5-mic spatial audio from Meta Ray-Ban Smart Glasses.'
+                                : 'Host is broadcasting active Carroll County updates and dispatch logs.'}
                             </p>
+                          </div>
+                        )}
+
+                        {/* Meta Glasses Telemetry Overlay Bar */}
+                        {post.isMetaGlassesPov && (
+                          <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+                            <div className="flex items-center gap-2 px-3 py-1 bg-black/70 backdrop-blur-md rounded-full border border-purple-500/40 text-[9px] font-mono text-purple-300">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                              <span>{post.povTelemetry?.townNode || post.town || 'Effingham Hub'} • {post.povTelemetry?.speedMph || 24} MPH</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/70 backdrop-blur-md rounded-full border border-white/20 text-[9px] font-mono text-emerald-300">
+                              <span>AWD 4x4</span>
+                              <span>•</span>
+                              <span>5-MIC 360°</span>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -616,6 +656,11 @@ export default function CommunityFeedPage() {
         </div>
 
       </div>
+
+      <MetaGlassesLiveStreamModal
+        isOpen={isMetaGlassesModalOpen}
+        onClose={() => setIsMetaGlassesModalOpen(false)}
+      />
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>

@@ -81,11 +81,20 @@ export interface ShoutoutPost {
 
   // Live Streamer Broadcaster Capabilities
   isLiveStream?: boolean;
-  streamPlatform?: 'youtube' | 'twitch' | 'kick' | 'custom' | 'audio';
+  streamPlatform?: 'youtube' | 'twitch' | 'kick' | 'custom' | 'audio' | 'meta_glasses' | 'instagram' | 'facebook';
   streamUrl?: string;
   streamTitle?: string;
   streamViewerCount?: number;
   streamStartedAt?: string;
+  isMetaGlassesPov?: boolean;
+  povDeviceName?: string;
+  povTelemetry?: {
+    speedMph?: number;
+    townNode?: string;
+    batteryPercent?: number;
+    isAwdActive?: boolean;
+    audioLatencyMs?: number;
+  };
 }
 
 export type NfcCardProfileType = 
