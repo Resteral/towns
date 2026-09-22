@@ -3,15 +3,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
-import { TradeCategory, BeforeAfterShowcase, WorkRequest } from '@/lib/types';
-import BeforeAfterSlider from '@/components/BeforeAfterSlider';
+import { TradeCategory, WorkRequest } from '@/lib/types';
 import ImageUpload from '@/components/ImageUpload';
 import AuthModal from '@/components/AuthModal';
 import { 
-  Wrench, Sparkles, Heart, Phone, Mail, ExternalLink, 
+  Wrench, Phone, Mail, ExternalLink, 
   MapPin, Clock, DollarSign, PlusCircle, CheckCircle2, 
   Search, Filter, ShieldCheck, Flame, MessageSquare, 
-  ArrowRight, ThumbsUp, Send, Briefcase, Star, AlertCircle, RefreshCw, UserCheck
+  ArrowRight, ThumbsUp, Send, Briefcase, Star, AlertCircle, RefreshCw, UserCheck,
+  Truck, Check
 } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<TradeCategory, { label: string; icon: string }> = {
@@ -30,10 +30,7 @@ const CATEGORY_LABELS: Record<TradeCategory, { label: string; icon: string }> = 
 
 export default function WorkAndTradesPage() {
   const { 
-    beforeAfterShowcases, 
     workRequests, 
-    addBeforeAfterShowcase, 
-    likeShowcase, 
     addWorkRequest,
     incrementWorkRequestQuotes,
     activeTown,
@@ -42,7 +39,7 @@ export default function WorkAndTradesPage() {
   } = useNfcStore();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'gallery' | 'jobs' | 'post_job' | 'advertise'>('gallery');
+  const [activeTab, setActiveTab] = useState<'jobs' | 'post_job' | 'dispatch'>('jobs');
   const [selectedCategory, setSelectedCategory] = useState<TradeCategory | 'all'>('all');
   const [selectedTown, setSelectedTown] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,24 +65,6 @@ export default function WorkAndTradesPage() {
   const [newJobBeforeImage, setNewJobBeforeImage] = useState('');
   const [jobPostSuccess, setJobPostSuccess] = useState(false);
 
-  // Contractor Post Before/After Showcase Form State
-  const [advBusinessName, setAdvBusinessName] = useState(currentUser?.name ? `${currentUser.name}'s Trade Services` : '');
-  const [advCategory, setAdvCategory] = useState<TradeCategory>('carpentry');
-  const [advProjectTitle, setAdvProjectTitle] = useState('');
-  const [advDescription, setAdvDescription] = useState('');
-  const [advTown, setAdvTown] = useState(currentUser?.town || activeTown?.name || 'Effingham');
-  const [advBeforeImage, setAdvBeforeImage] = useState('');
-  const [advAfterImage, setAdvAfterImage] = useState('');
-  const [advBeforeCaption, setAdvBeforeCaption] = useState('Old / Damaged Condition');
-  const [advAfterCaption, setAdvAfterCaption] = useState('Finished Transformation');
-  const [advCostEstimate, setAdvCostEstimate] = useState('$1,500 - $3,500');
-  const [advTimeToComplete, setAdvTimeToComplete] = useState('2-3 Days');
-  const [advPhone, setAdvPhone] = useState(currentUser?.phone || '(603) ');
-  const [advEmail, setAdvEmail] = useState(currentUser?.email || '');
-  const [advWebsite, setAdvWebsite] = useState('');
-  const [advSpecialOffer, setAdvSpecialOffer] = useState('★ 10% Off for Local Carroll County Residents!');
-  const [advPostSuccess, setAdvPostSuccess] = useState(false);
-
   // Sync state when currentUser switches
   useEffect(() => {
     if (currentUser) {
@@ -95,26 +74,8 @@ export default function WorkAndTradesPage() {
 
       setQuoteContractorName(currentUser.name);
       setQuoteContractorPhone(currentUser.phone);
-
-      setAdvBusinessName(currentUser.role === 'contractor' || currentUser.role === 'merchant' ? `${currentUser.name} Trades` : currentUser.name);
-      setAdvPhone(currentUser.phone);
-      if (currentUser.email) setAdvEmail(currentUser.email);
-      if (currentUser.town) setAdvTown(currentUser.town);
     }
   }, [currentUser]);
-
-  // Filtered Showcases
-  const filteredShowcases = useMemo(() => {
-    return beforeAfterShowcases.filter(showcase => {
-      const matchCat = selectedCategory === 'all' || showcase.businessCategory === selectedCategory;
-      const matchTown = selectedTown === 'all' || showcase.town.toLowerCase().includes(selectedTown.toLowerCase());
-      const matchQuery = !searchQuery || 
-        showcase.projectTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        showcase.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        showcase.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchCat && matchTown && matchQuery;
-    });
-  }, [beforeAfterShowcases, selectedCategory, selectedTown, searchQuery]);
 
   // Filtered Work Requests
   const filteredWorkRequests = useMemo(() => {
@@ -158,46 +119,6 @@ export default function WorkAndTradesPage() {
     }, 1800);
   };
 
-  // Handle Contractor Showcase Submit
-  const handleCreateShowcase = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!advBusinessName || !advProjectTitle || !advPhone || !advBeforeImage || !advAfterImage) {
-      alert('Please provide your business name, project title, phone, and upload both Before & After photos.');
-      return;
-    }
-
-    addBeforeAfterShowcase({
-      businessName: advBusinessName,
-      businessCategory: advCategory,
-      projectTitle: advProjectTitle,
-      description: advDescription,
-      town: advTown,
-      state: 'NH',
-      beforeImageUrl: advBeforeImage,
-      afterImageUrl: advAfterImage,
-      beforeCaption: advBeforeCaption,
-      afterCaption: advAfterCaption,
-      costOrBudgetEstimate: advCostEstimate,
-      timeToComplete: advTimeToComplete,
-      contactPhone: advPhone,
-      contactEmail: advEmail,
-      websiteUrl: advWebsite,
-      specialOffer: advSpecialOffer,
-      rating: 5.0,
-      featured: true,
-    });
-
-    setAdvPostSuccess(true);
-    setTimeout(() => {
-      setAdvPostSuccess(false);
-      setActiveTab('gallery');
-      setAdvProjectTitle('');
-      setAdvDescription('');
-      setAdvBeforeImage('');
-      setAdvAfterImage('');
-    }, 1800);
-  };
-
   // Handle Submit Quote
   const handleSendQuote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,31 +150,19 @@ export default function WorkAndTradesPage() {
         <div className="text-center space-y-4 max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-black uppercase tracking-widest">
             <Wrench className="w-3.5 h-3.5 text-amber-400" />
-            <span>Carroll County Trades & Visual Showcase Hub</span>
+            <span>Carroll County Trades & Work Request Hub</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white">
-            Before & After <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-500 bg-clip-text text-transparent">Transformations</span>
+            Trades & Contractor <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-500 bg-clip-text text-transparent">Job Board</span>
           </h1>
           
           <p className="text-base sm:text-lg text-white/60 font-medium leading-relaxed">
-            Inspect real local craftsmanship with our interactive split-sliders. Advertise your trade business with verified before/after project proofs, or post a work request to get fast quotes from reputable Carroll County contractors.
+            Direct coordination for local Carroll County trade projects, emergency home repairs, timber clearing, landscaping, and contractor dispatch. Post a job in 60 seconds or quote open work requests.
           </p>
 
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button
-              onClick={() => setActiveTab('gallery')}
-              className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
-                activeTab === 'gallery'
-                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 scale-105'
-                  : 'bg-white/5 hover:bg-white/10 text-white/80 border border-white/10'
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Before & After Gallery ({beforeAfterShowcases.length})</span>
-            </button>
-
             <button
               onClick={() => setActiveTab('jobs')}
               className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
@@ -279,21 +188,21 @@ export default function WorkAndTradesPage() {
             </button>
 
             <button
-              onClick={() => setActiveTab('advertise')}
+              onClick={() => setActiveTab('dispatch')}
               className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
-                activeTab === 'advertise'
+                activeTab === 'dispatch'
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-black shadow-lg shadow-emerald-500/20 scale-105'
                   : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
               }`}
             >
-              <Flame className="w-4 h-4" />
-              <span>Advertise Your Trade</span>
+              <Truck className="w-4 h-4" />
+              <span>Priority Courier & Hauling</span>
             </button>
           </div>
         </div>
 
-        {/* Universal Filter & Search Bar (For Gallery and Job Board) */}
-        {(activeTab === 'gallery' || activeTab === 'jobs') && (
+        {/* Universal Filter & Search Bar (For Job Board) */}
+        {activeTab === 'jobs' && (
           <div className="p-5 bg-white/[0.03] border border-white/10 rounded-3xl backdrop-blur-xl space-y-4">
             <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
               
@@ -302,7 +211,7 @@ export default function WorkAndTradesPage() {
                 <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search projects, trades, contractors..."
+                  placeholder="Search work requests, trades..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
@@ -372,190 +281,18 @@ export default function WorkAndTradesPage() {
           </div>
         )}
 
-        {/* TAB 1: BEFORE & AFTER SHOWCASE GALLERY */}
-        {activeTab === 'gallery' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-                  <span>Interactive Transformation Showcase</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20">
-                    {filteredShowcases.length} Projects
-                  </span>
-                </h2>
-                <p className="text-xs text-white/50">Drag the slider handle left/right to compare before and after photos</p>
-              </div>
-
-              <button
-                onClick={() => setActiveTab('advertise')}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-black rounded-2xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all shadow-lg shadow-emerald-500/20"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Showcase Your Project</span>
-              </button>
-            </div>
-
-            {filteredShowcases.length === 0 ? (
-              <div className="text-center py-20 bg-white/[0.02] border border-white/10 rounded-3xl space-y-4">
-                <Wrench className="w-12 h-12 text-white/20 mx-auto" />
-                <h3 className="text-lg font-bold text-white">No transformation projects match your filter</h3>
-                <p className="text-xs text-white/40 max-w-md mx-auto">
-                  Try clearing your search or category filters, or be the first local business to advertise in this category!
-                </p>
-                <button
-                  onClick={() => { setSelectedCategory('all'); setSelectedTown('all'); setSearchQuery(''); }}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold"
-                >
-                  Reset Filters
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {filteredShowcases.map((showcase) => (
-                  <div 
-                    key={showcase.id}
-                    className="bg-[#0b0c10] border border-white/10 hover:border-amber-400/40 rounded-3xl p-5 space-y-5 transition-all duration-300 shadow-2xl flex flex-col justify-between group"
-                  >
-                    {/* Top Business Bar */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30 flex items-center gap-1">
-                            <span>{CATEGORY_LABELS[showcase.businessCategory]?.icon || '🛠️'}</span>
-                            <span>{CATEGORY_LABELS[showcase.businessCategory]?.label || showcase.businessCategory}</span>
-                          </span>
-                          <span className="text-[11px] font-bold text-white/50 flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-amber-400" />
-                            {showcase.town}, {showcase.state}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-black text-white group-hover:text-amber-300 transition-colors">
-                          {showcase.businessName}
-                        </h3>
-                      </div>
-
-                      {/* Like button */}
-                      <button
-                        onClick={() => likeShowcase(showcase.id)}
-                        className={`px-3 py-1.5 rounded-2xl text-xs font-black flex items-center gap-1.5 border transition-all ${
-                          showcase.userLiked
-                            ? 'bg-rose-500/20 text-rose-400 border-rose-500/40 scale-105'
-                            : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        <Heart className={`w-3.5 h-3.5 ${showcase.userLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
-                        <span>{showcase.likesCount || 0}</span>
-                      </button>
-                    </div>
-
-                    {/* Interactive Before/After Split Slider */}
-                    <div className="rounded-2xl overflow-hidden shadow-xl border border-white/5">
-                      <BeforeAfterSlider
-                        beforeImage={showcase.beforeImageUrl}
-                        afterImage={showcase.afterImageUrl}
-                        beforeLabel={showcase.beforeCaption || 'BEFORE'}
-                        afterLabel={showcase.afterCaption || 'AFTER'}
-                        aspectRatio="photo"
-                      />
-                    </div>
-
-                    {/* Project Details */}
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="font-bold text-white text-base leading-snug">
-                          {showcase.projectTitle}
-                        </h4>
-                        <p className="text-xs text-white/60 leading-relaxed mt-1">
-                          {showcase.description}
-                        </p>
-                      </div>
-
-                      {/* Metrics: Budget & Duration */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 text-[11px]">
-                        {showcase.costOrBudgetEstimate && (
-                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
-                            <span className="text-white/40 block text-[9px] uppercase font-black">Project Cost</span>
-                            <span className="font-black text-amber-400">{showcase.costOrBudgetEstimate}</span>
-                          </div>
-                        )}
-                        {showcase.timeToComplete && (
-                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
-                            <span className="text-white/40 block text-[9px] uppercase font-black">Duration</span>
-                            <span className="font-bold text-white">{showcase.timeToComplete}</span>
-                          </div>
-                        )}
-                        <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
-                          <span className="text-white/40 block text-[9px] uppercase font-black">Rating</span>
-                          <span className="font-bold text-amber-300 flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            {showcase.rating?.toFixed(1) || '5.0'} Verified
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Special Promo Offer Badge */}
-                      {showcase.specialOffer && (
-                        <div className="p-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-2">
-                          <Flame className="w-4 h-4 text-amber-400 shrink-0 animate-bounce" />
-                          <span>{showcase.specialOffer}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Contact / Quote Action Bar */}
-                    <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-white/10">
-                      <a
-                        href={`tel:${showcase.contactPhone}`}
-                        className="flex-1 min-w-[140px] px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-black text-xs font-black uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all text-center flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>Call {showcase.contactPhone}</span>
-                      </a>
-
-                      {showcase.contactEmail && (
-                        <a
-                          href={`mailto:${showcase.contactEmail}?subject=Quote Request from Townraise - ${showcase.projectTitle}`}
-                          className="px-3.5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold transition-all flex items-center gap-1.5"
-                          title="Send Email"
-                        >
-                          <Mail className="w-4 h-4 text-white/70" />
-                          <span className="hidden sm:inline">Email</span>
-                        </a>
-                      )}
-
-                      {showcase.websiteUrl && (
-                        <a
-                          href={showcase.websiteUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3.5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold transition-all flex items-center gap-1.5"
-                          title="Visit Website"
-                        >
-                          <ExternalLink className="w-4 h-4 text-white/70" />
-                          <span className="hidden sm:inline">Website</span>
-                        </a>
-                      )}
-                    </div>
-
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 2: LOCAL WORK REQUEST BOARD */}
+        {/* TAB 1: LOCAL WORK REQUEST BOARD */}
         {activeTab === 'jobs' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-                  <span>Homeowner Work Request Board</span>
+                  <span>Homeowner & Business Work Requests</span>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                     {filteredWorkRequests.length} Open Jobs
                   </span>
                 </h2>
-                <p className="text-xs text-white/50">Local Carroll County residents seeking licensed contractors, handymen & helpers</p>
+                <p className="text-xs text-white/50">Local Carroll County residents seeking licensed contractors, handymen & trade specialists</p>
               </div>
 
               <button
@@ -570,7 +307,7 @@ export default function WorkAndTradesPage() {
             {filteredWorkRequests.length === 0 ? (
               <div className="text-center py-20 bg-white/[0.02] border border-white/10 rounded-3xl space-y-4">
                 <Briefcase className="w-12 h-12 text-white/20 mx-auto" />
-                <h3 className="text-lg font-bold text-white">No work requests found matching your filter</h3>
+                <h3 className="text-lg font-bold text-white">No active work requests found</h3>
                 <p className="text-xs text-white/40 max-w-md mx-auto">
                   Have a repair, tree clearing, deck build, or landscaping task? Post it now and local contractors will contact you with quotes!
                 </p>
@@ -612,7 +349,7 @@ export default function WorkAndTradesPage() {
                         {req.title}
                       </h3>
 
-                      {/* Before Photo if uploaded */}
+                      {/* Photo if uploaded */}
                       {req.beforeImageUrl && (
                         <div className="relative rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/50">
                           <img 
@@ -686,7 +423,7 @@ export default function WorkAndTradesPage() {
           </div>
         )}
 
-        {/* TAB 3: POST A WORK REQUEST (HOMEOWNER) */}
+        {/* TAB 2: POST A WORK REQUEST (HOMEOWNER) */}
         {activeTab === 'post_job' && (
           <div className="max-w-2xl mx-auto bg-[#0b0c10] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
             <div className="space-y-1">
@@ -796,13 +533,13 @@ export default function WorkAndTradesPage() {
                   />
                 </div>
 
-                {/* Before Photo Upload */}
+                {/* Condition Photo Upload */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-black uppercase tracking-wider text-white/70">Current Condition Photo (Optional)</label>
+                  <label className="text-xs font-black uppercase tracking-wider text-white/70">Current Area Photo (Optional)</label>
                   <ImageUpload
                     value={newJobBeforeImage}
                     onChange={setNewJobBeforeImage}
-                    label="Upload Photo of Current Area / Problem"
+                    label="Upload Photo of Area / Problem"
                     subtitle="Take or upload a picture so contractors can provide accurate estimates"
                     aspectRatio="wide"
                   />
@@ -883,272 +620,96 @@ export default function WorkAndTradesPage() {
           </div>
         )}
 
-        {/* TAB 4: ADVERTISE YOUR BUSINESS / SHOWCASE BEFORE & AFTER (CONTRACTORS) */}
-        {activeTab === 'advertise' && (
+        {/* TAB 3: VANGUARD COURIER & HAULING DISPATCH */}
+        {activeTab === 'dispatch' && (
           <div className="max-w-3xl mx-auto bg-[#0b0c10] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-black uppercase tracking-wider border border-emerald-500/20">
-                <Flame className="w-3.5 h-3.5" />
-                <span>Contractor & Business Promotion</span>
+                <Truck className="w-3.5 h-3.5" />
+                <span>Regional Logistics & Vanguard Fleet</span>
               </div>
               <h2 className="text-2xl font-black text-white uppercase tracking-tight">
-                Advertise Your Business with Before & After Proof
+                Sean Martin 4x4 Priority Courier & Material Hauling
               </h2>
               <p className="text-xs text-white/60">
-                Showcase your best craftsmanship with an interactive before/after slider. Attract high-intent Carroll County customers ready to hire.
+                24/7 mountain courier runs, lumber pickups, hardware drops, dock firewood delivery, and emergency equipment transport.
               </p>
             </div>
 
-            {/* Contractor Account Identity Banner */}
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-xl shadow-inner">
-                  {currentUser?.avatar || '🛠️'}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white">
-                      Listing as Contractor: <strong className="text-emerald-400">{currentUser ? currentUser.name : 'Guest Business'}</strong>
-                    </span>
-                    {currentUser && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-bold uppercase">
-                        {currentUser.role}
-                      </span>
-                    )}
+            {/* Operator Card */}
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-white/[0.04] to-transparent border border-white/10 space-y-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-3xl shadow-inner">
+                    👑
                   </div>
-                  <p className="text-[11px] text-white/50 font-mono">
-                    {currentUser ? `📍 Phone: ${currentUser.phone} • Email: ${currentUser.email || 'None'} • Town: ${currentUser.town}, NH` : 'Sign in to auto-fill business credentials and receive direct homeowner leads.'}
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-black text-white">Sean Martin</h3>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-black uppercase border border-amber-400/30">
+                        Founding Lead
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/60">Silver Subaru Outback (AWD Vanguard Unit) • Plate: NH-VANGUARD</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-xs font-black uppercase text-emerald-400">Online & Ready</span>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsAuthModalOpen(true)}
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-emerald-400 hover:text-emerald-300 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
-              >
-                <span>{currentUser ? 'Switch Account' : 'Log In / Register'}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
+                  <span className="text-white/40 block text-[10px] uppercase font-bold">Direct Dispatch Line</span>
+                  <a href="tel:5085070305" className="text-amber-400 font-black text-sm hover:underline flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>(508) 507-0305</span>
+                  </a>
+                </div>
 
-            {advPostSuccess ? (
-              <div className="p-8 text-center bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-3 animate-in fade-in zoom-in-95">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
-                <h3 className="text-lg font-black text-white">Showcase Published to Hub!</h3>
-                <p className="text-xs text-white/70">Your interactive Before & After transformation is now live in the gallery.</p>
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
+                  <span className="text-white/40 block text-[10px] uppercase font-bold">Email Dispatch</span>
+                  <a href="mailto:frijj555@gmail.com" className="text-white font-bold hover:underline flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-white/60" />
+                    <span>frijj555@gmail.com</span>
+                  </a>
+                </div>
               </div>
-            ) : (
-              <form onSubmit={handleCreateShowcase} className="space-y-6">
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Business Name *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Ossipee Valley Tree & Land Works"
-                      value={advBusinessName}
-                      onChange={(e) => setAdvBusinessName(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Trade Category *</label>
-                    <select
-                      value={advCategory}
-                      onChange={(e) => setAdvCategory(e.target.value as TradeCategory)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white focus:outline-none focus:border-amber-400"
-                    >
-                      {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-                        <option key={k} value={k}>{v.icon} {v.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black uppercase tracking-wider text-white/70">Project Title / Transformation Summary *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Weathered Cedar Deck Teardown & Trex Composite Rebuild"
-                    value={advProjectTitle}
-                    onChange={(e) => setAdvProjectTitle(e.target.value)}
-                    className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black uppercase tracking-wider text-white/70">Project Description *</label>
-                  <textarea
-                    rows={3}
-                    required
-                    placeholder="Explain the problem before, materials used, technique, and final results achieved..."
-                    value={advDescription}
-                    onChange={(e) => setAdvDescription(e.target.value)}
-                    className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                  />
-                </div>
-
-                {/* DUAL BEFORE AND AFTER IMAGE UPLOADS */}
-                <div className="p-4 bg-white/[0.02] border border-white/10 rounded-3xl space-y-4">
+              <div className="space-y-2 pt-2">
+                <h4 className="text-xs font-black uppercase text-white/70">Hauling & Errand Capabilities:</h4>
+                <div className="grid grid-cols-2 gap-2 text-[11px] text-white/80">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    <h3 className="text-sm font-black uppercase tracking-wider text-white">Before & After Project Photos</h3>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Ace Hardware & Tool Pickups</span>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Before Image */}
-                    <div className="space-y-2">
-                      <ImageUpload
-                        value={advBeforeImage}
-                        onChange={setAdvBeforeImage}
-                        label="1. Upload BEFORE Photo *"
-                        subtitle="Original worn/damaged area before work started"
-                        aspectRatio="wide"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Before Caption (e.g. Rotting wood & cracked stairs)"
-                        value={advBeforeCaption}
-                        onChange={(e) => setAdvBeforeCaption(e.target.value)}
-                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                      />
-                    </div>
-
-                    {/* After Image */}
-                    <div className="space-y-2">
-                      <ImageUpload
-                        value={advAfterImage}
-                        onChange={setAdvAfterImage}
-                        label="2. Upload AFTER Photo *"
-                        subtitle="Completed transformation and clean finish"
-                        aspectRatio="wide"
-                      />
-                      <input
-                        type="text"
-                        placeholder="After Caption (e.g. Handcrafted Cedar Deck with Cable Railings)"
-                        value={advAfterCaption}
-                        onChange={(e) => setAdvAfterCaption(e.target.value)}
-                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                      />
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Hannaford Curbside Express</span>
                   </div>
-
-                  {/* Live Interactive Preview if both images uploaded */}
-                  {advBeforeImage && advAfterImage && (
-                    <div className="pt-3 space-y-2 border-t border-white/10">
-                      <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5" /> Interactive Split-Slider Live Preview:
-                      </span>
-                      <div className="rounded-2xl overflow-hidden border border-amber-400/30">
-                        <BeforeAfterSlider
-                          beforeImage={advBeforeImage}
-                          afterImage={advAfterImage}
-                          beforeLabel={advBeforeCaption}
-                          afterLabel={advAfterCaption}
-                          aspectRatio="photo"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Town Based In *</label>
-                    <select
-                      value={advTown}
-                      onChange={(e) => setAdvTown(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white focus:outline-none focus:border-amber-400"
-                    >
-                      {towns.map(t => (
-                        <option key={t.id} value={t.name}>{t.name}, NH</option>
-                      ))}
-                    </select>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Lakeside Firewood & Dock Drop</span>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Typical Cost Range</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. $2,000 - $4,500"
-                      value={advCostEstimate}
-                      onChange={(e) => setAdvCostEstimate(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Time To Complete</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 3 Days"
-                      value={advTimeToComplete}
-                      onChange={(e) => setAdvTimeToComplete(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                    />
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Emergency Mountain Run</span>
                   </div>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Contact Phone *</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="(603) 539-1234"
-                      value={advPhone}
-                      onChange={(e) => setAdvPhone(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Contact Email</label>
-                    <input
-                      type="email"
-                      placeholder="quotes@mycontractor.com"
-                      value={advEmail}
-                      onChange={(e) => setAdvEmail(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black uppercase tracking-wider text-white/70">Website / Facebook</label>
-                    <input
-                      type="url"
-                      placeholder="https://mybusiness.com"
-                      value={advWebsite}
-                      onChange={(e) => setAdvWebsite(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-black uppercase tracking-wider text-white/70">Special Customer Promotion Offer</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. ★ Free on-site inspection + 10% off for Effingham & Ossipee residents"
-                    value={advSpecialOffer}
-                    onChange={(e) => setAdvSpecialOffer(e.target.value)}
-                    className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-2xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-amber-600 text-black font-black text-sm uppercase tracking-wider transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2"
+              <div className="pt-2">
+                <a
+                  href="tel:5085070305"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-sm uppercase tracking-wider transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 hover:scale-[1.01]"
                 >
-                  <Flame className="w-4 h-4 text-black" />
-                  <span>Publish Transformation Showcase & Advertise</span>
-                </button>
-              </form>
-            )}
+                  <Phone className="w-4 h-4" />
+                  <span>Call Sean Martin for Immediate Dispatch: (508) 507-0305</span>
+                </a>
+              </div>
+            </div>
           </div>
         )}
 

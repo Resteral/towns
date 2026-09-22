@@ -370,7 +370,7 @@ export default function Navbar() {
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Trades & Contractors</div>
-                      <div className="text-[10px] text-zinc-400">Before/after project galleries & quote dispatch</div>
+                      <div className="text-[10px] text-zinc-400">Local work requests, trade jobs & quote dispatch</div>
                     </div>
                   </Link>
 
