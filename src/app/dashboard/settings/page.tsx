@@ -26,12 +26,45 @@ export default function NotificationSettingsPage() {
   const [discordWebhook, setDiscordWebhook] = useState(notificationSettings.discordWebhookUrl || '');
   const [enableSound, setEnableSound] = useState(notificationSettings.enableSoundChime ?? true);
 
+  // Merchant & Driver Payment Payout Handles
+  const [paypalEmail, setPaypalEmail] = useState('frijj555@gmail.com');
+  const [paypalHandle, setPaypalHandle] = useState('paypal.me/frijj555');
+  const [cashAppTag, setCashAppTag] = useState('$frijj555');
+  const [venmoHandle, setVenmoHandle] = useState('@Sean-Martin-NH');
+  const [zellePhone, setZellePhone] = useState('(508) 507-0305');
+
+  // Load custom payment accounts from localStorage on mount
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('pulpulse_payout_settings_v1');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.paypalEmail) setPaypalEmail(parsed.paypalEmail);
+          if (parsed.paypalHandle) setPaypalHandle(parsed.paypalHandle);
+          if (parsed.cashAppTag) setCashAppTag(parsed.cashAppTag);
+          if (parsed.venmoHandle) setVenmoHandle(parsed.venmoHandle);
+          if (parsed.zellePhone) setZellePhone(parsed.zellePhone);
+        }
+      } catch {}
+    }
+  });
+
   const [testStatus, setTestStatus] = useState<string | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [savedNotice, setSavedNotice] = useState(false);
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pulpulse_payout_settings_v1', JSON.stringify({
+        paypalEmail,
+        paypalHandle,
+        cashAppTag,
+        venmoHandle,
+        zellePhone
+      }));
+    }
     updateNotificationSettings({
       phoneNumber: phone,
       enableSms,
@@ -187,6 +220,100 @@ export default function NotificationSettingsPage() {
               placeholder="e.g. (603) 555-0199"
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 font-mono"
             />
+          </div>
+        </div>
+
+        {/* Payment & Payout Accounts (PayPal, Cash App, Venmo, Zelle) */}
+        <div className="bg-[#0e0e14] border border-white/10 rounded-3xl p-6 md:p-8 space-y-6">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xl">
+                🅿️
+              </div>
+              <div>
+                <h3 className="text-lg font-black italic text-white uppercase">Customer Payment & Payout Accounts</h3>
+                <p className="text-xs text-zinc-400">
+                  Configure where customers send food & courier prepayments (PayPal, Cash App, Venmo, Zelle).
+                </p>
+              </div>
+            </div>
+            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-mono font-bold uppercase">
+              Instant Payouts
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* PayPal Email & Handle */}
+            <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🅿️</span>
+                <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">PayPal Account</span>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-zinc-400">PayPal Email / PayPal.Me Link</label>
+                <input
+                  type="text"
+                  value={paypalEmail}
+                  onChange={(e) => setPaypalEmail(e.target.value)}
+                  placeholder="frijj555@gmail.com or paypal.me/frijj555"
+                  className="w-full bg-black/40 border border-blue-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-blue-400"
+                />
+              </div>
+            </div>
+
+            {/* Cash App */}
+            <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🟩</span>
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Cash App Cashtag</span>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-zinc-400">Cashtag handle</label>
+                <input
+                  type="text"
+                  value={cashAppTag}
+                  onChange={(e) => setCashAppTag(e.target.value)}
+                  placeholder="$frijj555"
+                  className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-400"
+                />
+              </div>
+            </div>
+
+            {/* Venmo */}
+            <div className="p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🟦</span>
+                <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Venmo Handle</span>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-zinc-400">Venmo @username</label>
+                <input
+                  type="text"
+                  value={venmoHandle}
+                  onChange={(e) => setVenmoHandle(e.target.value)}
+                  placeholder="@Sean-Martin-NH"
+                  className="w-full bg-black/40 border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+            </div>
+
+            {/* Zelle */}
+            <div className="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🟪</span>
+                <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">Zelle Bank Transfer</span>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-zinc-400">Zelle Phone or Email</label>
+                <input
+                  type="text"
+                  value={zellePhone}
+                  onChange={(e) => setZellePhone(e.target.value)}
+                  placeholder="(508) 507-0305 / frijj555@gmail.com"
+                  className="w-full bg-black/40 border border-purple-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-purple-400"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

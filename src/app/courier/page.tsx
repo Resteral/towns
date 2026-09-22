@@ -508,7 +508,7 @@ export default function CourierErrandsPage() {
               </div>
 
               {/* Payment Methods Grid */}
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 
                 {/* Cash App */}
                 <button
@@ -544,6 +544,24 @@ export default function CourierErrandsPage() {
                   </div>
                   <div className="font-black text-xs text-white">Venmo</div>
                   <div className="text-[9px] font-mono text-blue-300">@Sean-Martin-NH</div>
+                </button>
+
+                {/* PayPal */}
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('paypal')}
+                  className={`p-3.5 rounded-2xl border text-left transition-all ${
+                    paymentMethod === 'paypal'
+                      ? 'bg-blue-600/20 border-blue-400 text-white shadow-lg'
+                      : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-lg">🅿️</span>
+                    {paymentMethod === 'paypal' && <Check className="w-4 h-4 text-blue-400" />}
+                  </div>
+                  <div className="font-black text-xs text-white">PayPal</div>
+                  <div className="text-[9px] font-mono text-blue-300">paypal.me/frijj555</div>
                 </button>
 
                 {/* Zelle */}
@@ -585,6 +603,36 @@ export default function CourierErrandsPage() {
               </div>
 
               {/* Interactive Prepayment Details Box */}
+              {paymentMethod === 'paypal' && (
+                <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-3 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-blue-300 flex items-center gap-1.5">
+                      <span>🅿️</span> PayPal Direct Transfer
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy('frijj555@gmail.com', 'paypal')}
+                      className="text-[10px] font-mono text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      {copiedKey === 'paypal' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedKey === 'paypal' ? 'Copied!' : 'Copy Email'}</span>
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-zinc-300 leading-snug">
+                    Send <strong className="text-white">${total.toFixed(2)}</strong> to <strong className="text-blue-300">paypal.me/frijj555</strong> or <strong className="text-white">frijj555@gmail.com</strong>.
+                  </p>
+                  <a
+                    href={`https://paypal.me/frijj555/${total.toFixed(2)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-2.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase text-xs tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg"
+                  >
+                    <span>Open PayPal to Pay ${total.toFixed(2)}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+
               {paymentMethod === 'cash_app' && (
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-3 animate-in fade-in duration-200">
                   <div className="flex items-center justify-between">

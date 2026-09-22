@@ -185,7 +185,7 @@ export interface DeliveryItem {
 }
 
 export type OrderServiceType = 'standard_delivery' | 'store_pickup' | 'prepaid_buy' | 'custom_errand';
-export type PaymentMethod = 'cash_app' | 'venmo' | 'zelle' | 'card' | 'cash_on_delivery';
+export type PaymentMethod = 'cash_app' | 'venmo' | 'zelle' | 'paypal' | 'card' | 'cash_on_delivery';
 export type PaymentStatus = 'prepaid' | 'pending_verification' | 'pay_on_delivery';
 
 export interface DeliveryDriverInfo {
