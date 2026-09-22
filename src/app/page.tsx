@@ -10,7 +10,8 @@ import { ReviewProduct } from '@/lib/types';
 import { 
   Radio, Sparkles, ShieldCheck, Zap, TrendingUp, Star, 
   ArrowRight, CheckCircle2, ChevronRight, Cpu, Activity,
-  Sliders, ShoppingBag, Eye, Layers, Compass, Truck, Phone
+  Sliders, ShoppingBag, Eye, Layers, Compass, Truck, Phone,
+  Building2, MessageSquare, Code2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
@@ -604,6 +605,91 @@ export default function HomePage() {
             >
               Order NFC Hardware Fleet
             </Link>
+          </div>
+        </section>
+
+        {/* 5.5 TOURISM CONCIERGE, SMS AUTOMATION & EMBED STUDIO */}
+        <section className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400">
+              Turnkey Hospitality & Automation Engine
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
+              Supercharge Carroll County <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-300 to-indigo-400">
+                Tourism, Guests & Local Sales
+              </span>
+            </h2>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              From automated Airbnb dockside firewood delivery to autonomous 2-way SMS text-back and embeddable website trust badges.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Lake Concierge */}
+            <div className="p-7 rounded-3xl bg-gradient-to-b from-emerald-950/40 to-[#0c0c14] border border-emerald-500/20 space-y-4 hover:border-emerald-500/40 transition-all flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-black uppercase italic text-white">Airbnb Lake Concierge</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Keyless Wi-Fi connect, boat ramp statuses, and 1-tap dockside campfire firewood & s'mores kit delivery for lakehouse guests.
+                </p>
+              </div>
+
+              <Link
+                href="/concierge"
+                className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center justify-between"
+              >
+                <span>Open Lake Concierge</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* SMS Automation */}
+            <div className="p-7 rounded-3xl bg-gradient-to-b from-amber-950/40 to-[#0c0c14] border border-amber-500/20 space-y-4 hover:border-amber-500/40 transition-all flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-black uppercase italic text-white">2-Way SMS Automation</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Autonomous missed-call auto-text back, 5-star review boosters, digital table buzzers, and weekend VIP discount broadcasts.
+                </p>
+              </div>
+
+              <Link
+                href="/dashboard/sms-hub"
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center justify-between"
+              >
+                <span>SMS Automation Hub</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Embeddable Widgets */}
+            <div className="p-7 rounded-3xl bg-gradient-to-b from-indigo-950/40 to-[#0c0c14] border border-indigo-500/20 space-y-4 hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <Code2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-black uppercase italic text-white">Website Trust Seals</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Copy-paste 1-click HTML review carousels, floating trust seals, and Google rating ribbons onto client WordPress or Shopify sites.
+                </p>
+              </div>
+
+              <Link
+                href="/dashboard/embeds"
+                className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-black text-xs uppercase tracking-wider transition-all flex items-center justify-between"
+              >
+                <span>Website Embed Studio</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
           </div>
         </section>
 
