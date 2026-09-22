@@ -12,6 +12,10 @@ export default function NotificationSettingsPage() {
 
   const [phone, setPhone] = useState(notificationSettings.phoneNumber || '');
   const [enableSms, setEnableSms] = useState(notificationSettings.enableSms ?? true);
+  const [enableTwilio, setEnableTwilio] = useState(notificationSettings.enableTwilio ?? false);
+  const [twilioSid, setTwilioSid] = useState(notificationSettings.twilioAccountSid || '');
+  const [twilioAuth, setTwilioAuth] = useState(notificationSettings.twilioAuthToken || '');
+  const [twilioFromNumber, setTwilioFromNumber] = useState(notificationSettings.twilioPhoneNumber || '');
   const [enableTelegram, setEnableTelegram] = useState(notificationSettings.enableTelegram ?? false);
   const [telegramToken, setTelegramToken] = useState(notificationSettings.telegramBotToken || '');
   const [telegramChatId, setTelegramChatId] = useState(notificationSettings.telegramChatId || '');
@@ -28,6 +32,10 @@ export default function NotificationSettingsPage() {
     updateNotificationSettings({
       phoneNumber: phone,
       enableSms,
+      enableTwilio,
+      twilioAccountSid: twilioSid,
+      twilioAuthToken: twilioAuth,
+      twilioPhoneNumber: twilioFromNumber,
       enableTelegram,
       telegramBotToken: telegramToken,
       telegramChatId,
@@ -73,6 +81,10 @@ export default function NotificationSettingsPage() {
           settings: {
             phoneNumber: phone,
             enableSms,
+            enableTwilio,
+            twilioAccountSid: twilioSid,
+            twilioAuthToken: twilioAuth,
+            twilioPhoneNumber: twilioFromNumber,
             enableTelegram,
             telegramBotToken: telegramToken,
             telegramChatId,
@@ -169,7 +181,85 @@ export default function NotificationSettingsPage() {
           </div>
         </div>
 
-        {/* Method 2: Telegram Bot Relay (Zero Latency & 100% Free Push Notifications with Sound) */}
+        {/* Method 2: Twilio Carrier SMS (Real Cellular Texts to iPhone/Android) */}
+        <div className="bg-[#0e0e14] border border-white/10 rounded-3xl p-6 md:p-8 space-y-6">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+                <Radio className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-black italic text-white uppercase">Twilio Carrier SMS Engine</h3>
+                  <span className="px-2 py-0.5 bg-red-500/20 text-red-300 text-[8px] font-mono font-bold uppercase rounded-md border border-red-500/30">
+                    Carrier SMS • $0.0079/text
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-400">
+                  Sends automated cellular SMS text messages directly to your phone and to customers with live order updates.
+                </p>
+              </div>
+            </div>
+
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={enableTwilio}
+                onChange={(e) => setEnableTwilio(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+            </label>
+          </div>
+
+          {enableTwilio && (
+            <div className="space-y-4 pt-2 border-t border-white/5 animate-in fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 mb-1.5 block">Twilio Account SID</label>
+                  <input
+                    type="text"
+                    value={twilioSid}
+                    onChange={(e) => setTwilioSid(e.target.value)}
+                    placeholder="e.g. ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-red-400 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 mb-1.5 block">Twilio Auth Token</label>
+                  <input
+                    type="password"
+                    value={twilioAuth}
+                    onChange={(e) => setTwilioAuth(e.target.value)}
+                    placeholder="e.g. your_auth_token_here"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-red-400 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 mb-1.5 block">Twilio Phone Number</label>
+                  <input
+                    type="tel"
+                    value={twilioFromNumber}
+                    onChange={(e) => setTwilioFromNumber(e.target.value)}
+                    placeholder="e.g. +1603539XXXX"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-red-400 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-red-950/20 border border-red-500/20 rounded-2xl text-[11px] text-zinc-300 space-y-1">
+                <p className="font-bold text-red-300">Quick Twilio Setup (3 minutes):</p>
+                <ol className="list-decimal list-inside space-y-0.5 text-zinc-400">
+                  <li>Create a free account at <b>twilio.com</b> (includes ~$15 free trial credit).</li>
+                  <li>Click <b>Buy a Phone Number</b> (search for area code <code>603</code> or <code>508</code>, costs ~$1.15/mo).</li>
+                  <li>Copy your <b>Account SID</b> and <b>Auth Token</b> from the Twilio Console homepage and paste above!</li>
+                </ol>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Method 3: Telegram Bot Relay (Zero Latency & 100% Free Push Notifications with Sound) */}
         <div className="bg-[#0e0e14] border border-white/10 rounded-3xl p-6 md:p-8 space-y-6">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">

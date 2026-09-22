@@ -279,6 +279,10 @@ export interface DeliveryOrder {
 export interface NotificationSettings {
   phoneNumber: string;
   enableSms: boolean;
+  enableTwilio?: boolean;
+  twilioAccountSid?: string;
+  twilioAuthToken?: string;
+  twilioPhoneNumber?: string;
   enableTelegram: boolean;
   telegramBotToken?: string;
   telegramChatId?: string;
