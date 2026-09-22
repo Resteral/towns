@@ -14,14 +14,14 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Oasis | Local Storefronts, NFC Network & Food Delivery Driver App",
-  description: "Accelerate your 5-star Google Reviews, browse local restaurant menus, and manage real-time courier food delivery dispatch.",
+  title: "Townraise | Local Storefronts, NFC Network & Food Delivery Driver App",
+  description: "Accelerate your 5-star Google Reviews, browse local restaurant menus, explore tourist scavenger hunts, and manage real-time courier food delivery dispatch across Carroll County.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Oasis Driver",
+    title: "Townraise",
   },
-  applicationName: "Oasis Courier",
+  applicationName: "Townraise",
 };
 
 export default function RootLayout({

@@ -12,10 +12,11 @@ export default function Footer() {
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-6">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-400 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-amber-500/20">
-                <Radio className="w-5 h-5 text-black" />
-              </div>
-              <span className="font-black italic tracking-tighter text-2xl text-white uppercase">Oasis<span className="text-amber-400">Tap</span></span>
+              <img 
+                src="/townraise-logo.png" 
+                alt="Townraise" 
+                className="h-10 w-auto object-contain" 
+              />
             </Link>
             <p className="text-sm text-zinc-400 leading-relaxed max-w-sm">
               The premier physical-to-digital Google Review acceleration platform. Turn real-world customer interactions into verified 5-star ratings with ultra-responsive NFC cards, tabletop acrylics, and smart review filtering.

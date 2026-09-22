@@ -46,17 +46,15 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-indigo-400 p-0.5 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full bg-[#070709] rounded-[14px] flex items-center justify-center">
-                <Radio className="w-5 h-5 text-amber-400 animate-pulse" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black italic tracking-tighter text-xl text-white uppercase">Oasis<span className="text-amber-400">Tap</span></span>
-                <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-amber-400/10 text-amber-400 border border-amber-400/20 rounded-full">Decentralized</span>
-              </div>
-              <p className="text-[8px] font-bold text-white/40 tracking-[0.2em] uppercase">Reviews & Town Nodes</p>
+            <img 
+              src="/townraise-logo.png" 
+              alt="Townraise" 
+              className="h-8 md:h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-105" 
+            />
+            <div className="hidden sm:block">
+              <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-amber-400/10 text-amber-400 border border-amber-400/20 rounded-full">
+                Town Nodes
+              </span>
             </div>
           </Link>
 
