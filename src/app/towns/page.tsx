@@ -42,10 +42,10 @@ export default function TownsRadarPage() {
               <span>Decentralized Regional Node Radar</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase text-white">
-              Town <span className="text-amber-400">Nodes.</span>
+              Unified <span className="text-amber-400">Town Nodes.</span>
             </h1>
-            <p className="text-xs md:text-sm text-zinc-400 max-w-xl">
-              Regional settlement capacity, active courier transit latency, and independent boutique networks across unified communities.
+            <p className="text-xs md:text-sm text-zinc-300 max-w-xl">
+              Uniting the surrounding towns into one functional regional atmosphere. Live courier connectivity, local artisan commerce, and neighborhood work dispatch across Effingham, Ossipee, Freedom, Wakefield, and Conway.
             </p>
           </div>
 

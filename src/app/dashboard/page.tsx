@@ -61,18 +61,18 @@ export default function DashboardOverviewPage() {
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-widest">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Carroll County Town Operating System • Live
+              Regional Unity Network • Carroll County, NH
             </div>
             
             <h1 className="text-3xl md:text-5xl font-black italic tracking-tight uppercase text-white leading-tight">
-              Community Hub & <br className="hidden sm:inline" />
+              Uniting Our Towns in <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-400 bg-clip-text text-transparent">
-                Local Commerce Engine
+                One Functional Atmosphere
               </span>
             </h1>
 
-            <p className="text-zinc-400 text-xs md:text-sm font-light leading-relaxed">
-              Your all-in-one local command center for <b>on-the-go delivery</b>, <b>grocery shopping</b>, <b>verified marketplace shops</b>, <b>town events</b>, and <b>local work & contractor jobs</b> across Effingham, Ossipee, Freedom, Wakefield, and Conway.
+            <p className="text-zinc-300 text-xs md:text-sm font-normal leading-relaxed">
+              Bridging Effingham, Ossipee, Freedom, Wakefield, and Conway into a single connected community engine for <b>on-the-go delivery</b>, <b>grocery shopping</b>, <b>verified local shops</b>, <b>community events</b>, and <b>neighborhood contractor jobs</b>.
             </p>
           </div>
 
@@ -96,8 +96,31 @@ export default function DashboardOverviewPage() {
           </div>
         </div>
 
+        {/* Unified Towns Interconnect Pill Strip */}
+        <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400/80 mr-1">
+            Connected Regional Hubs:
+          </span>
+          {[
+            { name: 'Effingham', emoji: '🌲' },
+            { name: 'Center Ossipee', emoji: '🔨' },
+            { name: 'Freedom', emoji: '🏡' },
+            { name: 'Wakefield / Sanbornville', emoji: '🥪' },
+            { name: 'Conway & North Conway', emoji: '🏔️' },
+            { name: 'Wolfeboro & Tamworth', emoji: '⛵' }
+          ].map(town => (
+            <span
+              key={town.name}
+              className="px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-white text-[11px] font-semibold flex items-center gap-1 hover:border-amber-400/40 hover:bg-white/10 transition-all"
+            >
+              <span>{town.emoji}</span>
+              <span>{town.name}</span>
+            </span>
+          ))}
+        </div>
+
         {/* Real-Time Telemetry Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/10">
           <div>
             <span className="text-[10px] font-mono text-zinc-400 uppercase block">Active Courier Driver</span>
             <div className="flex items-center gap-2 mt-1">
