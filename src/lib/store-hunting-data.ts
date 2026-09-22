@@ -633,22 +633,4 @@ export const INITIAL_STORE_CIRCUITS: StoreHuntCircuit[] = [
   }
 ];
 
-export const INITIAL_STORE_HUNTER_STAMPS: StoreHunterStamp[] = [
-  {
-    spotId: 'spot-antique-1',
-    storeName: 'Bearcamp River Vintage & Antiques',
-    circuitId: 'circuit-antiques-thrift',
-    town: 'Ossipee',
-    timestamp: '2026-09-21T15:20:00Z',
-    badgeIcon: '🏺',
-    pointsEarned: 35,
-    verifiedVia: 'nfc',
-    unlockedPerk: {
-      discountLabel: '15% Off Any Glassware or Primitive Collectible',
-      discountDescription: 'Flash at checkout register or tap with mobile wallet to apply instant 15% discount.',
-      voucherCode: 'BEARCAMP-15-GLASS',
-      minimumSpend: '$20 minimum purchase',
-      expiresInDays: 30
-    }
-  }
-];
+export const INITIAL_STORE_HUNTER_STAMPS: StoreHunterStamp[] = [];

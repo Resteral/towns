@@ -575,74 +575,7 @@ export const INITIAL_BEFORE_AFTER_SHOWCASES: BeforeAfterShowcase[] = [
   }
 ];
 
-export const INITIAL_WORK_REQUESTS: WorkRequest[] = [
-  {
-    id: 'req-1',
-    title: 'Spring Yard Cleanup, Fallen Branch Clearing & Firewood Stacking',
-    category: 'landscaping',
-    description: 'Looking for a reliable local contractor or helper with a trailer or truck to clear winter branch fall, rake perimeter lawn, and stack 2 cords of split firewood by shed.',
-    town: 'Effingham',
-    state: 'NH',
-    budgetRange: '$200 - $500',
-    urgency: 'within_few_days',
-    requesterName: 'Tom Henderson',
-    requesterPhone: '(603) 539-9921',
-    addressOrNeighborhood: 'Snows Mountain Rd, Effingham',
-    beforeImageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&auto=format&fit=crop&q=80',
-    status: 'open',
-    quotesCount: 2,
-    createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
-  },
-  {
-    id: 'req-2',
-    title: 'Rebuild 4 Weathered Front Entry Steps & Replace Handrail',
-    category: 'carpentry',
-    description: 'Pressure treated front entryway stairs are cracked and wobbly. Need 4 new 48" stringers, tread boards, and sturdy wooden handrail installed before summer guests arrive.',
-    town: 'Freedom',
-    state: 'NH',
-    budgetRange: '$500 - $1,500',
-    urgency: 'within_few_days',
-    requesterName: 'Carol Vance',
-    requesterPhone: '(603) 539-1144',
-    addressOrNeighborhood: 'Ossipee Lake Shoreline, Freedom',
-    beforeImageUrl: 'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80',
-    status: 'open',
-    quotesCount: 1,
-    createdAt: new Date(Date.now() - 14 * 3600000).toISOString(),
-  },
-  {
-    id: 'req-3',
-    title: 'Gravel Driveway Grading & Drainage Washout Fix',
-    category: 'masonry',
-    description: 'Spring runoff created a rut down our 200ft gravel driveway. Need tractor grading, 2 loads of crushed bank-run gravel spread and compacted.',
-    town: 'Center Ossipee',
-    state: 'NH',
-    budgetRange: '$500 - $1,500',
-    urgency: 'flexible_this_month',
-    requesterName: 'Mark Albright',
-    requesterPhone: '(603) 539-5588',
-    addressOrNeighborhood: 'Route 16 Corridor, Center Ossipee',
-    status: 'open',
-    quotesCount: 3,
-    createdAt: new Date(Date.now() - 28 * 3600000).toISOString(),
-  },
-  {
-    id: 'req-4',
-    title: 'Interior Living Room & High Ceiling Stairwell Painting',
-    category: 'painting',
-    description: 'Cathedral ceiling living room and stairwell wall repainting in neutral warm white. Approximately 600 sq ft of wall space. Paint provided or can be budgeted.',
-    town: 'Wolfeboro',
-    state: 'NH',
-    budgetRange: '$1,500 - $5,000',
-    urgency: 'flexible_this_month',
-    requesterName: 'Janet Miller',
-    requesterPhone: '(603) 569-4411',
-    addressOrNeighborhood: 'South Main St, Wolfeboro',
-    status: 'open',
-    quotesCount: 2,
-    createdAt: new Date(Date.now() - 48 * 3600000).toISOString(),
-  }
-];
+export const INITIAL_WORK_REQUESTS: WorkRequest[] = [];
 
 export const INITIAL_NFC_MENU_PRODUCTS: NfcMenuProduct[] = [
   {
@@ -819,72 +752,7 @@ export const INITIAL_NFC_MENU_PRODUCTS: NfcMenuProduct[] = [
   }
 ];
 
-export const INITIAL_NFC_HARDWARE_ORDERS: NfcHardwareOrder[] = [
-  {
-    id: 'hord-101',
-    orderNumber: 'NFC-8041',
-    buyerName: 'Gary Collins (Owner)',
-    buyerPhone: '(603) 539-7440',
-    buyerEmail: 'gary@pnbeats.com',
-    buyerBusinessName: 'PNB Eats Roadside Grill',
-    deliveryAddress: 'NH-25, Effingham, NH 03882',
-    productId: 'nfc-menu-acrylic-stand',
-    productTitle: 'Dual-Sided Acrylic Tap-to-Order Table Stand (Pre-Encoded)',
-    formFactor: 'acrylic_table_stand',
-    targetRestaurantName: 'PNB Eats Roadside Grill',
-    quantity: 8,
-    unitPrice: 24.99,
-    totalAmount: 199.92,
-    status: 'delivered',
-    programmedUrl: 'https://oasistap.com/site/pnb-eats',
-    tableAssignments: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Table 6', 'Bar A', 'Bar B'],
-    chipType: 'NTAG215',
-    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
-    paidStatus: 'paid'
-  },
-  {
-    id: 'hord-102',
-    orderNumber: 'NFC-8042',
-    buyerName: 'Dan Sullivan',
-    buyerPhone: '(603) 539-2244',
-    buyerBusinessName: 'Pizza Barn & Smokehouse',
-    deliveryAddress: 'Route 16, Center Ossipee, NH 03814',
-    productId: 'nfc-menu-table-disc',
-    productTitle: 'Commercial Self-Adhesive PVC Table Tap Disc (35mm)',
-    formFactor: 'pvc_table_disc',
-    targetRestaurantName: 'Pizza Barn & Smokehouse',
-    quantity: 12,
-    unitPrice: 12.50,
-    totalAmount: 150.00,
-    status: 'programmed_qa',
-    programmedUrl: 'https://oasistap.com/site/pizza-barn-smokehouse',
-    tableAssignments: ['Patio 1', 'Patio 2', 'Patio 3', 'Patio 4', 'Dining 1', 'Dining 2'],
-    chipType: 'NTAG213',
-    createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-    paidStatus: 'paid'
-  },
-  {
-    id: 'hord-103',
-    orderNumber: 'NFC-8043',
-    buyerName: 'Mike Hobbs',
-    buyerPhone: '(603) 539-2000',
-    buyerBusinessName: 'Hobbs Tavern & Brewing Co.',
-    deliveryAddress: '2415 White Mountain Hwy, West Ossipee, NH 03890',
-    productId: 'nfc-menu-wood-tent',
-    productTitle: 'Rustic Artisan Hardwood NFC Table Tent',
-    formFactor: 'wood_table_tent',
-    targetRestaurantName: 'Hobbs Tavern & Brewing Co.',
-    quantity: 6,
-    unitPrice: 29.99,
-    totalAmount: 179.94,
-    status: 'pending_flash',
-    programmedUrl: 'https://oasistap.com/site/hobbs-tavern-brewing',
-    tableAssignments: ['Taproom 1', 'Taproom 2', 'Taproom 3', 'Taproom 4', 'Beer Garden 1', 'Beer Garden 2'],
-    chipType: 'NTAG216',
-    createdAt: new Date().toISOString(),
-    paidStatus: 'pay_on_delivery'
-  }
-];
+export const INITIAL_NFC_HARDWARE_ORDERS: NfcHardwareOrder[] = [];
 
 
 
@@ -1070,73 +938,7 @@ export const INITIAL_MANAGED_SERVICES: ManagedServicePackage[] = [
   }
 ];
 
-export const INITIAL_CLIENT_SUBSCRIPTIONS: ClientServiceSubscription[] = [
-  {
-    id: 'sub-pnb-eats',
-    clientBusinessName: 'PNB Eats Roadside Grill',
-    contactName: 'Gary Collins',
-    contactPhone: '(603) 539-7440',
-    contactEmail: 'gary@pnbeats.com',
-    town: 'Effingham, NH',
-    packageId: 'srv-digital-menu-ordering',
-    packageName: 'Turnkey Digital Menu & Smart Table Ordering System',
-    monthlyFee: 79.00,
-    status: 'active',
-    nextBillingDate: '2026-10-01',
-    startedDate: '2026-06-01',
-    automationsActive: true,
-    notes: '8 acrylic table stands active. Weekend brunch scheduler active.',
-    totalRevenueGenerated: 316.00
-  },
-  {
-    id: 'sub-pizza-barn',
-    clientBusinessName: 'Pizza Barn & Smokehouse',
-    contactName: 'Dan Sullivan',
-    contactPhone: '(603) 539-2244',
-    town: 'Center Ossipee, NH',
-    packageId: 'srv-reputation-engine',
-    packageName: 'Google 5-Star Reputation Engine & Feedback Shield',
-    monthlyFee: 99.00,
-    status: 'active',
-    nextBillingDate: '2026-10-05',
-    startedDate: '2026-05-15',
-    automationsActive: true,
-    notes: 'Negative review shield prevented 4 public 2-star reviews. 4.9 rating maintained.',
-    totalRevenueGenerated: 396.00
-  },
-  {
-    id: 'sub-ossipee-lake-cabin',
-    clientBusinessName: 'Pine Cove Waterfront Chalet (Airbnb)',
-    contactName: 'Sarah Jenkins',
-    contactPhone: '(603) 641-9400',
-    town: 'Freedom, NH',
-    packageId: 'srv-airbnb-concierge',
-    packageName: 'Lake House & Airbnb Automated Guest Concierge Portal',
-    monthlyFee: 49.00,
-    status: 'active',
-    nextBillingDate: '2026-10-10',
-    startedDate: '2026-07-01',
-    automationsActive: true,
-    notes: '3 guest plaques in cabin. Guests have ordered $480 in food delivery.',
-    totalRevenueGenerated: 147.00
-  },
-  {
-    id: 'sub-walts-woodcraft',
-    clientBusinessName: "Walt's Artisan Woodcraft & Decking",
-    contactName: 'Walter Henderson',
-    contactPhone: '(603) 539-8120',
-    town: 'Effingham, NH',
-    packageId: 'srv-contractor-marketing',
-    packageName: 'Contractor Trade Showcase & Automatic Lead Dispatcher',
-    monthlyFee: 129.00,
-    status: 'active',
-    nextBillingDate: '2026-10-15',
-    startedDate: '2026-06-15',
-    automationsActive: true,
-    notes: 'Won 3 deck replacement contracts ($24,000 total) through trade board leads.',
-    totalRevenueGenerated: 387.00
-  }
-];
+export const INITIAL_CLIENT_SUBSCRIPTIONS: ClientServiceSubscription[] = [];
 
 export const INITIAL_AUTOMATION_BOTS: ServiceAutomationBot[] = [
   {
@@ -1496,19 +1298,12 @@ export const INITIAL_LOYALTY_REWARDS: TownLoyaltyReward[] = [
 ];
 
 export const DEFAULT_USER_LOYALTY_WALLET: UserLoyaltyWallet = {
-  userPoints: 320,
-  lifetimeTaps: 18,
-  reviewsWritten: 4,
-  level: 'Town Vanguard Insider',
-  tierNumber: 2,
-  redeemedRewards: [
-    {
-      rewardId: 'rew-free-delivery',
-      rewardTitle: 'Free Priority Courier Delivery',
-      code: 'TAP-DELIV-9821',
-      redeemedAt: '2026-08-20'
-    }
-  ]
+  userPoints: 0,
+  lifetimeTaps: 0,
+  reviewsWritten: 0,
+  level: 'Novice Pioneer',
+  tierNumber: 1,
+  redeemedRewards: []
 };
 
 export const INITIAL_EVENTS: TownEvent[] = [

@@ -449,25 +449,4 @@ export const INITIAL_TOURIST_HUNTS: TouristHunt[] = [
   }
 ];
 
-export const INITIAL_USER_STAMPS: PassportStamp[] = [
-  {
-    checkpointId: 'cp-ossipee-1',
-    checkpointName: 'Ossipee Lake Natural Public Shore',
-    huntId: 'hunt-ossipee-pioneer',
-    town: 'Ossipee',
-    timestamp: '2026-09-20T14:30:00Z',
-    badgeIcon: '🌲',
-    pointsEarned: 25,
-    verifiedVia: 'nfc'
-  },
-  {
-    checkpointId: 'cp-wolf-1',
-    checkpointName: 'Wolfeboro Town Docks on Lake Winnipesaukee',
-    huntId: 'hunt-wolfeboro-resort',
-    town: 'Wolfeboro',
-    timestamp: '2026-09-21T11:15:00Z',
-    badgeIcon: '⛵',
-    pointsEarned: 25,
-    verifiedVia: 'qr'
-  }
-];
+export const INITIAL_USER_STAMPS: PassportStamp[] = [];
