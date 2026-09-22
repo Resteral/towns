@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { NfcCardConfig, ReviewProduct } from '@/lib/types';
@@ -48,7 +48,13 @@ import {
   Wrench,
   MapPin,
   Flame,
-  Info
+  Info,
+  Play,
+  Pause,
+  Printer,
+  ListFilter,
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 export type NfcActionType = 
@@ -69,6 +75,17 @@ export type NfcActionType =
   | 'url';
 
 export type NfcFormFactorType = 'card' | 'sticker' | 'stand' | 'wood_puck' | 'keychain';
+
+export interface BatchCardItem {
+  id: number;
+  serialNumber: string;
+  uid?: string;
+  status: 'pending' | 'flashing' | 'completed' | 'failed';
+  payloadUrl: string;
+  cardType: string;
+  flashedAt?: string;
+  qrDataUrl?: string;
+}
 
 export interface NfcCapabilityItem {
   id: NfcActionType;
@@ -488,8 +505,8 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
 export default function NfcTagReaderCustomizer() {
   const { addCard, playDeliveryChime, products, addToCart, currentUser } = useNfcStore();
 
-  // Active Main Tab: Capabilities vs Customizer vs Reader vs Export
-  const [activeTab, setActiveTab] = useState<'capabilities' | 'customizer' | 'reader' | 'export'>('capabilities');
+  // Active Main Tab: Capabilities vs Customizer vs Batch vs Reader vs Export
+  const [activeTab, setActiveTab] = useState<'capabilities' | 'customizer' | 'batch' | 'reader' | 'export'>('batch');
   const [capabilitiesFilter, setCapabilitiesFilter] = useState<'all' | 'growth' | 'contact' | 'courier' | 'cashless' | 'trades' | 'automation' | 'community'>('all');
 
   // --- NFC READER STATE ---
@@ -507,12 +524,12 @@ export default function NfcTagReaderCustomizer() {
   }, []);
 
   // --- CUSTOMIZER STATE ---
-  const [actionType, setActionType] = useState<NfcActionType>('google_review');
+  const [actionType, setActionType] = useState<NfcActionType>('loyalty_pass');
   const [formFactor, setFormFactor] = useState<NfcFormFactorType>('card');
 
   // Payload Content State
-  const [businessName, setBusinessName] = useState(currentUser?.name ? `${currentUser.name}'s Oasis Beacon` : 'Smoke World Ossipee');
-  const [headline, setHeadline] = useState('Tap phone to review us on Google!');
+  const [businessName, setBusinessName] = useState(currentUser?.name ? `${currentUser.name}'s Oasis Community Pass` : 'Oasis Carroll County Regional Pass');
+  const [headline, setHeadline] = useState('Tap phone for instant Carroll County perks & 1-tap courier dispatch!');
   const [googleReviewUrl, setGoogleReviewUrl] = useState('https://search.google.com/local/writereview?placeid=ChIJb6eBq9f94okRGb_SmokeWorldOss');
   const [customUrl, setCustomUrl] = useState('https://oasistap.local');
   const [paypalUsername, setPaypalUsername] = useState('seanhse97');
@@ -546,12 +563,216 @@ export default function NfcTagReaderCustomizer() {
   // Visual Customization State
   const [selectedColor, setSelectedColor] = useState('#0f172a');
   const [selectedTexture, setSelectedTexture] = useState<'matte' | 'carbon' | 'metal' | 'cyber' | 'holo'>('cyber');
-  const [selectedEmoji, setSelectedEmoji] = useState('💨');
+  const [selectedEmoji, setSelectedEmoji] = useState('🌲');
   const [customLogoUrl, setCustomLogoUrl] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [writeSuccessMsg, setWriteSuccessMsg] = useState<string | null>(null);
   const [isWritingNfc, setIsWritingNfc] = useState(false);
   const [generatedQrDataUrl, setGeneratedQrDataUrl] = useState<string>('');
+
+  // ========================================================
+  // BATCH 100-CARD PROGRAMMER STATE
+  // ========================================================
+  const [batchTargetCount, setBatchTargetCount] = useState<number>(100);
+  const [batchPreset, setBatchPreset] = useState<'oasis_community' | 'courier_lifeline' | 'biz_review_sample' | 'event_door_pass' | 'custom_sequence'>('oasis_community');
+  const [batchPrefix, setBatchPrefix] = useState('OASIS-PASS-');
+  const [batchCustomBaseUrl, setBatchCustomBaseUrl] = useState('https://oasistap.local/rewards?pass=');
+  const [isBatchConveyorActive, setIsBatchConveyorActive] = useState(false);
+  const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
+  const [isAutoTurboFlashing, setIsAutoTurboFlashing] = useState(false);
+  const [batchCards, setBatchCards] = useState<BatchCardItem[]>([]);
+  const [showPrintLabelModal, setShowPrintLabelModal] = useState(false);
+
+  // Initialize or re-generate batch cards list
+  const initializeBatchCards = (count: number, preset: string, prefix: string, baseUrl: string) => {
+    const list: BatchCardItem[] = [];
+    for (let i = 1; i <= count; i++) {
+      const serial = `${prefix}${String(i).padStart(3, '0')}`;
+      let payload = '';
+      let typeLabel = '';
+
+      if (preset === 'oasis_community') {
+        payload = `https://oasistap.local/rewards?pass=${serial}&welcome=50&town=CarrollCounty`;
+        typeLabel = 'Oasis Regional VIP Pass (+50 Pts)';
+      } else if (preset === 'courier_lifeline') {
+        payload = `https://oasistap.local/courier?card=${serial}&directPhone=5085070305&paypal=seanhse97`;
+        typeLabel = 'Sean Martin 4x4 Hotline & Lifeline';
+      } else if (preset === 'biz_review_sample') {
+        payload = `https://oasistap.local/tap/trial-${serial}`;
+        typeLabel = 'Merchant 5-Star Review Sample';
+      } else if (preset === 'event_door_pass') {
+        payload = `https://oasistap.local/events?ticket=${serial}`;
+        typeLabel = 'Carroll County Event VIP Pass';
+      } else {
+        payload = `${baseUrl}${serial}`;
+        typeLabel = 'Custom Serial Sequence';
+      }
+
+      list.push({
+        id: i,
+        serialNumber: serial,
+        status: 'pending',
+        payloadUrl: payload,
+        cardType: typeLabel,
+      });
+    }
+    setBatchCards(list);
+    setCurrentBatchIndex(0);
+  };
+
+  // Run on initial mount
+  useEffect(() => {
+    initializeBatchCards(batchTargetCount, batchPreset, batchPrefix, batchCustomBaseUrl);
+  }, []);
+
+  // Recalculate when preset or target count changes
+  const handlePresetChange = (newPreset: typeof batchPreset) => {
+    setBatchPreset(newPreset);
+    let pfx = 'OASIS-PASS-';
+    let base = 'https://oasistap.local/rewards?pass=';
+    if (newPreset === 'courier_lifeline') {
+      pfx = 'SEAN-4X4-';
+      base = 'https://oasistap.local/courier?card=';
+    } else if (newPreset === 'biz_review_sample') {
+      pfx = 'REVIEW-';
+      base = 'https://oasistap.local/tap/trial-';
+    } else if (newPreset === 'event_door_pass') {
+      pfx = 'VIP-DOOR-';
+      base = 'https://oasistap.local/events?ticket=';
+    }
+    setBatchPrefix(pfx);
+    setBatchCustomBaseUrl(base);
+    initializeBatchCards(batchTargetCount, newPreset, pfx, base);
+  };
+
+  const handleTargetCountChange = (count: number) => {
+    setBatchTargetCount(count);
+    initializeBatchCards(count, batchPreset, batchPrefix, batchCustomBaseUrl);
+  };
+
+  // Flash single card in batch (physical or simulated)
+  const flashCardAtIndex = (index: number, simulatedUid?: string) => {
+    if (index >= batchCards.length) {
+      setIsBatchConveyorActive(false);
+      confetti({ particleCount: 100, spread: 90, origin: { y: 0.5 } });
+      playDeliveryChime();
+      setWriteSuccessMsg(`🎉 All ${batchCards.length} Giveaway Cards have been successfully programmed and logged!`);
+      return;
+    }
+
+    const card = batchCards[index];
+    const uid = simulatedUid || `04:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}:${Math.floor(10 + Math.random() * 89)}`;
+    
+    // Register in fleet store
+    addCard({
+      cardName: `${card.serialNumber} (${card.cardType})`,
+      businessName: businessName || 'Oasis Regional Giveaway Pass',
+      googleReviewUrl: card.payloadUrl,
+      mode: 'smart_funnel',
+      thresholdStars: 4,
+      customHeadline: headline,
+      logoUrl: customLogoUrl || selectedEmoji,
+      primaryColor: selectedColor,
+      active: true,
+      assignedLocation: `Giveaway Batch #${card.id}`
+    });
+
+    setBatchCards(prev => prev.map((c, i) => i === index ? {
+      ...c,
+      status: 'completed',
+      uid,
+      flashedAt: new Date().toLocaleTimeString(),
+    } : c));
+
+    setCurrentBatchIndex(index + 1);
+    playDeliveryChime();
+
+    if (index + 1 === batchCards.length) {
+      setIsBatchConveyorActive(false);
+      setIsAutoTurboFlashing(false);
+      confetti({ particleCount: 120, spread: 100, origin: { y: 0.5 } });
+      setWriteSuccessMsg(`🏆 BATCH COMPLETE! 100% of ${batchCards.length} Giveaway Cards are programmed & active in your Fleet.`);
+    }
+  };
+
+  // Turbo Auto-Flash Simulation for Demoing 100 Cards
+  const handleTurboSimulateAll = () => {
+    setIsAutoTurboFlashing(true);
+    let idx = currentBatchIndex;
+    const interval = setInterval(() => {
+      if (idx >= batchCards.length) {
+        clearInterval(interval);
+        setIsAutoTurboFlashing(false);
+        return;
+      }
+      flashCardAtIndex(idx);
+      idx++;
+    }, 70);
+  };
+
+  // Continuous Physical Web NFC Batch Conveyor Loop
+  const handleTogglePhysicalBatchConveyor = async () => {
+    if (!('NDEFReader' in window)) {
+      alert('Physical Web NFC batch flashing requires Chrome on Android or a Web NFC enabled device. You can test the conveyor belt with "Simulate Card Flash" or Turbo Auto-Flash!');
+      return;
+    }
+
+    if (isBatchConveyorActive) {
+      setIsBatchConveyorActive(false);
+      setScanStatusMessage('Batch Conveyor Paused.');
+      return;
+    }
+
+    try {
+      setIsBatchConveyorActive(true);
+      setScanStatusMessage(`📡 Conveyor Armed! Touch Card #${currentBatchIndex + 1} against antenna...`);
+      const ndef = new (window as any).NDEFReader();
+      await ndef.scan();
+
+      ndef.onreading = async (event: any) => {
+        const nextIdx = currentBatchIndex;
+        if (nextIdx >= batchCards.length) {
+          setIsBatchConveyorActive(false);
+          return;
+        }
+
+        const cardToFlash = batchCards[nextIdx];
+        const chipUid = event.serialNumber || '04:XX:XX:XX:XX:XX:XX';
+
+        try {
+          // Write payload to physical card
+          await ndef.write({
+            records: [{ recordType: 'url', data: cardToFlash.payloadUrl }]
+          });
+
+          flashCardAtIndex(nextIdx, chipUid);
+          setScanStatusMessage(`✅ Flashed Card #${nextIdx + 1} (${cardToFlash.serialNumber})! Touch Card #${nextIdx + 2}...`);
+          confetti({ particleCount: 20, spread: 40 });
+        } catch (err: any) {
+          setScanStatusMessage(`⚠️ Error flashing card #${nextIdx + 1}: ${err.message}. Retrying...`);
+        }
+      };
+    } catch (err: any) {
+      setIsBatchConveyorActive(false);
+      alert(`Could not start batch NFC antenna: ${err.message || err}`);
+    }
+  };
+
+  // Export Batch CSV
+  const handleExportBatchCsv = () => {
+    let csv = 'Card ID,Serial Number,Card Type,Assigned UID,Status,Target Payload URL,Flashed Timestamp\n';
+    batchCards.forEach(c => {
+      csv += `"${c.id}","${c.serialNumber}","${c.cardType}","${c.uid || 'N/A'}","${c.status}","${c.payloadUrl}","${c.flashedAt || 'Pending'}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `oasis-batch-100-cards-${batchPreset}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Generate target payload string based on active actionType
   const getComputedPayloadUrl = () => {
@@ -824,6 +1045,9 @@ export default function NfcTagReaderCustomizer() {
     return cap.category === capabilitiesFilter;
   });
 
+  const completedBatchCount = batchCards.filter(c => c.status === 'completed').length;
+  const progressPercent = Math.round((completedBatchCount / (batchCards.length || 1)) * 100);
+
   return (
     <div className="space-y-10 max-w-7xl mx-auto">
       
@@ -836,23 +1060,35 @@ export default function NfcTagReaderCustomizer() {
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-widest">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span>13.56MHz Smart Contactless Hardware Studio</span>
+              <span>13.56MHz Bulk Batch Flasher & Giveaway Studio</span>
             </div>
 
             <h1 className="text-3xl md:text-5xl font-black italic tracking-tight uppercase text-white leading-tight">
-              All The Things You Can Do <br />
+              Program 100 NFC Cards <br />
               <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-indigo-400 bg-clip-text text-transparent">
-                With Your NFC Cards & Tags
+                For Community Giveaways
               </span>
             </h1>
 
             <p className="text-zinc-300 text-xs md:text-sm font-normal leading-relaxed">
-              Explore 15+ powerful real-world applications: <b>5-Star Google Review Boosters</b>, <b>Dine-In Digital Menus</b>, <b>Emergency 4x4 Courier Dispatch</b>, <b>Instant PayPal Cashless Tipping</b> (<span className="text-amber-400 font-mono">seanhse97@gmail.com</span>), <b>Paperless vCards</b>, <b>Guest Wi-Fi Auto-Connect</b>, and <b>Smart Pet Collars</b>.
+              Batch-program your 100 blank NFC cards on a continuous <b>"Tap & Flash" conveyor belt</b>. Turn them into <b>Oasis Community VIP Passes (+50 Pts)</b>, <b>Sean Martin 4x4 Hotline Cards</b>, <b>Local Merchant Review Trials</b>, or <b>Event Door Passes</b>.
             </p>
           </div>
 
           {/* Tab Switcher */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-black/50 p-1.5 rounded-2xl border border-white/10 w-full lg:w-auto">
+            <button
+              onClick={() => setActiveTab('batch')}
+              className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'batch'
+                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Zap className="w-4 h-4" />
+              <span>1. Batch 100 Flasher</span>
+            </button>
+
             <button
               onClick={() => setActiveTab('capabilities')}
               className={`flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
@@ -862,7 +1098,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>1. All Capabilities ({ALL_NFC_CAPABILITIES.length})</span>
+              <span>2. All 15 Capabilities</span>
             </button>
 
             <button
@@ -874,7 +1110,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Palette className="w-4 h-4" />
-              <span>2. Customizer Studio</span>
+              <span>3. Single Canvas</span>
             </button>
 
             <button
@@ -886,7 +1122,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Scan className="w-4 h-4" />
-              <span>3. Tag Reader</span>
+              <span>4. Reader</span>
             </button>
 
             <button
@@ -898,7 +1134,7 @@ export default function NfcTagReaderCustomizer() {
               }`}
             >
               <Cpu className="w-4 h-4" />
-              <span>4. Flash & Program</span>
+              <span>5. NDEF Export</span>
             </button>
           </div>
         </div>
@@ -912,14 +1148,382 @@ export default function NfcTagReaderCustomizer() {
             <span>{writeSuccessMsg}</span>
           </div>
           <Link href="/dashboard/cards" className="underline hover:text-white flex items-center gap-1">
-            <span>Manage Beacon Fleet</span>
+            <span>Manage Beacon Fleet ({batchCards.filter(c => c.status === 'completed').length} active)</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       )}
 
       {/* ======================================================== */}
-      {/* TAB 1: ALL THINGS YOU CAN DO (NFC CAPABILITIES MATRIX)  */}
+      {/* TAB: BATCH 100-CARD BULK PROGRAMMER                     */}
+      {/* ======================================================== */}
+      {activeTab === 'batch' && (
+        <div className="space-y-8">
+          
+          {/* Top Configuration & Conveyor Deck */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left 5 Cols: Batch Setup & Campaign Selector */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="p-6 md:p-8 rounded-3xl bg-[#0c0c12] border border-white/10 space-y-5">
+                <div>
+                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">
+                    Giveaway Setup
+                  </span>
+                  <h3 className="text-xl font-black italic text-white uppercase">
+                    1. Choose Giveaway Campaign
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Select how you want to configure your 100 physical giveaway cards:
+                  </p>
+                </div>
+
+                {/* Giveaway Presets */}
+                <div className="space-y-2.5">
+                  {[
+                    {
+                      id: 'oasis_community',
+                      title: 'Oasis Regional VIP Pass (+50 Loyalty Points)',
+                      desc: 'Give to neighbors & residents to join the network, earn store points & access couriers.',
+                      icon: '🌲',
+                      badge: 'Recommended for Towns',
+                      sampleUrl: 'https://oasistap.local/rewards?pass=OASIS-PASS-001'
+                    },
+                    {
+                      id: 'courier_lifeline',
+                      title: 'Sean Martin 4x4 Hotline & Lifeline Pass',
+                      desc: 'Give to local drivers & motorists for 1-tap 24/7 towing (508-507-0305) & PayPal tipping.',
+                      icon: '🛻',
+                      badge: 'Emergency Recovery',
+                      sampleUrl: 'https://oasistap.local/courier?card=SEAN-4X4-001'
+                    },
+                    {
+                      id: 'biz_review_sample',
+                      title: 'Local Business 5-Star Review Trial Card',
+                      desc: 'Give free samples to shop owners in Effingham, Ossipee, Freedom & Conway.',
+                      icon: '⭐',
+                      badge: 'Merchant Onboarding',
+                      sampleUrl: 'https://oasistap.local/tap/trial-REVIEW-001'
+                    },
+                    {
+                      id: 'event_door_pass',
+                      title: 'Carroll County Live Music & Event VIP Pass',
+                      desc: 'Fast-track door pass for concert nights, craft fairs & brewery tastings.',
+                      icon: '🎟️',
+                      badge: 'Event Check-In',
+                      sampleUrl: 'https://oasistap.local/events?ticket=VIP-001'
+                    },
+                  ].map(preset => (
+                    <button
+                      key={preset.id}
+                      onClick={() => handlePresetChange(preset.id as any)}
+                      className={`w-full p-4 rounded-2xl border text-left transition-all flex items-start gap-3.5 ${
+                        batchPreset === preset.id
+                          ? 'bg-amber-400/15 border-amber-400 text-white shadow-xl shadow-amber-500/10'
+                          : 'bg-white/5 border-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <span className="text-2xl mt-0.5">{preset.icon}</span>
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-black text-white">{preset.title}</h4>
+                          <span className="text-[8px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300">
+                            {preset.badge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-300 font-light leading-snug">{preset.desc}</p>
+                        <p className="text-[9px] font-mono text-amber-400 truncate">{preset.sampleUrl}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Batch Size Selector */}
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <div className="flex justify-between items-center text-xs font-mono">
+                    <span className="text-zinc-400 uppercase font-bold">Total Batch Size:</span>
+                    <span className="text-amber-400 font-black">{batchTargetCount} Physical Cards</span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2">
+                    {[25, 50, 100, 250].map(count => (
+                      <button
+                        key={count}
+                        onClick={() => handleTargetCountChange(count)}
+                        className={`py-2 rounded-xl text-xs font-mono font-bold transition-all border ${
+                          batchTargetCount === count
+                            ? 'bg-amber-400 text-black border-amber-300 shadow-md'
+                            : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {count} Cards
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Right 7 Cols: Conveyor Belt Flasher & Action Deck */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Live Conveyor Station Card */}
+              <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-[#121220] via-[#0d0d16] to-[#07070b] border border-amber-400/30 space-y-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                {/* Top Status Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div>
+                    <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest block">
+                      Automated Conveyor Mode
+                    </span>
+                    <h3 className="text-2xl font-black italic uppercase text-white">
+                      {isBatchConveyorActive ? '🟢 Conveyor Armed & Listening' : '⚡ Multi-Card Flasher'}
+                    </h3>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-2xl font-black font-mono text-amber-400">
+                      {completedBatchCount} / {batchCards.length}
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-400 block">CARDS PROGRAMMED</span>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px] font-mono text-zinc-400">
+                    <span>Batch Progress:</span>
+                    <span className="text-white font-bold">{progressPercent}% Completed</span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden p-0.5 border border-white/10">
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-emerald-400 rounded-full transition-all duration-300 shadow-md"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Large Interactive NFC Touch Target */}
+                <div className="p-8 rounded-3xl bg-black/60 border border-white/10 text-center space-y-4 relative">
+                  <div className="w-20 h-20 rounded-full bg-amber-400/20 border-2 border-amber-400 flex items-center justify-center mx-auto text-amber-400 shadow-xl shadow-amber-500/20">
+                    <Radio className={`w-10 h-10 ${isBatchConveyorActive || isAutoTurboFlashing ? 'animate-ping text-amber-300' : 'animate-pulse'}`} />
+                  </div>
+
+                  <div>
+                    {currentBatchIndex < batchCards.length ? (
+                      <>
+                        <h4 className="text-lg font-black text-white uppercase italic">
+                          {isBatchConveyorActive 
+                            ? `Touch Card #${currentBatchIndex + 1} (${batchCards[currentBatchIndex]?.serialNumber})` 
+                            : `Ready to Flash Card #${currentBatchIndex + 1} (${batchCards[currentBatchIndex]?.serialNumber})`}
+                        </h4>
+                        <p className="text-xs text-zinc-400 max-w-md mx-auto mt-1">
+                          Hold your physical NFC card against the back of your phone. The system will encode it, advance to the next card, and chime automatically!
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+                        <h4 className="text-lg font-black text-emerald-400 uppercase italic mt-2">
+                          All {batchCards.length} Cards Programmed!
+                        </h4>
+                        <p className="text-xs text-zinc-300">
+                          Your complete 100-card batch is now active, registered in your Fleet, and ready to hand out across Carroll County.
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Primary Flashing Buttons */}
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 pt-2">
+                    <button
+                      onClick={handleTogglePhysicalBatchConveyor}
+                      className={`flex-1 py-4 font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl flex items-center justify-center gap-2 ${
+                        isBatchConveyorActive
+                          ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20'
+                          : 'bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black shadow-amber-500/25'
+                      }`}
+                    >
+                      {isBatchConveyorActive ? (
+                        <>
+                          <Pause className="w-4 h-4" />
+                          <span>Pause Physical Conveyor</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4" />
+                          <span>Start Physical Auto-Conveyor</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => flashCardAtIndex(currentBatchIndex)}
+                      disabled={currentBatchIndex >= batchCards.length}
+                      className="px-5 py-4 bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all flex items-center justify-center gap-2 shrink-0 disabled:opacity-40"
+                    >
+                      <Zap className="w-4 h-4 text-amber-400" />
+                      <span>Flash Next Card (Simulate)</span>
+                    </button>
+                  </div>
+
+                  {/* Turbo Auto-Simulate Button */}
+                  <div className="pt-2 flex items-center justify-center gap-3">
+                    <button
+                      onClick={handleTurboSimulateAll}
+                      disabled={isAutoTurboFlashing || currentBatchIndex >= batchCards.length}
+                      className="text-xs font-mono text-amber-400 hover:text-amber-300 underline flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{isAutoTurboFlashing ? 'Turbo Auto-Flashing in progress...' : `🚀 Turbo-Flash All Remaining (${batchCards.length - currentBatchIndex} Cards)`}</span>
+                    </button>
+                    <span className="text-zinc-600">•</span>
+                    <button
+                      onClick={() => initializeBatchCards(batchTargetCount, batchPreset, batchPrefix, batchCustomBaseUrl)}
+                      className="text-xs font-mono text-zinc-400 hover:text-white underline"
+                    >
+                      Reset Batch
+                    </button>
+                  </div>
+                </div>
+
+                {/* Export / Print Tools Bar */}
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleExportBatchCsv}
+                      className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-200 hover:text-white rounded-xl font-bold transition-all flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4 text-emerald-400" />
+                      <span>Download Batch CSV Log</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShowPrintLabelModal(true)}
+                      className="px-4 py-2.5 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 hover:text-white rounded-xl font-bold transition-all flex items-center gap-2"
+                    >
+                      <Printer className="w-4 h-4" />
+                      <span>Print QR Sticker Sheet</span>
+                    </button>
+                  </div>
+
+                  <span className="text-[11px] text-zinc-400">
+                    Chip Spec: <b>NTAG213 / 144B</b>
+                  </span>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Section: Card-by-Card Live Audit Table */}
+          <div className="p-6 md:p-8 rounded-3xl bg-[#0c0c12] border border-white/10 space-y-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">
+                  Live Flashing Audit Trail
+                </span>
+                <h3 className="text-xl font-black italic text-white uppercase">
+                  Batch Card Manifest ({completedBatchCount} / {batchCards.length} Verified)
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  {completedBatchCount} Flashed
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/5 text-zinc-400 border border-white/10">
+                  {batchCards.length - completedBatchCount} Pending
+                </span>
+              </div>
+            </div>
+
+            {/* Manifest List Table */}
+            <div className="max-h-96 overflow-y-auto rounded-2xl border border-white/5 divide-y divide-white/5 text-xs font-mono">
+              {batchCards.map((card, idx) => (
+                <div 
+                  key={card.id}
+                  className={`p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors ${
+                    card.status === 'completed' 
+                      ? 'bg-emerald-500/[0.04] hover:bg-emerald-500/[0.08]' 
+                      : idx === currentBatchIndex 
+                      ? 'bg-amber-400/10 border-l-4 border-l-amber-400' 
+                      : 'hover:bg-white/[0.02]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
+                      card.status === 'completed'
+                        ? 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/40'
+                        : idx === currentBatchIndex
+                        ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40 animate-pulse'
+                        : 'bg-white/5 text-zinc-500 border border-white/5'
+                    }`}>
+                      #{card.id}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-white">{card.serialNumber}</span>
+                        <span className="text-[10px] text-zinc-400 font-light">• {card.cardType}</span>
+                      </div>
+                      <p className="text-[10px] text-amber-400/80 truncate max-w-md">
+                        {card.payloadUrl}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {card.uid && (
+                      <span className="text-[10px] text-zinc-400">
+                        UID: <strong className="text-zinc-200">{card.uid}</strong>
+                      </span>
+                    )}
+
+                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase flex items-center gap-1 ${
+                      card.status === 'completed'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : idx === currentBatchIndex
+                        ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                        : 'bg-white/5 text-zinc-500 border border-white/5'
+                    }`}>
+                      {card.status === 'completed' ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-400" />
+                          <span>Flashed ({card.flashedAt || 'Active'})</span>
+                        </>
+                      ) : idx === currentBatchIndex ? (
+                        <>
+                          <Radio className="w-3 h-3 text-amber-400 animate-pulse" />
+                          <span>Next in Queue</span>
+                        </>
+                      ) : (
+                        <span>Pending Touch</span>
+                      )}
+                    </span>
+
+                    {card.status !== 'completed' && (
+                      <button
+                        onClick={() => flashCardAtIndex(idx)}
+                        className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-amber-400 hover:text-white rounded-lg text-[10px] font-bold"
+                      >
+                        Flash
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 2: ALL THINGS YOU CAN DO (NFC CAPABILITIES MATRIX)  */}
       {/* ======================================================== */}
       {activeTab === 'capabilities' && (
         <div className="space-y-8">
@@ -1021,46 +1625,11 @@ export default function NfcTagReaderCustomizer() {
               </div>
             ))}
           </div>
-
-          {/* Quick Hardware & Form Factor Showcase */}
-          <div className="p-8 rounded-3xl bg-gradient-to-r from-[#10101c] via-[#0d0d16] to-[#0a0a10] border border-white/10 space-y-6">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">
-                Physical Form Factors Supported
-              </span>
-              <h3 className="text-2xl font-black text-white uppercase italic">
-                Any Object Can Become an NFC Touchpoint
-              </h3>
-              <p className="text-xs text-zinc-400 max-w-2xl">
-                Our standardized 13.56 MHz chips work universally with all iPhones (XS through 16 Pro) and all Android smartphones with zero apps required.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {[
-                { name: 'Smart PVC Card', desc: 'CR80 standard credit-card size matte finish', icon: '💳', use: 'Wallets & vCards' },
-                { name: 'Countertop Stand', desc: 'Sleek acrylic slant stand with dual QR backup', icon: '🏛️', use: 'Cash registers & bars' },
-                { name: 'Epoxy Waterproof Sticker', desc: '30mm 3M adhesive waterproof sticker', icon: '🏷️', use: 'Tables, trucks & windows' },
-                { name: 'Lakeside Maple Puck', desc: 'Laser-engraved solid New England maple wood', icon: '🪵', use: 'Dining tables & patios' },
-                { name: 'Heavy-Duty Key Fob', desc: 'Rugged keychain for drivers & tradesmen', icon: '🛡️', use: 'Keyrings & fleet vehicles' },
-              ].map((hf, i) => (
-                <div key={i} className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-2 text-center">
-                  <span className="text-3xl block">{hf.icon}</span>
-                  <h4 className="text-xs font-black text-white">{hf.name}</h4>
-                  <p className="text-[10px] text-zinc-400 leading-tight">{hf.desc}</p>
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[8px] font-mono font-bold uppercase">
-                    {hf.use}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
       )}
 
       {/* ======================================================== */}
-      {/* TAB 2: CUSTOMIZER & VISUAL CARD CANVAS                  */}
+      {/* TAB 3: CUSTOMIZER & VISUAL CARD CANVAS                  */}
       {/* ======================================================== */}
       {activeTab === 'customizer' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1620,7 +2189,7 @@ export default function NfcTagReaderCustomizer() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 3: REAL & SIMULATED NFC TAG READER / INSPECTOR       */}
+      {/* TAB 4: REAL & SIMULATED NFC TAG READER / INSPECTOR       */}
       {/* ======================================================== */}
       {activeTab === 'reader' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1827,7 +2396,7 @@ export default function NfcTagReaderCustomizer() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 4: ENCODING & FLASHING WORKSTATION                  */}
+      {/* TAB 5: ENCODING & FLASHING WORKSTATION                  */}
       {/* ======================================================== */}
       {activeTab === 'export' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1974,6 +2543,68 @@ export default function NfcTagReaderCustomizer() {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* PRINTABLE QR STICKER SHEET MODAL */}
+      {showPrintLabelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="bg-[#0e0f14] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-4xl w-full max-h-[90vh] flex flex-col justify-between space-y-4 shadow-2xl relative">
+            <div className="flex justify-between items-center pb-2 border-b border-white/10">
+              <div>
+                <h3 className="text-lg font-black text-white uppercase italic">
+                  Printable Giveaway Label Sheet ({batchCards.length} Labels)
+                </h3>
+                <p className="text-xs text-zinc-400 font-mono">
+                  Ready to print on standard Avery 2"x1" stickers or card backing sleeves.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPrintLabelModal(false)}
+                className="text-zinc-400 hover:text-white text-xs font-bold font-mono"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {/* Label Grid Preview */}
+            <div className="overflow-y-auto max-h-[60vh] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-2 bg-white/5 rounded-2xl border border-white/5">
+              {batchCards.map(card => (
+                <div key={card.id} className="p-3 bg-white text-black rounded-xl text-center space-y-1 shadow-md border border-zinc-200">
+                  <div className="flex justify-between items-center text-[8px] font-mono font-bold text-zinc-600">
+                    <span>OASIS PASS</span>
+                    <span>#{card.id}</span>
+                  </div>
+                  <div className="w-16 h-16 mx-auto bg-black rounded p-0.5">
+                    {generatedQrDataUrl && (
+                      <img src={generatedQrDataUrl} alt="QR" className="w-full h-full object-contain invert" />
+                    )}
+                  </div>
+                  <p className="text-[9px] font-black tracking-tight leading-none text-zinc-900">{card.serialNumber}</p>
+                  <p className="text-[7px] font-mono text-zinc-500 truncate">13.56 MHz NFC Standard</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 flex justify-between items-center">
+              <button
+                onClick={() => setShowPrintLabelModal(false)}
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 rounded-xl text-xs font-mono font-bold"
+              >
+                Done
+              </button>
+
+              <button
+                onClick={() => {
+                  window.print();
+                }}
+                className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Sticker Labels</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
