@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useNfcStore } from '@/lib/store';
 import HeroTapSimulator from '@/components/HeroTapSimulator';
 import CardCustomizerModal from '@/components/CardCustomizerModal';
@@ -11,13 +12,46 @@ import {
   Radio, Sparkles, ShieldCheck, Zap, TrendingUp, Star, 
   ArrowRight, CheckCircle2, ChevronRight, Cpu, Activity,
   Sliders, ShoppingBag, Eye, Layers, Compass, Truck, Phone,
-  Building2, MessageSquare, Code2
+  Building2, MessageSquare, Code2, Plus, Check, ShoppingCart
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 export default function HomePage() {
-  const { products } = useNfcStore();
+  const router = useRouter();
+  const { products, cart, addToCart } = useNfcStore();
   const [selectedCustomProduct, setSelectedCustomProduct] = useState<ReviewProduct | null>(null);
+  const [selectedMarketplaceCategory, setSelectedMarketplaceCategory] = useState<string>('all');
+  const [justAddedId, setJustAddedId] = useState<string | null>(null);
+  
+  // Cart summary
+  const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const cartSubtotal = cart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
+
+  const handleQuickAddToCart = (p: ReviewProduct) => {
+    addToCart(p);
+    setJustAddedId(p.id);
+    setTimeout(() => setJustAddedId(null), 1800);
+  };
+
+  const handleInstantBuy = (p: ReviewProduct) => {
+    addToCart(p);
+    router.push('/cart');
+  };
+
+  const marketplaceCategories = [
+    { id: 'all', label: 'All Products', icon: '✨' },
+    { id: 'cards', label: 'NFC Cards', icon: '💳' },
+    { id: 'stands', label: 'Tabletop Acrylics', icon: '💎' },
+    { id: 'stickers', label: 'Tap Stickers', icon: '🏷️' },
+    { id: 'food', label: 'Bakehouse & Honey', icon: '🍯' },
+    { id: 'artisan', label: 'Artisan Woodcraft', icon: '🪵' },
+    { id: 'bundles', label: 'Fleet Bundles', icon: '📦' },
+  ];
+
+  const filteredMarketplaceProducts = products.filter((p) => {
+    if (selectedMarketplaceCategory === 'all') return true;
+    return p.category === selectedMarketplaceCategory;
+  });
   
   // ROI Calculator State
   const [dailyCustomers, setDailyCustomers] = useState(120);
@@ -465,31 +499,66 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 3. FEATURED HARDWARE CATALOG */}
-        <section className="space-y-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        {/* 3. DIRECT MARKETPLACE SALES & HARDWARE FLEET */}
+        <section className="space-y-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/5 pb-6">
             <div className="space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400">
-                Premium NFC Hardware Fleet
-              </span>
-              <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
-                Engineered for High-Traffic Tap Speed
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Townraise Marketplace Direct Sales</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
+                Shop Hardware & Local Artisan Goods
               </h2>
+              <p className="text-xs text-zinc-400 max-w-xl">
+                Purchase pre-programmed NFC stands, staff review cards, 3M tap stickers, or local farm-harvested goods directly from the overview.
+              </p>
             </div>
-            <Link
-              href="/marketplace"
-              className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-white hover:bg-white/10 transition-all flex items-center gap-2"
-            >
-              <span>View Full Marketplace</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+
+            <div className="flex items-center gap-3">
+              {cartItemCount > 0 && (
+                <Link
+                  href="/cart"
+                  className="px-5 py-3 rounded-2xl bg-amber-400 text-black font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2 animate-bounce"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Cart ({cartItemCount}) • {formatCurrency(cartSubtotal)}</span>
+                </Link>
+              )}
+              <Link
+                href="/marketplace"
+                className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-white hover:bg-white/10 transition-all flex items-center gap-2"
+              >
+                <span>Full Marketplace</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
 
+          {/* Interactive Category Selector */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {marketplaceCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedMarketplaceCategory(cat.id)}
+                className={`px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  selectedMarketplaceCategory === cat.id
+                    ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 font-black'
+                    : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 border border-white/5'
+                }`}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Products Grid with Direct Buy and Add to Cart */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.slice(0, 3).map((product) => (
+            {filteredMarketplaceProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-6 flex flex-col justify-between hover:border-amber-400/40 hover:bg-white/[0.04] transition-all duration-300 group"
+                className="bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-6 flex flex-col justify-between hover:border-amber-400/40 hover:bg-white/[0.04] transition-all duration-300 group shadow-xl"
               >
                 <div className="space-y-4">
                   {/* Image with badge */}
@@ -497,46 +566,125 @@ export default function HomePage() {
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-85 group-hover:opacity-100"
                     />
                     {product.badge && (
                       <span className="absolute top-3 left-3 px-3 py-1 bg-amber-400 text-black font-black text-[9px] uppercase tracking-widest rounded-full shadow-lg">
                         {product.badge}
                       </span>
                     )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1 text-amber-400 text-xs">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                      ))}
-                      <span className="text-zinc-400 font-mono ml-1">({product.reviewsCount})</span>
-                    </div>
-                    <h3 className="text-xl font-black italic text-white tracking-tight">{product.name}</h3>
-                    <p className="text-xs text-zinc-400 line-clamp-2">{product.subtitle}</p>
-                  </div>
-                </div>
-
-                <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between">
-                  <div>
-                    <span className="text-2xl font-black italic text-amber-400">{formatCurrency(product.price)}</span>
-                    {product.originalPrice && (
-                      <span className="text-xs text-zinc-500 line-through ml-2">{formatCurrency(product.originalPrice)}</span>
+                    {product.sellerName && (
+                      <span className="absolute bottom-3 left-3 px-2.5 py-0.5 bg-black/80 backdrop-blur-md border border-white/10 text-white font-mono text-[9px] font-bold rounded-lg">
+                        By {product.sellerName}
+                      </span>
                     )}
                   </div>
 
-                  <button
-                    onClick={() => setSelectedCustomProduct(product)}
-                    className="px-4 py-2.5 bg-white/10 hover:bg-amber-400 hover:text-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5"
-                  >
-                    <Sliders className="w-3.5 h-3.5" />
-                    <span>Customize</span>
-                  </button>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-amber-400 text-xs">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                        ))}
+                        <span className="text-zinc-400 font-mono ml-1 text-[11px]">({product.reviewsCount})</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-mono font-bold">
+                        In Stock
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-black italic text-white tracking-tight group-hover:text-amber-300 transition-colors">
+                      {product.name}
+                    </h3>
+                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">{product.subtitle}</p>
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="text-2xl font-black italic text-amber-400">{formatCurrency(product.price)}</span>
+                      {product.originalPrice && (
+                        <span className="text-xs text-zinc-500 line-through ml-2 font-mono">{formatCurrency(product.originalPrice)}</span>
+                      )}
+                    </div>
+                    {product.material && (
+                      <span className="text-[10px] font-mono text-zinc-400">{product.material.split(' ')[0]}</span>
+                    )}
+                  </div>
+
+                  {/* Direct Action Buttons: Quick Add, Instant Buy, Customize */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleQuickAddToCart(product)}
+                      className={`py-2.5 px-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                        justAddedId === product.id
+                          ? 'bg-emerald-500 text-black font-black'
+                          : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
+                      }`}
+                    >
+                      {justAddedId === product.id ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-black" />
+                          <span>Added!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Add to Cart</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => handleInstantBuy(product)}
+                      className="py-2.5 px-3 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-xl text-[10px] uppercase tracking-wider transition-all shadow-md shadow-amber-500/10 flex items-center justify-center gap-1.5"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-black fill-current" />
+                      <span>Instant Buy</span>
+                    </button>
+                  </div>
+
+                  {product.category === 'cards' || product.category === 'stands' ? (
+                    <button
+                      onClick={() => setSelectedCustomProduct(product)}
+                      className="w-full py-1.5 bg-transparent hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg text-[9px] font-mono uppercase tracking-widest transition-all flex items-center justify-center gap-1"
+                    >
+                      <Sliders className="w-3 h-3 text-amber-400" />
+                      <span>Custom Laser Engraving Options →</span>
+                    </button>
+                  ) : null}
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Quick Cart Floating Checkout Bar */}
+          {cartItemCount > 0 && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-[#0e0e16] to-emerald-500/20 border border-amber-400/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-400 text-black flex items-center justify-center font-black">
+                  <ShoppingCart className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-black text-white">
+                    {cartItemCount} item{cartItemCount !== 1 ? 's' : ''} in your Shopping Cart
+                  </div>
+                  <div className="text-xs text-amber-400 font-mono">
+                    Subtotal: {formatCurrency(cartSubtotal)} • Free Express Local Courier Delivery
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/cart"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
+              >
+                <span>Proceed to Checkout</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* 4. SMART GATEKEEPER / RATING SHIELD ARCHITECTURE */}
