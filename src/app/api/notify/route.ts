@@ -5,21 +5,28 @@ import { DeliveryOrder, NotificationSettings } from '@/lib/types';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { order, settings } = body as { order: DeliveryOrder; settings: NotificationSettings };
+    const { order, settings } = body as { order: DeliveryOrder; settings?: NotificationSettings };
 
     if (!order) {
       return NextResponse.json({ error: 'Missing order details' }, { status: 400 });
     }
 
-    const defaultSettings: NotificationSettings = settings || {
-      phoneNumber: '(603) 555-0199',
-      enableSms: true,
-      enableTelegram: false,
-      enableDiscord: false,
-      enableSoundChime: true,
+    const mergedSettings: NotificationSettings = {
+      phoneNumber: settings?.phoneNumber || process.env.COURIER_DISPATCH_PHONE || '(508) 507-0305',
+      enableSms: settings?.enableSms ?? true,
+      enableTwilio: settings?.enableTwilio || !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN),
+      twilioAccountSid: settings?.twilioAccountSid || process.env.TWILIO_ACCOUNT_SID,
+      twilioAuthToken: settings?.twilioAuthToken || process.env.TWILIO_AUTH_TOKEN,
+      twilioPhoneNumber: settings?.twilioPhoneNumber || process.env.TWILIO_PHONE_NUMBER,
+      enableTelegram: settings?.enableTelegram || !!(settings?.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN),
+      telegramBotToken: settings?.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN,
+      telegramChatId: settings?.telegramChatId || process.env.TELEGRAM_CHAT_ID,
+      enableDiscord: settings?.enableDiscord || !!(settings?.discordWebhookUrl || process.env.DISCORD_WEBHOOK_URL),
+      discordWebhookUrl: settings?.discordWebhookUrl || process.env.DISCORD_WEBHOOK_URL,
+      enableSoundChime: settings?.enableSoundChime ?? true,
     };
 
-    const result = await sendOrderPhoneNotification(order, defaultSettings);
+    const result = await sendOrderPhoneNotification(order, mergedSettings);
 
     return NextResponse.json({
       success: true,
