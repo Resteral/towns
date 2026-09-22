@@ -11,6 +11,8 @@ import {
   Truck, 
   ShieldCheck, 
   LogOut, 
+  Lock,
+  KeyRound,
   Store, 
   Hammer, 
   Sparkles, 
@@ -20,7 +22,10 @@ import {
   PlusCircle,
   ArrowRight,
   ShieldAlert,
-  Radio
+  Radio,
+  Eye,
+  EyeOff,
+  AlertCircle
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -34,16 +39,29 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     loginUser, 
     logoutUser, 
     registerUser, 
+    authenticateUser,
+    registeredAccounts,
     deliveryDrivers, 
     toggleDriverStatus,
     loyaltyWallet 
   } = useNfcStore();
 
-  const [activeTab, setActiveTab] = useState<'presets' | 'register'>('presets');
+  const [activeTab, setActiveTab] = useState<'signin' | 'register'>('signin');
+  
+  // Sign In Form State
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPin, setLoginPin] = useState('');
+  const [showLoginPin, setShowLoginPin] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  // Register Form State
   const [registerForm, setRegisterForm] = useState({
     name: '',
     email: '',
     phone: '',
+    pin: '',
+    confirmPin: '',
     town: 'Effingham',
     state: 'NH',
     role: 'driver' as UserRole,
@@ -51,7 +69,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     vehicleName: 'Subaru Outback AWD',
     isDriver: true
   });
-  const [successMsg, setSuccessMsg] = useState('');
+  const [showRegisterPin, setShowRegisterPin] = useState(false);
 
   if (!isOpen) return null;
 
@@ -59,19 +77,55 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     ? deliveryDrivers.find(d => d.id === currentUser.driverMemberId || d.email === currentUser.email || d.phone === currentUser.phone)
     : null;
 
-  const handleSelectPreset = (user: UserProfile) => {
-    loginUser(user);
-    setSuccessMsg(`Logged in as ${user.name} (${user.role.toUpperCase()})`);
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+
+    if (!loginIdentifier.trim()) {
+      setAuthError('Please enter your registered phone number or email.');
+      return;
+    }
+    if (!loginPin.trim()) {
+      setAuthError('Please enter your 4-6 digit Security PIN.');
+      return;
+    }
+
+    const result = authenticateUser(loginIdentifier, loginPin);
+    if (!result.success) {
+      setAuthError(result.error || 'Authentication failed. Please check your credentials.');
+      return;
+    }
+
+    setSuccessMsg(`Welcome back, ${result.user?.name}!`);
+    setLoginPin('');
     setTimeout(() => {
       setSuccessMsg('');
       onClose();
     }, 1200);
   };
 
+  const handlePreFill = (preset: UserProfile) => {
+    setLoginIdentifier(preset.phone || preset.email);
+    setLoginPin(preset.pin || '1234');
+    setAuthError('');
+  };
+
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!registerForm.name || !registerForm.phone) {
-      alert('Please provide your name and phone number.');
+    setAuthError('');
+
+    if (!registerForm.name.trim() || !registerForm.phone.trim()) {
+      setAuthError('Please provide your full name and phone number.');
+      return;
+    }
+
+    if (!registerForm.pin || registerForm.pin.length < 4) {
+      setAuthError('Security PIN must be at least 4 digits.');
+      return;
+    }
+
+    if (registerForm.pin !== registerForm.confirmPin) {
+      setAuthError('Security PINs do not match. Please re-enter.');
       return;
     }
 
@@ -79,9 +133,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const avatar = isDriverRole ? (registerForm.avatar || '🚗') : (registerForm.role === 'merchant' ? '🥪' : registerForm.role === 'contractor' ? '🔨' : '🌲');
 
     const newUser = registerUser({
-      name: registerForm.name,
-      email: registerForm.email || `${registerForm.name.toLowerCase().replace(/\s+/g, '.')}@carrollcounty.local`,
-      phone: registerForm.phone,
+      name: registerForm.name.trim(),
+      email: registerForm.email.trim() || `${registerForm.name.toLowerCase().replace(/\s+/g, '.')}@carrollcounty.local`,
+      phone: registerForm.phone.trim(),
+      pin: registerForm.pin.trim(),
       role: registerForm.role,
       avatar,
       town: registerForm.town,
@@ -90,7 +145,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       isDriver: isDriverRole
     });
 
-    setSuccessMsg(`Welcome, ${newUser.name}! Your account is active.`);
+    setSuccessMsg(`Account created for ${newUser.name}! You are now securely logged in.`);
     setTimeout(() => {
       setSuccessMsg('');
       onClose();
@@ -107,14 +162,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Carroll County Community Auth & Telemetry</span>
+              <Lock className="w-3.5 h-3.5" />
+              <span>Secure Authentication & Resident Passcode Portal</span>
             </div>
             <h2 className="text-2xl font-black italic tracking-tight uppercase text-white">
-              {currentUser ? 'Your Profile & Account' : 'Sign In or Join Our Towns'}
+              {currentUser ? 'Your Profile & Security Status' : 'Sign In or Join Our Towns'}
             </h2>
             <p className="text-xs text-zinc-400 font-light">
-              Connect to on-the-go delivery dispatches, instant contractor leads, and local rewards.
+              Protected authentication prevents unauthorized account switching. Enter your Security PIN to sign in.
             </p>
           </div>
 
@@ -126,10 +181,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </button>
         </div>
 
-        {/* Success Alert */}
+        {/* Alerts */}
+        {authError && (
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono font-bold flex items-center gap-2 animate-in zoom-in-95 duration-200">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{authError}</span>
+          </div>
+        )}
+
         {successMsg && (
           <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold flex items-center gap-2 animate-in zoom-in-95 duration-200">
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4 shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -235,81 +297,118 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
         )}
 
-        {/* Tab Selector for Switcher / Registration */}
+        {/* Tab Selector */}
         <div className="flex items-center gap-2 border-b border-white/10 pb-3">
           <button
-            onClick={() => setActiveTab('presets')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'presets'
+            onClick={() => { setActiveTab('signin'); setAuthError(''); }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'signin'
                 ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
                 : 'text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10'
             }`}
           >
-            ⚡ 1-Click Role Switcher ({PRESET_USERS.length})
+            <Lock className="w-3.5 h-3.5" />
+            <span>Secure Sign In (PIN Protected)</span>
           </button>
           <button
-            onClick={() => setActiveTab('register')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            onClick={() => { setActiveTab('register'); setAuthError(''); }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'register'
                 ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
                 : 'text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10'
             }`}
           >
-            ➕ Register New Member / Driver
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Create New Resident / Driver Account</span>
           </button>
         </div>
 
-        {/* TAB 1: 1-Click Role Switcher */}
-        {activeTab === 'presets' && (
-          <div className="space-y-3">
-            <p className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
-              Select any verified local identity for instant access:
-            </p>
+        {/* TAB 1: Secure Sign In with PIN */}
+        {activeTab === 'signin' && (
+          <div className="space-y-5">
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Phone Number or Email *</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="(603) 539-7440 or user@email.com"
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400 placeholder:text-zinc-600"
+                />
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {PRESET_USERS.map((preset) => {
-                const isSelected = currentUser?.id === preset.id;
-                return (
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Security PIN (4-6 Digits) *</span>
+                  </label>
+                  <span className="text-[10px] text-zinc-500 font-mono">Protected verification</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showLoginPin ? 'text' : 'password'}
+                    required
+                    maxLength={8}
+                    placeholder="Enter your 4-6 digit PIN"
+                    value={loginPin}
+                    onChange={(e) => setLoginPin(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400 placeholder:text-zinc-600 font-mono tracking-widest"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPin(!showLoginPin)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
+                  >
+                    {showLoginPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
+              >
+                <Lock className="w-4 h-4" />
+                <span>Verify Credentials & Sign In</span>
+              </button>
+            </form>
+
+            {/* Verified Account Fast-Fill (Requires PIN Submission) */}
+            <div className="pt-3 border-t border-white/5 space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+                <span>Verified Resident Test Accounts (Click to Fill & Enter PIN):</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {PRESET_USERS.map((preset) => (
                   <button
                     key={preset.id}
-                    onClick={() => handleSelectPreset(preset)}
-                    className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-amber-400/10 border-amber-400/50 shadow-lg shadow-amber-400/10'
-                        : 'bg-white/[0.02] hover:bg-white/[0.06] border-white/5 hover:border-white/20'
-                    }`}
+                    type="button"
+                    onClick={() => handlePreFill(preset)}
+                    className="p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 hover:border-amber-400/30 text-left transition-all flex items-center justify-between group"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl p-2 rounded-xl bg-white/5 border border-white/10">
-                          {preset.avatar}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-bold text-white">{preset.name}</span>
-                            {isSelected && <Check className="w-4 h-4 text-amber-400" />}
-                          </div>
-                          <span className="text-[10px] font-mono text-zinc-400">
-                            📍 {preset.town}, {preset.state}
-                          </span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl">{preset.avatar}</span>
+                      <div>
+                        <div className="text-xs font-bold text-white group-hover:text-amber-300">
+                          {preset.name}
+                        </div>
+                        <div className="text-[10px] text-zinc-400 font-mono">
+                          {preset.phone} • {preset.role.toUpperCase()}
                         </div>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase ${
-                        preset.role === 'driver' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                        preset.role === 'merchant' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                        preset.role === 'contractor' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
-                        'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                      }`}>
-                        {preset.role}
-                      </span>
                     </div>
-
-                    <div className="mt-3 pt-2.5 border-t border-white/5 text-[11px] text-zinc-400 font-light">
-                      {preset.badge || `${preset.town} Member`}
-                    </div>
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-white/5 text-amber-300/80 border border-white/10 group-hover:bg-amber-400 group-hover:text-black">
+                      PIN: {preset.pin}
+                    </span>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -331,7 +430,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Phone (SMS Pings) *</label>
+                <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Phone (Sign In & SMS) *</label>
                 <input 
                   type="tel"
                   required
@@ -367,7 +466,52 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <option value="Conway">Conway / North Conway, NH</option>
                   <option value="Wolfeboro">Wolfeboro, NH</option>
                   <option value="Tamworth">Tamworth, NH</option>
+                  <option value="Tuftonboro">Tuftonboro, NH</option>
+                  <option value="Moultonborough">Moultonborough, NH</option>
                 </select>
+              </div>
+            </div>
+
+            {/* PIN Setup for Account Security */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-amber-400/5 border border-amber-400/20">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <KeyRound className="w-3.5 h-3.5" />
+                  <span>Create Security PIN (4-6 Digits) *</span>
+                </label>
+                <input
+                  type={showRegisterPin ? 'text' : 'password'}
+                  required
+                  maxLength={8}
+                  placeholder="e.g. 4829"
+                  value={registerForm.pin}
+                  onChange={e => setRegisterForm({...registerForm, pin: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-black/40 border border-amber-400/30 rounded-xl text-white text-xs font-mono tracking-widest focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-mono text-amber-300 uppercase tracking-wider">
+                    Confirm Security PIN *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowRegisterPin(!showRegisterPin)}
+                    className="text-[10px] font-mono text-zinc-400 hover:text-white"
+                  >
+                    {showRegisterPin ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                <input
+                  type={showRegisterPin ? 'text' : 'password'}
+                  required
+                  maxLength={8}
+                  placeholder="Re-enter PIN"
+                  value={registerForm.confirmPin}
+                  onChange={e => setRegisterForm({...registerForm, confirmPin: e.target.value})}
+                  className="w-full px-4 py-2.5 bg-black/40 border border-amber-400/30 rounded-xl text-white text-xs font-mono tracking-widest focus:outline-none focus:border-amber-400"
+                />
               </div>
             </div>
 
@@ -431,14 +575,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               className="w-full py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Create Account & Start</span>
+              <span>Register Account with PIN Protection</span>
             </button>
           </form>
         )}
 
         {/* Footer info */}
         <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
-          <span>Townraise Decentralized Auth</span>
+          <span>Townraise Secure Auth v2</span>
           <Link 
             href="/drivers" 
             onClick={onClose} 

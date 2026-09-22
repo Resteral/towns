@@ -26,7 +26,10 @@ import {
   Coins,
   Crown,
   Radio,
-  ExternalLink
+  ExternalLink,
+  Lock,
+  KeyRound,
+  AlertCircle
 } from 'lucide-react';
 
 export default function HeroTapSimulator() {
@@ -35,6 +38,7 @@ export default function HeroTapSimulator() {
     loginUser, 
     logoutUser, 
     registerUser, 
+    authenticateUser,
     loyaltyWallet,
     storeHunterStamps, 
     passportStamps,
@@ -42,32 +46,68 @@ export default function HeroTapSimulator() {
   } = useNfcStore();
 
   const [isSwitching, setIsSwitching] = useState(false);
-  const [activeTab, setActiveTab] = useState<'quick_roles' | 'custom_login'>('quick_roles');
+  const [activeTab, setActiveTab] = useState<'signin' | 'register'>('signin');
+  
+  // Sign in state
+  const [signInIdentifier, setSignInIdentifier] = useState('');
+  const [signInPin, setSignInPin] = useState('');
+  
+  // Custom register state
   const [customName, setCustomName] = useState('');
   const [customPhone, setCustomPhone] = useState('');
-  const [customTown, setCustomTown] = useState(activeTown.name || 'Effingham');
+  const [customPin, setCustomPin] = useState('');
+  const [customTown, setCustomTown] = useState(activeTown?.name || 'Effingham');
   const [customRole, setCustomRole] = useState<UserRole>('resident');
+  
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const cardProgression = useMemo(() => {
     return calculateCardProgression(storeHunterStamps, passportStamps);
   }, [storeHunterStamps, passportStamps]);
 
-  const handleSelectPreset = (user: UserProfile) => {
-    loginUser(user);
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+
+    const res = authenticateUser(signInIdentifier, signInPin);
+    if (!res.success) {
+      setAuthError(res.error || 'Authentication failed. Please verify credentials.');
+      return;
+    }
+
     confetti({
       particleCount: 70,
       spread: 60,
       origin: { y: 0.6 }
     });
-    setFeedbackMsg(`Welcome back, ${user.name}!`);
+    setFeedbackMsg(`Welcome back, ${res.user?.name}!`);
     setIsSwitching(false);
+    setSignInPin('');
     setTimeout(() => setFeedbackMsg(null), 3000);
   };
 
-  const handleCustomLogin = (e: React.FormEvent) => {
+  const handlePreFillAccount = (user: UserProfile) => {
+    setSignInIdentifier(user.phone || user.email);
+    setSignInPin(user.pin || '1234');
+    setAuthError(null);
+  };
+
+  const handleCustomRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customName.trim()) return;
+    setAuthError(null);
+    if (!customName.trim()) {
+      setAuthError('Please enter your full name.');
+      return;
+    }
+    if (!customPhone.trim()) {
+      setAuthError('Please enter your phone number.');
+      return;
+    }
+    if (!customPin.trim() || customPin.length < 4) {
+      setAuthError('Please create a 4-6 digit Security PIN.');
+      return;
+    }
 
     const isDriverRole = customRole === 'driver';
     const avatar = isDriverRole ? '🚗' : (customRole === 'merchant' ? '🥪' : customRole === 'contractor' ? '🔨' : '🌲');
@@ -75,7 +115,8 @@ export default function HeroTapSimulator() {
     const newUser = registerUser({
       name: customName.trim(),
       email: `${customName.toLowerCase().replace(/\s+/g, '.')}@townraise.org`,
-      phone: customPhone.trim() || '(508) 507-0305',
+      phone: customPhone.trim(),
+      pin: customPin.trim(),
       role: customRole,
       avatar,
       town: customTown,
@@ -89,10 +130,11 @@ export default function HeroTapSimulator() {
       spread: 70,
       origin: { y: 0.6 }
     });
-    setFeedbackMsg(`Account created for ${newUser.name}! +50 Welcome Points added.`);
+    setFeedbackMsg(`Account created for ${newUser.name}! +100 Welcome Points added.`);
     setIsSwitching(false);
     setCustomName('');
     setCustomPhone('');
+    setCustomPin('');
     setTimeout(() => setFeedbackMsg(null), 3500);
   };
 
@@ -124,6 +166,13 @@ export default function HeroTapSimulator() {
             <div className="p-3 my-2 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-bold text-center animate-in fade-in slide-in-from-top-2 flex items-center justify-center gap-1.5">
               <Sparkles className="w-4 h-4 text-emerald-400" />
               <span>{feedbackMsg}</span>
+            </div>
+          )}
+
+          {authError && (
+            <div className="p-3 my-2 bg-red-500/15 border border-red-500/30 rounded-xl text-red-300 text-xs font-bold text-center animate-in fade-in slide-in-from-top-2 flex items-center justify-center gap-1.5">
+              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <span>{authError}</span>
             </div>
           )}
 
@@ -250,11 +299,11 @@ export default function HeroTapSimulator() {
                 {/* Switch Role Button */}
                 <div className="pt-2 flex items-center justify-between text-xs font-mono">
                   <button
-                    onClick={() => setIsSwitching(true)}
+                    onClick={() => { setIsSwitching(true); setAuthError(null); }}
                     className="text-amber-400 hover:underline flex items-center gap-1.5"
                   >
-                    <User className="w-3.5 h-3.5" />
-                    <span>Switch Role / Account</span>
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Switch Account (PIN Protected)</span>
                   </button>
 
                   <button
@@ -268,77 +317,106 @@ export default function HeroTapSimulator() {
 
               </div>
             ) : (
-              /* STATE 2: Log In / Switch Account Form */
+              /* STATE 2: Log In / Switch Account Form with PIN Verification */
               <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
                 
                 <div className="text-left space-y-1">
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 text-[9px] font-mono font-bold uppercase">
-                    <Sparkles className="w-3 h-3" /> Instant Member Access
+                    <Lock className="w-3 h-3" /> Secure Access Only
                   </div>
                   <h3 className="text-xl font-black italic uppercase text-white tracking-tight">
-                    Sign In to Townraise
+                    Resident & Member Sign In
                   </h3>
                   <p className="text-xs text-zinc-400">
-                    Connect your account to claim courier deliveries, trade leads, and local store hunting discounts.
+                    Accounts are protected with a Security PIN to prevent unauthorized identity switching.
                   </p>
                 </div>
 
-                {/* Tabs: 1-Click Roles vs Quick Sign In */}
+                {/* Tabs: Sign In vs Create Account */}
                 <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 text-xs font-bold">
                   <button
-                    onClick={() => setActiveTab('quick_roles')}
-                    className={`flex-1 py-1.5 rounded-lg transition-all ${
-                      activeTab === 'quick_roles' 
+                    onClick={() => { setActiveTab('signin'); setAuthError(null); }}
+                    className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      activeTab === 'signin' 
                         ? 'bg-amber-400 text-black shadow-md' 
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    ⚡ 1-Click Roles
+                    <Lock className="w-3 h-3" />
+                    <span>Sign In (PIN)</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('custom_login')}
-                    className={`flex-1 py-1.5 rounded-lg transition-all ${
-                      activeTab === 'custom_login' 
+                    onClick={() => { setActiveTab('register'); setAuthError(null); }}
+                    className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      activeTab === 'register' 
                         ? 'bg-amber-400 text-black shadow-md' 
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    ✍️ Create / Custom Sign In
+                    <PlusCircle className="w-3 h-3" />
+                    <span>Create Account</span>
                   </button>
                 </div>
 
-                {/* Tab 1: 1-Click Preset Roles */}
-                {activeTab === 'quick_roles' && (
-                  <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
-                    {PRESET_USERS.map((user) => (
-                      <button
-                        key={user.id}
-                        onClick={() => handleSelectPreset(user)}
-                        className="w-full p-2.5 rounded-xl bg-white/[0.03] hover:bg-amber-400/15 border border-white/10 hover:border-amber-400/40 transition-all flex items-center justify-between text-left group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">{user.avatar}</span>
-                          <div>
-                            <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
-                              {user.name}
-                            </div>
-                            <div className="text-[10px] text-zinc-400 font-mono">
-                              {user.badge} • {user.town}, NH
-                            </div>
-                          </div>
-                        </div>
+                {/* Tab 1: Sign In with Phone/Email + PIN */}
+                {activeTab === 'signin' && (
+                  <form onSubmit={handleSignIn} className="space-y-3 text-left">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase text-zinc-400">Phone or Email *</label>
+                      <input
+                        type="text"
+                        required
+                        value={signInIdentifier}
+                        onChange={(e) => setSignInIdentifier(e.target.value)}
+                        placeholder="(603) 539-7440 or email"
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
 
-                        <span className="px-2 py-1 rounded-lg bg-white/5 group-hover:bg-amber-400 group-hover:text-black text-[9px] font-black uppercase tracking-wider transition-all shrink-0">
-                          Log In ➔
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase text-zinc-400">Security PIN *</label>
+                      <input
+                        type="password"
+                        required
+                        maxLength={8}
+                        value={signInPin}
+                        onChange={(e) => setSignInPin(e.target.value)}
+                        placeholder="Enter 4-6 digit PIN"
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono tracking-widest placeholder:text-zinc-600 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-wider rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                    >
+                      <Lock className="w-4 h-4" />
+                      <span>Verify PIN & Sign In</span>
+                    </button>
+
+                    {/* Pre-fill Preset Helper List */}
+                    <div className="pt-2 border-t border-white/5 space-y-1.5">
+                      <span className="text-[9px] font-mono uppercase text-zinc-500">Quick Test Personas:</span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {PRESET_USERS.slice(0, 4).map(u => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => handlePreFillAccount(u)}
+                            className="p-1.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 text-left text-[10px] flex items-center justify-between"
+                          >
+                            <span className="truncate text-zinc-300 font-bold">{u.avatar} {u.name.split(' ')[0]}</span>
+                            <span className="text-[8px] font-mono text-amber-400">PIN:{u.pin}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </form>
                 )}
 
-                {/* Tab 2: Custom Sign In Form */}
-                {activeTab === 'custom_login' && (
-                  <form onSubmit={handleCustomLogin} className="space-y-3 text-left">
+                {/* Tab 2: Register New Account Form */}
+                {activeTab === 'register' && (
+                  <form onSubmit={handleCustomRegister} className="space-y-3 text-left">
                     <div className="space-y-1">
                       <label className="text-[10px] font-mono uppercase text-zinc-400">Your Full Name *</label>
                       <input
@@ -353,9 +431,10 @@ export default function HeroTapSimulator() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-zinc-400">Phone Number</label>
+                        <label className="text-[10px] font-mono uppercase text-zinc-400">Phone Number *</label>
                         <input
                           type="tel"
+                          required
                           value={customPhone}
                           onChange={(e) => setCustomPhone(e.target.value)}
                           placeholder="(603) 555-0199"
@@ -363,6 +442,21 @@ export default function HeroTapSimulator() {
                         />
                       </div>
 
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase text-zinc-400">Security PIN *</label>
+                        <input
+                          type="password"
+                          required
+                          maxLength={8}
+                          value={customPin}
+                          onChange={(e) => setCustomPin(e.target.value)}
+                          placeholder="4-digit PIN"
+                          className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono tracking-widest placeholder:text-zinc-600 focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <label className="text-[10px] font-mono uppercase text-zinc-400">Town Node</label>
                         <select
@@ -378,20 +472,20 @@ export default function HeroTapSimulator() {
                           <option value="Tamworth">Tamworth, NH</option>
                         </select>
                       </div>
-                    </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-zinc-400">Your Primary Role</label>
-                      <select
-                        value={customRole}
-                        onChange={(e) => setCustomRole(e.target.value as UserRole)}
-                        className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
-                      >
-                        <option value="resident">🌲 Resident & Scavenger Hunter</option>
-                        <option value="merchant">🏪 Storefront & Restaurant Owner</option>
-                        <option value="contractor">🛠️ Trade Contractor & Builder</option>
-                        <option value="driver">🚚 Community Courier Driver (4x4)</option>
-                      </select>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono uppercase text-zinc-400">Role</label>
+                        <select
+                          value={customRole}
+                          onChange={(e) => setCustomRole(e.target.value as UserRole)}
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-400"
+                        >
+                          <option value="resident">🌲 Resident</option>
+                          <option value="merchant">🏪 Merchant</option>
+                          <option value="contractor">🛠️ Contractor</option>
+                          <option value="driver">🚚 Driver (4x4)</option>
+                        </select>
+                      </div>
                     </div>
 
                     <button
@@ -406,7 +500,7 @@ export default function HeroTapSimulator() {
 
                 {currentUser && (
                   <button
-                    onClick={() => setIsSwitching(false)}
+                    onClick={() => { setIsSwitching(false); setAuthError(null); }}
                     className="w-full py-1.5 text-center text-xs font-mono text-zinc-400 hover:text-white"
                   >
                     ← Back to Active Profile ({currentUser.name})
@@ -420,8 +514,8 @@ export default function HeroTapSimulator() {
 
           {/* Device Footer Information */}
           <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[9px] font-mono text-zinc-500">
-            <span>TOWNRAISE DECENTRALIZED IDENTITY</span>
-            <span className="text-amber-400/80 font-bold">LIVE PASS</span>
+            <span>TOWNRAISE SECURE IDENTITY</span>
+            <span className="text-amber-400/80 font-bold">PIN VERIFIED</span>
           </div>
 
         </div>

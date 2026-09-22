@@ -814,6 +814,7 @@ export interface UserProfile {
   name: string;
   email: string;
   phone: string;
+  pin?: string;
   role: UserRole;
   avatar: string;
   town: string;

@@ -63,6 +63,7 @@ const STORAGE_KEYS = {
   SMS_LOGS: 'pulpulse_sms_logs_v1',
   SMS_SUBSCRIBERS: 'pulpulse_sms_subscribers_v1',
   AUTH_USER: 'pulpulse_auth_user_v2',
+  REGISTERED_ACCOUNTS: 'pulpulse_registered_accounts_v2',
   DELIVERY_DRIVERS: 'pulpulse_delivery_drivers_v2',
   TOURIST_HUNTS: 'pulpulse_tourist_hunts_v1',
   PASSPORT_STAMPS: 'pulpulse_passport_stamps_v1',
@@ -182,6 +183,7 @@ export const PRESET_USERS: UserProfile[] = [
     name: 'Sean Martin',
     email: 'frijj555@gmail.com',
     phone: '(508) 507-0305',
+    pin: '0305',
     role: 'driver',
     avatar: '👑',
     town: 'Effingham',
@@ -196,6 +198,7 @@ export const PRESET_USERS: UserProfile[] = [
     name: 'Jake Reynolds',
     email: 'jake.r@gmail.com',
     phone: '(603) 539-8822',
+    pin: '8822',
     role: 'driver',
     avatar: '🛻',
     town: 'Center Ossipee',
@@ -210,6 +213,7 @@ export const PRESET_USERS: UserProfile[] = [
     name: 'Gary Collins (PNB Eats)',
     email: 'gary@pnbeats.com',
     phone: '(603) 539-7440',
+    pin: '7440',
     role: 'merchant',
     avatar: '🥪',
     town: 'Effingham',
@@ -223,6 +227,7 @@ export const PRESET_USERS: UserProfile[] = [
     name: 'Alex Tremblay',
     email: 'alex.tremblay@gmail.com',
     phone: '(603) 555-0199',
+    pin: '0199',
     role: 'resident',
     avatar: '🌲',
     town: 'Freedom',
@@ -236,6 +241,7 @@ export const PRESET_USERS: UserProfile[] = [
     name: 'Walter Henderson (Walt\'s Woodcraft)',
     email: 'walt@waltswoodcraft.com',
     phone: '(603) 539-8120',
+    pin: '8120',
     role: 'contractor',
     avatar: '🔨',
     town: 'Effingham',
@@ -1808,6 +1814,7 @@ export function useNfcStore() {
   const [smsLogs, setSmsLogs] = useState<SmsLogMessage[]>(INITIAL_SMS_LOGS);
   const [smsSubscribers, setSmsSubscribers] = useState<SmsSubscriberContact[]>(INITIAL_SMS_SUBSCRIBERS);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(PRESET_USERS[0]);
+  const [registeredAccounts, setRegisteredAccounts] = useState<UserProfile[]>(PRESET_USERS);
   const [deliveryDrivers, setDeliveryDrivers] = useState<DeliveryDriverMember[]>(INITIAL_DELIVERY_DRIVERS);
   const [touristHunts, setTouristHunts] = useState<TouristHunt[]>(INITIAL_TOURIST_HUNTS);
   const [passportStamps, setPassportStamps] = useState<PassportStamp[]>(INITIAL_USER_STAMPS);
@@ -1848,6 +1855,17 @@ export function useNfcStore() {
         setPassportStamps(JSON.parse(storedStamps));
       } else {
         setPassportStamps(INITIAL_USER_STAMPS);
+      }
+
+      const storedAccounts = localStorage.getItem(STORAGE_KEYS.REGISTERED_ACCOUNTS);
+      let loadedAccounts = PRESET_USERS;
+      if (storedAccounts) {
+        const parsed: UserProfile[] = JSON.parse(storedAccounts);
+        const existingIds = new Set(parsed.map(u => u.id));
+        loadedAccounts = [...parsed, ...PRESET_USERS.filter(u => !existingIds.has(u.id))];
+        setRegisteredAccounts(loadedAccounts);
+      } else {
+        setRegisteredAccounts(PRESET_USERS);
       }
 
       const storedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
@@ -3435,14 +3453,56 @@ export function useNfcStore() {
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
   };
 
+  const authenticateUser = (identifier: string, enteredPin: string): { success: boolean; user?: UserProfile; error?: string } => {
+    const cleanIdent = identifier.trim().toLowerCase();
+    const cleanDigits = identifier.replace(/\D/g, '');
+    const cleanPin = enteredPin.trim();
+
+    if (!cleanIdent) {
+      return { success: false, error: 'Please enter your phone number or email.' };
+    }
+    if (!cleanPin) {
+      return { success: false, error: 'Please enter your 4-6 digit Security PIN.' };
+    }
+
+    const allAccounts = [...registeredAccounts, ...PRESET_USERS];
+    const foundUser = allAccounts.find(u => {
+      const userDigits = u.phone.replace(/\D/g, '');
+      const emailMatch = Boolean(u.email && u.email.toLowerCase() === cleanIdent);
+      const phoneMatch = Boolean(cleanDigits.length >= 7 && (userDigits.includes(cleanDigits) || cleanDigits.includes(userDigits)));
+      const nameMatch = Boolean(u.name.toLowerCase() === cleanIdent);
+      const idMatch = Boolean(u.id.toLowerCase() === cleanIdent);
+      return emailMatch || phoneMatch || nameMatch || idMatch;
+    });
+
+    if (!foundUser) {
+      return { success: false, error: 'No account found matching this phone or email. Please check spelling or create a new account.' };
+    }
+
+    const expectedPin = foundUser.pin || '1234';
+    if (cleanPin !== expectedPin) {
+      return { success: false, error: 'Incorrect Security PIN. Unauthorized access prevented.' };
+    }
+
+    loginUser(foundUser);
+    return { success: true, user: foundUser };
+  };
+
   const registerUser = (userData: Omit<UserProfile, 'id' | 'createdAt'>) => {
     const newUser: UserProfile = {
       ...userData,
       id: `user-${Date.now().toString(36)}`,
+      pin: userData.pin || '1234',
       createdAt: new Date().toISOString().split('T')[0]
     };
     setCurrentUser(newUser);
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(newUser));
+
+    setRegisteredAccounts(prev => {
+      const next = [newUser, ...prev.filter(u => u.id !== newUser.id && u.phone !== newUser.phone)];
+      localStorage.setItem(STORAGE_KEYS.REGISTERED_ACCOUNTS, JSON.stringify(next));
+      return next;
+    });
 
     if (newUser.isDriver) {
       const newDriver: DeliveryDriverMember = {
@@ -3736,6 +3796,7 @@ export function useNfcStore() {
     smsLogs,
     smsSubscribers,
     currentUser,
+    registeredAccounts,
     deliveryDrivers,
     touristHunts,
     passportStamps,
@@ -3815,6 +3876,7 @@ export function useNfcStore() {
     loginUser,
     logoutUser,
     registerUser,
+    authenticateUser,
     toggleDriverStatus,
     registerAsDriver,
     checkInCheckpoint,
