@@ -68,6 +68,7 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-zinc-400 font-medium">
               <li><Link href="/about" className="text-amber-300 font-bold hover:text-amber-200 transition-colors flex items-center gap-1.5"><span>🔥 About Us & Manifesto</span></Link></li>
+              <li><Link href="/spread" className="text-amber-400 font-black hover:text-amber-300 transition-colors flex items-center gap-1.5"><span>📢 Spread Word & Print Flyers</span></Link></li>
               <li><Link href="/society" className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1.5"><span>🏛️ Sovereign Society & Vault</span></Link></li>
               <li><Link href="/store-hunting" className="text-pink-400 font-bold hover:text-pink-300 transition-colors">🛍️ Store-to-Store Circuits</Link></li>
               <li><Link href="/tourist-hunts" className="hover:text-white transition-colors">🧭 Tourist Scavenger Hunts</Link></li>

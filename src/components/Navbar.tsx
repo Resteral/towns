@@ -33,7 +33,8 @@ import {
   Flame,
   Key,
   ArrowRight,
-  Plus
+  Plus,
+  Megaphone
 } from 'lucide-react';
 import { calculateCardProgression } from '@/lib/card-leveling';
 import NfcCardLevelWidget from '@/components/NfcCardLevelWidget';
@@ -565,6 +566,16 @@ export default function Navbar() {
               </div>
             </button>
 
+            {/* Spread The Word CTA */}
+            <Link
+              href="/spread"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-md shadow-amber-500/10"
+              title="Spread the Word across towns with printable flyers and social blasts"
+            >
+              <Megaphone className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>Spread Word</span>
+            </Link>
+
             {/* Portal / Dashboard CTA */}
             <Link
               href="/dashboard"
@@ -710,6 +721,14 @@ export default function Navbar() {
 
             {/* Business Onboarding CTAs */}
             <div className="pt-3 border-t border-white/10 space-y-2">
+              <Link
+                href="/spread"
+                className="w-full py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-black font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+              >
+                <Megaphone className="w-4 h-4 text-black animate-pulse" />
+                <span>📢 Spread Word Across Towns</span>
+              </Link>
+
               <Link
                 href="/csv-importer"
                 className="w-full py-2.5 bg-gradient-to-r from-emerald-500/20 to-amber-500/20 border border-emerald-500/40 text-emerald-300 font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2"
