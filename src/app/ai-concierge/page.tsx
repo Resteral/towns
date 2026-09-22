@@ -87,15 +87,102 @@ export default function DedicatedAiConciergePage() {
     }
   ]);
 
-  // Find matching businesses
+  // Find matching businesses with deep category, menu item, and semantic keyword matching
   const findMatchingBusinesses = (query: string): LocalBusiness[] => {
-    const q = query.toLowerCase();
-    return EFFINGHAM_AREA_BUSINESSES.filter(biz => 
-      biz.name.toLowerCase().includes(q) || 
-      biz.town.toLowerCase().includes(q) || 
-      biz.description.toLowerCase().includes(q) ||
-      biz.category.toLowerCase().includes(q)
-    ).slice(0, 3);
+    const q = query.toLowerCase().trim();
+    if (!q) return EFFINGHAM_AREA_BUSINESSES.slice(0, 3);
+
+    // Semantic keyword collections
+    const hardwareKws = [
+      'hammer', 'nail', 'nails', 'screw', 'screws', 'drill', 'tool', 'tools', 'hardware', 'paint', 'pellet', 'pellets',
+      'feed', 'saw', 'plumb', 'shovel', 'wrench', 'battery', 'generator', 'ace', 'dewalt', 'poulin',
+      'building', 'homestead', 'lumber', 'wood pellet', 'bolt', 'plywood', 'contractor', 'garden', 'grainery'
+    ];
+    const smokeKws = [
+      'vape', 'smoke', 'glass', 'bong', 'pipe', 'cigar', 'tobacco', 'cbd', 'torch', 'lighter',
+      'geek bar', 'disposable', 'lookah', 'raw cone', 'rolling paper', 'hecht', 'puff', 'vaporizer', 'smoke world'
+    ];
+    const groceryKws = [
+      'grocery', 'groceries', 'milk', 'egg', 'eggs', 'bread', 'butter', 'fruit', 'vegetable',
+      'produce', 'supermarket', 'market', 'deli', 'butcher', 'steak', 'meat', 'provisions', 'hannaford', 'grinder'
+    ];
+    const antiqueKws = [
+      'antique', 'antiques', 'flea market', 'vintage', 'pottery', 'fudge', 'cast iron', 'lantern',
+      'skillet', 'souvenir', 'gift', 'gifts', 'curiosities', 'peddler', 'tramway', 'zeb'
+    ];
+    const lakeCampingKws = [
+      'camp', 'camping', 'campground', 'tent', 'rv', 'beach', 'boat', 'kayak', 'dock', 'lake',
+      'swimming', 'canoe', 'firewood', 'smores', 's\'mores'
+    ];
+    const coffeeKws = [
+      'coffee', 'espresso', 'cold brew', 'nitro', 'latte', 'cappuccino', 'sourdough', 'bread',
+      'bakery', 'scone', 'pastry', 'brioche', 'cinnamon roll', 'roastery', 'bagel'
+    ];
+    const seafoodKws = [
+      'lobster', 'clam', 'clams', 'chowder', 'seafood', 'haddock', 'fish', 'fried clams'
+    ];
+    const bbqKws = [
+      'bbq', 'barbecue', 'pulled pork', 'ribs', 'brisket', 'smoked'
+    ];
+    const pizzaKws = [
+      'pizza', 'slice', 'flatbread', 'crust', 'pie', 'pepperoni'
+    ];
+    const pubKws = [
+      'pub', 'tavern', 'beer', 'wings', 'poutine', 'burger', 'ale', 'ipa', 'draft'
+    ];
+
+    const isHardware = hardwareKws.some(kw => q.includes(kw));
+    const isSmoke = smokeKws.some(kw => q.includes(kw));
+    const isGrocery = groceryKws.some(kw => q.includes(kw));
+    const isAntique = antiqueKws.some(kw => q.includes(kw));
+    const isLakeCamp = lakeCampingKws.some(kw => q.includes(kw));
+    const isCoffee = coffeeKws.some(kw => q.includes(kw));
+    const isSeafood = seafoodKws.some(kw => q.includes(kw));
+    const isBbq = bbqKws.some(kw => q.includes(kw));
+    const isPizza = pizzaKws.some(kw => q.includes(kw));
+    const isPub = pubKws.some(kw => q.includes(kw));
+
+    const scored = EFFINGHAM_AREA_BUSINESSES.map(biz => {
+      let score = 0;
+      const bName = biz.name.toLowerCase();
+      const bDesc = biz.description.toLowerCase();
+      const bCat = biz.category.toLowerCase();
+      const bTown = biz.town.toLowerCase();
+      const bMenuTitle = (biz.menuTitle || '').toLowerCase();
+
+      // Direct text match
+      if (bName.includes(q)) score += 12;
+      if (bDesc.includes(q)) score += 6;
+      if (bMenuTitle.includes(q)) score += 6;
+      if (bCat.includes(q)) score += 4;
+      if (bTown.includes(q)) score += 2;
+
+      // Menu items match
+      if (biz.menuItems) {
+        biz.menuItems.forEach(item => {
+          if (item.name.toLowerCase().includes(q)) score += 10;
+          if (item.description.toLowerCase().includes(q)) score += 5;
+          if (item.category?.toLowerCase().includes(q)) score += 4;
+        });
+      }
+
+      // Domain/semantic mapping boosts
+      if (isHardware && (biz.id === 'biz-oss-mountain-grainery' || bName.includes('ace') || bName.includes('grainery'))) score += 20;
+      if (isSmoke && (biz.id === 'biz-oss-smoke-world' || bName.includes('smoke world'))) score += 20;
+      if (isGrocery && (biz.id === 'biz-wak-lovell-lake-market' || biz.id === 'biz-fre-village-store')) score += 15;
+      if (isAntique && (biz.id === 'biz-eff-country-peddler' || biz.id === 'biz-oss-tramway-artisans' || biz.id === 'biz-con-zebs-store')) score += 15;
+      if (isLakeCamp && (biz.id === 'biz-eff-camping-area' || biz.id === 'biz-eff-sean-courier')) score += 15;
+      if (isCoffee && (biz.id === 'biz-eff-oasis-roastery' || biz.id === 'biz-con-frontside-coffee' || biz.id === 'biz-fre-village-store')) score += 15;
+      if (isSeafood && (biz.id === 'biz-oss-jakes-seafood' || biz.id === 'biz-wak-knotty-pine')) score += 15;
+      if (isBbq && (biz.id === 'biz-oss-yankee-smokehouse' || biz.id === 'biz-oss-pizza-barn')) score += 15;
+      if (isPizza && (biz.id === 'biz-oss-pizza-barn' || biz.id === 'biz-eff-pnb-eats' || biz.id === 'biz-con-flatbread')) score += 15;
+      if (isPub && (biz.id === 'biz-wak-poor-peoples-pub' || biz.id === 'biz-oss-hobbs-tavern')) score += 15;
+
+      return { biz, score };
+    });
+
+    const filtered = scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).map(s => s.biz);
+    return filtered.length > 0 ? filtered.slice(0, 3) : EFFINGHAM_AREA_BUSINESSES.slice(0, 3);
   };
 
   // Find matching dishes
@@ -150,15 +237,128 @@ export default function DedicatedAiConciergePage() {
     setTimeout(() => {
       const lower = text.toLowerCase();
 
-      // 1. Call-Ahead / Store Pickup / Prepay Requests
-      if (
+      // Keywords
+      const hardwareKeywords = [
+        'hammer', 'nail', 'nails', 'screw', 'screws', 'drill', 'tool', 'tools', 'hardware', 'paint', 'pellet', 'pellets',
+        'feed', 'saw', 'plumb', 'shovel', 'wrench', 'battery', 'generator', 'ace', 'dewalt', 'poulin',
+        'wood pellet', 'building', 'lumber', 'grainery'
+      ];
+      const smokeKeywords = [
+        'vape', 'smoke', 'glass', 'bong', 'pipe', 'cigar', 'tobacco', 'cbd', 'torch', 'lighter',
+        'geek bar', 'disposable', 'lookah', 'raw cone', 'smoke world'
+      ];
+      const groceryKeywords = [
+        'grocery', 'groceries', 'milk', 'egg', 'eggs', 'bread', 'butter', 'fruit', 'vegetable',
+        'produce', 'supermarket', 'market', 'deli', 'butcher', 'steak', 'meat', 'provisions', 'hannaford'
+      ];
+      const antiqueKeywords = [
+        'antique', 'antiques', 'flea market', 'vintage', 'pottery', 'fudge', 'cast iron', 'lantern', 'peddler', 'tramway', 'zeb'
+      ];
+
+      // 1. Hardware, Tools, Building Supplies & Homestead Feeds
+      if (hardwareKeywords.some(kw => lower.includes(kw))) {
+        setCallStoreId('biz-oss-mountain-grainery');
+        setCallItemDescription('Hardware, tools, building supplies or feed from Ace Hardware');
+        const matchingBiz = findMatchingBusinesses(text);
+
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🔨 Looking for tools, building supplies, hardware, or homestead feeds? **Mountain Grainery Ace Hardware** is located right on Route 16 in Center Ossipee ((603) 539-2666)!\n\n📞 You can call them directly to check inventory or pay over the phone, and **Sean Martin** can pick up and deliver your order directly to your job site, home, or camp:",
+            suggestedBusinesses: matchingBiz.length > 0 ? matchingBiz : [EFFINGHAM_AREA_BUSINESSES.find(b => b.id === 'biz-oss-mountain-grainery')!],
+            showCallAheadForm: true,
+            quickOptions: [
+              '📞 Call Ace Hardware: (603) 539-2666',
+              '🚗 Have Sean Pick Up from Ace',
+              '🪵 Hardwood Heating Pellets ($7.49)',
+              '🌾 Poulin Poultry Feed ($22.99)',
+              '🛠️ DeWalt 20V Drill Combo ($199.00)'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 2. Smoke, Vape, Glassware & Tobacco
+      else if (smokeKeywords.some(kw => lower.includes(kw))) {
+        setCallStoreId('biz-oss-smoke-world');
+        setCallItemDescription('Vape, glass, or smoke accessories from Smoke World');
+        const matchingBiz = findMatchingBusinesses(text);
+
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "💨 Looking for vape, glassware, smoke essentials, or tobacco accessories? **Smoke World Ossipee** is located on Route 16 in Ossipee ((603) 539-7665)!\n\n📞 Call the store directly to order, or have **Sean Martin** retrieve your order and deliver it to your door:",
+            suggestedBusinesses: matchingBiz.length > 0 ? matchingBiz : [EFFINGHAM_AREA_BUSINESSES.find(b => b.id === 'biz-oss-smoke-world')!],
+            showCallAheadForm: true,
+            quickOptions: [
+              '📞 Call Smoke World: (603) 539-7665',
+              '🚗 Have Sean Pick Up from Smoke World',
+              '💨 Geek Bar Pulse 15k ($19.99)',
+              '🧪 Handblown Glass Beaker ($69.99)'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 3. Groceries, Deli & Butcher Meats
+      else if (groceryKeywords.some(kw => lower.includes(kw))) {
+        setCallStoreId('biz-wak-lovell-lake-market');
+        setCallItemDescription('Groceries, butcher cuts, or deli items');
+        const matchingBiz = findMatchingBusinesses(text);
+
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🛒 Need groceries, fresh provisions, or butcher-cut steaks? **Lovell Lake Market & Deli** in Wakefield ((603) 522-3344) and **Freedom Village Store** ((603) 539-7988) are ready!\n\nSean Martin can pick up curbside groceries or butcher meats and deliver them right to your kitchen or campsite:",
+            suggestedBusinesses: matchingBiz,
+            showCallAheadForm: true,
+            quickOptions: [
+              '📞 Call Lovell Lake Market: (603) 522-3344',
+              '📞 Call Freedom Village Store: (603) 539-7988',
+              '🥩 Hand-Cut Prime Ribeye Steaks ($32.00)',
+              '🥪 Lovell Lake Monster Grinder ($13.99)'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 4. Antiques, Flea Market & Country Treasures
+      else if (antiqueKeywords.some(kw => lower.includes(kw))) {
+        setCallStoreId('biz-eff-country-peddler');
+        const matchingBiz = findMatchingBusinesses(text);
+
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🏺 Looking for vintage antiques, pottery, or artisan sweets? Explore **Country Peddler's Flea Market** in Effingham ((603) 539-7000), **Tramway Artisans** in West Ossipee ((603) 539-5700), and **Zeb's General Store** in North Conway ((603) 356-9294):",
+            suggestedBusinesses: matchingBiz,
+            showCallAheadForm: true,
+            quickOptions: [
+              '📞 Call Country Peddler: (603) 539-7000',
+              '📞 Call Tramway Artisans: (603) 539-5700',
+              '🍬 Zeb\'s Old-Fashioned Hard Candies ($12.99)',
+              '🍳 Restored Griswold Cast Iron ($48.00)'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 5. Call-Ahead / Store Pickup / Prepay Requests
+      else if (
         lower.includes('call') || 
         lower.includes('phone') || 
         lower.includes('number') || 
         lower.includes('prepay') || 
         lower.includes('pickup') || 
-        lower.includes('retrieve') ||
-        lower.includes('hardware')
+        lower.includes('retrieve')
       ) {
         const matchingBiz = findMatchingBusinesses(text);
         setMessages(prev => [
@@ -173,13 +373,14 @@ export default function DedicatedAiConciergePage() {
               '🍔 PNB Eats: (603) 539-7440',
               '🍕 Pizza Barn: (603) 539-2244',
               '🛠️ Ace Hardware: (603) 539-2666',
+              '💨 Smoke World: (603) 539-7665',
               '☕ Oasis Roastery: (508) 507-0305'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 2. Direct Delivery / Sean Martin Dispatch
+      // 6. Direct Delivery / Sean Martin Dispatch
       else if (lower.includes('deliver') || lower.includes('sean') || lower.includes('dispatch') || lower.includes('courier')) {
         setMessages(prev => [
           ...prev,
@@ -192,13 +393,14 @@ export default function DedicatedAiConciergePage() {
             quickOptions: [
               '📞 Call Store & Dispatch Pickup',
               '🍔 Add Steak & Cheese Sub First',
-              '🍕 Add Smoked Pizza First'
+              '🍕 Add Smoked Pizza First',
+              '🛠️ Pick Up Ace Hardware Order'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 3. Food
+      // 7. Food
       else if (
         lower.includes('food') || 
         lower.includes('eat') || 
@@ -212,7 +414,11 @@ export default function DedicatedAiConciergePage() {
         lower.includes('coffee') || 
         lower.includes('trout') || 
         lower.includes('wings') || 
-        lower.includes('gluten')
+        lower.includes('gluten') ||
+        lower.includes('seafood') ||
+        lower.includes('lobster') ||
+        lower.includes('beer') ||
+        lower.includes('pub')
       ) {
         const matches = findMatchingDishes(text);
         const matchingBiz = findMatchingBusinesses(text);
@@ -235,8 +441,8 @@ export default function DedicatedAiConciergePage() {
           }
         ]);
       } 
-      // 4. Firewood / Lake
-      else if (lower.includes('firewood') || lower.includes('lake') || lower.includes('dock') || lower.includes('airbnb') || lower.includes('smores')) {
+      // 8. Firewood / Lake
+      else if (lower.includes('firewood') || lower.includes('lake') || lower.includes('dock') || lower.includes('airbnb') || lower.includes('smores') || lower.includes('camp')) {
         setMessages(prev => [
           ...prev,
           {
@@ -253,21 +459,23 @@ export default function DedicatedAiConciergePage() {
           }
         ]);
       }
-      // 5. Default
+      // 9. Default
       else {
         const matches = findMatchingDishes('food');
-        const bizList = EFFINGHAM_AREA_BUSINESSES.slice(0, 2);
+        const bizList = findMatchingBusinesses(text);
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "I can look up direct business phone numbers, help you order food, or dispatch driver Sean Martin to pick up pre-paid orders. What would you like to do?",
+            text: "I can look up direct business phone numbers, help you order food, or dispatch driver Sean Martin to pick up pre-paid hardware, groceries, or meals. What are you looking for?",
             suggestedDishes: matches.slice(0, 2),
-            suggestedBusinesses: bizList,
+            suggestedBusinesses: bizList.slice(0, 2),
             quickOptions: [
-              '📞 Call Store & Dispatch Pickup',
+              '🛠️ Ace Hardware & Tools',
               '🍔 Order Hot Food & Takeout',
+              '🛒 Groceries & Market Pickup',
+              '💨 Smoke World Ossipee',
               '🌲 Lake Concierge & Dockside Firewood'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
