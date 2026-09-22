@@ -10,11 +10,15 @@ import {
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import ImageUpload from '@/components/ImageUpload';
+import AdminNfcCardProgrammerModal from '@/components/AdminNfcCardProgrammerModal';
+import { Key } from 'lucide-react';
 
 export default function CardsFleetPage() {
   const { cards, addCard, updateCard, deleteCard } = useNfcStore();
   const [editingCard, setEditingCard] = useState<NfcCardConfig | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isAdminProgrammerOpen, setIsAdminProgrammerOpen] = useState(false);
+  const [selectedAdminCard, setSelectedAdminCard] = useState<NfcCardConfig | null>(null);
   const [activeQrModalCard, setActiveQrModalCard] = useState<NfcCardConfig | null>(null);
   const [generatedQrDataUrl, setGeneratedQrDataUrl] = useState<string | null>(null);
 
@@ -122,26 +126,36 @@ export default function CardsFleetPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => {
+              setSelectedAdminCard(null);
+              setIsAdminProgrammerOpen(true);
+            }}
+            className="px-5 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-500/25 transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
+          >
+            <Key className="w-4 h-4" />
+            <span>⚡ Program Admin / Staff Pass</span>
+          </button>
           <Link
             href="/custom-nfc"
             className="px-5 py-3 bg-gradient-to-r from-amber-400/20 to-orange-500/20 hover:bg-amber-400/30 text-amber-300 font-bold text-xs uppercase tracking-wider rounded-2xl border border-amber-400/40 transition-all flex items-center gap-2"
           >
             <Radio className="w-4 h-4 text-amber-400 animate-pulse" />
-            <span>NFC Reader & Customizer Studio</span>
+            <span>NFC Studio</span>
           </Link>
           <Link
             href="/dashboard/programmer"
             className="px-5 py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl border border-white/10 transition-all flex items-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Scan Effingham & Flash</span>
+            <span>Town Programmer</span>
           </Link>
           <button
             onClick={openCreateModal}
-            className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+            className="px-5 py-3 bg-white/10 hover:bg-white/15 text-white font-black text-xs uppercase tracking-widest rounded-2xl border border-white/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Custom Beacon</span>
+            <span>Add Beacon</span>
           </button>
         </div>
       </div>
@@ -430,6 +444,16 @@ export default function CardsFleetPage() {
           </div>
         </div>
       )}
+
+      {/* Admin NFC Card Provisioner Modal */}
+      <AdminNfcCardProgrammerModal
+        isOpen={isAdminProgrammerOpen}
+        onClose={() => {
+          setIsAdminProgrammerOpen(false);
+          setSelectedAdminCard(null);
+        }}
+        preselectedCard={selectedAdminCard}
+      />
 
     </div>
   );

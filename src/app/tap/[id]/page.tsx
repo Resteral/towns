@@ -1,21 +1,36 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
-import { NfcCardConfig } from '@/lib/types';
+import { NfcCardConfig, UserProfile } from '@/lib/types';
 import { EFFINGHAM_AREA_BUSINESSES } from '@/lib/local-businesses';
+import { playChimeSound } from '@/lib/push-notifications';
 import confetti from 'canvas-confetti';
 import { 
   Star, Radio, ShieldCheck, CheckCircle2, ExternalLink, 
-  Sparkles, MessageSquare, ArrowRight, Heart, ThumbsUp 
+  Sparkles, MessageSquare, ArrowRight, Heart, ThumbsUp,
+  Key, Store, Truck, Hammer, Crown, Users, Smartphone,
+  Layers, Lock, Unlock, Phone, Mail, MapPin, Check
 } from 'lucide-react';
 
 export default function TapRouterPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const cardId = (params?.id as string) || 'card-oasis-main';
-  const { cards, storefronts, recordTap, submitFeedback } = useNfcStore();
+  const magicTokenFromUrl = searchParams?.get('magicToken');
+
+  const { 
+    cards, 
+    storefronts, 
+    recordTap, 
+    submitFeedback, 
+    currentUser, 
+    loginUser, 
+    registeredAccounts 
+  } = useNfcStore();
 
   const [card, setCard] = useState<NfcCardConfig | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
@@ -25,6 +40,9 @@ export default function TapRouterPage() {
   const [customerContact, setCustomerContact] = useState('');
   const [feedbackText, setFeedbackText] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Administrative Pass State
+  const [isAdminPassAuthenticated, setIsAdminPassAuthenticated] = useState(false);
 
   const getSafeReviewUrl = (c: NfcCardConfig | null) => {
     if (!c) return 'https://www.google.com/search?q=Oasis+Coffee+Bakery+Effingham+NH';
@@ -42,6 +60,49 @@ export default function TapRouterPage() {
     if (foundCard) {
       setCard(foundCard);
 
+      // Check if this card is an Administrative Management Pass
+      const isAdminPass = foundCard.profileType === 'admin_management_pass' || Boolean(foundCard.adminMagicToken) || Boolean(magicTokenFromUrl);
+
+      if (isAdminPass) {
+        setIsAdminPassAuthenticated(true);
+        recordTap(foundCard.id, 'admin_pass_tap' as any);
+        playChimeSound('bounty');
+        confetti({
+          particleCount: 60,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+
+        // Automatically log in as provisioned user if not already matching
+        if (foundCard.adminProvisionedUser) {
+          const matchingRegistered = registeredAccounts.find(
+            u => u.name.toLowerCase() === foundCard.adminProvisionedUser?.toLowerCase() ||
+                 (foundCard.adminProvisionedPhone && u.phone === foundCard.adminProvisionedPhone)
+          );
+
+          if (matchingRegistered) {
+            loginUser(matchingRegistered);
+          } else {
+            // Provision instant session
+            const newAdminUser: UserProfile = {
+              id: `user-${foundCard.id}`,
+              name: foundCard.adminProvisionedUser,
+              phone: foundCard.adminProvisionedPhone || '(603) 986-7104',
+              email: foundCard.adminProvisionedEmail || `${foundCard.adminProvisionedUser.toLowerCase().replace(/\s+/g, '')}@townraise.org`,
+              role: foundCard.adminAccessRole === 'driver' ? 'driver' : foundCard.adminAccessRole === 'contractor' ? 'contractor' : 'merchant',
+              town: (foundCard.adminAssignedTown || 'Effingham').split(',')[0],
+              state: 'NH',
+              avatar: foundCard.adminAccessRole === 'merchant' ? '🏪' : foundCard.adminAccessRole === 'driver' ? '🚐' : foundCard.adminAccessRole === 'contractor' ? '🔨' : '👑',
+              badge: `Verified ${foundCard.adminAccessRole?.toUpperCase() || 'NODE'} Pass Lead`,
+              createdAt: new Date().toISOString().split('T')[0],
+              isDriver: foundCard.adminAccessRole === 'driver',
+            };
+            loginUser(newAdminUser);
+          }
+        }
+        return;
+      }
+
       // If direct mode, redirect after a moment
       if (foundCard.mode === 'direct_google') {
         setIsRedirecting(true);
@@ -53,7 +114,7 @@ export default function TapRouterPage() {
         return () => clearTimeout(timer);
       }
     }
-  }, [cardId, cards]);
+  }, [cardId, cards, magicTokenFromUrl]);
 
   const handleRate = (stars: number) => {
     if (!card) return;
@@ -102,6 +163,138 @@ export default function TapRouterPage() {
     );
   }
 
+  // =========================================================================
+  // CASE A: ADMINISTRATIVE MANAGEMENT PASS ACTIVATED VIEW
+  // =========================================================================
+  if (isAdminPassAuthenticated || card.profileType === 'admin_management_pass') {
+    const roleTitle = card.adminAccessRole === 'merchant' 
+      ? 'Storefront Owner & Menu Manager'
+      : card.adminAccessRole === 'driver'
+      ? 'Verified Courier Driver'
+      : card.adminAccessRole === 'contractor'
+      ? 'Master Contractor & Tradesman'
+      : card.adminAccessRole === 'town_coordinator'
+      ? 'Regional Town Vanguard Lead'
+      : card.adminAccessRole === 'staff'
+      ? 'Kitchen & Staff Terminal'
+      : 'Operations Manager';
+
+    const directUrl = card.adminDirectDashboardUrl || '/dashboard/storefront';
+
+    return (
+      <div className="min-h-screen bg-[#070709] text-white flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl h-96 bg-amber-500/10 blur-[150px] pointer-events-none rounded-full" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-600/10 blur-[140px] pointer-events-none rounded-full" />
+
+        <div className="w-full max-w-lg bg-[#0c0c14] border-2 border-amber-400/50 rounded-[3rem] p-6 sm:p-8 shadow-2xl relative z-10 space-y-6 animate-in zoom-in-95 duration-500">
+          
+          {/* Top Status Badge */}
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 rounded-3xl bg-amber-400 text-black flex items-center justify-center text-3xl font-black mx-auto shadow-xl shadow-amber-400/20 animate-bounce">
+              {card.adminAccessRole === 'merchant' ? '🏪' : card.adminAccessRole === 'driver' ? '🚐' : card.adminAccessRole === 'contractor' ? '🔨' : '👑'}
+            </div>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>NFC AUTHENTICATED: {roleTitle.toUpperCase()}</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black italic uppercase tracking-tight text-white leading-tight">
+                {card.businessName}
+              </h1>
+              <p className="text-xs text-amber-300 font-mono">
+                Welcome, <strong>{card.adminProvisionedUser || 'Node Lead'}</strong>! You are securely logged in.
+              </p>
+            </div>
+          </div>
+
+          {/* Provisioned Node Credentials Card */}
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5 font-mono text-xs">
+            <div className="flex justify-between items-center border-b border-white/5 pb-2">
+              <span className="text-zinc-400 uppercase text-[10px]">Territory / Town:</span>
+              <span className="text-white font-bold">{card.adminAssignedTown || card.town || 'Carroll County, NH'}</span>
+            </div>
+            <div className="flex justify-between items-center border-b border-white/5 pb-2">
+              <span className="text-zinc-400 uppercase text-[10px]">Provisioned Email:</span>
+              <span className="text-white truncate max-w-[200px]">{card.adminProvisionedEmail || 'Registered'}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400 uppercase text-[10px]">Session Status:</span>
+              <span className="text-emerald-400 font-bold flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" /> Active Administrative Session
+              </span>
+            </div>
+          </div>
+
+          {/* Primary Action Button */}
+          <Link
+            href={directUrl}
+            className="w-full py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-black font-black text-sm uppercase tracking-widest text-center rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2"
+          >
+            <span>Open {card.businessName} Management Terminal</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+
+          {/* Quick Management Shortcuts */}
+          <div className="space-y-2 pt-2">
+            <span className="text-[10px] font-mono uppercase text-zinc-400 font-bold block">
+              Direct Administrative Hubs:
+            </span>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+              <Link
+                href="/dashboard/storefront"
+                className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center gap-2 text-zinc-200 hover:text-amber-300 transition-colors"
+              >
+                <Store className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="truncate">Storefront Hub</span>
+              </Link>
+              <Link
+                href="/dashboard/kitchen"
+                className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center gap-2 text-zinc-200 hover:text-amber-300 transition-colors"
+              >
+                <Users className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <span className="truncate">Live Orders</span>
+              </Link>
+              <Link
+                href="/driver"
+                className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center gap-2 text-zinc-200 hover:text-amber-300 transition-colors"
+              >
+                <Truck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate">Courier Terminal</span>
+              </Link>
+              <Link
+                href="/community"
+                className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl flex items-center gap-2 text-zinc-200 hover:text-amber-300 transition-colors"
+              >
+                <Radio className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                <span className="truncate">Live Wire Stream</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Instructions Box */}
+          <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 text-[11px] font-mono text-zinc-300 space-y-1">
+            <p className="text-indigo-300 font-bold">💡 Tip: Add to Phone Home Screen</p>
+            <p className="text-zinc-400 leading-relaxed">
+              Open your browser menu and tap <strong>"Add to Home Screen"</strong> to install your node terminal app for instant push notifications and synthesized order chimes.
+            </p>
+          </div>
+
+          {/* Footer note */}
+          <div className="pt-2 border-t border-white/5 flex justify-between items-center text-[9px] font-mono text-zinc-500">
+            <span>TOWNRAISE SECURE NFC AUTH</span>
+            <span>CARD ID: {card.id}</span>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // CASE B: STANDARD GOOGLE REVIEW & STOREFRONT TAP FUNNEL
+  // =========================================================================
   return (
     <div className="min-h-screen bg-[#070709] flex flex-col items-center justify-center p-4 selection:bg-amber-400 selection:text-black relative overflow-hidden">
       

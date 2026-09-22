@@ -31,9 +31,11 @@ import {
   DollarSign,
   User,
   Radio as RadioIcon,
-  Car
+  Car,
+  Key
 } from 'lucide-react';
 import { EFFINGHAM_AREA_BUSINESSES } from '@/lib/local-businesses';
+import AdminNfcCardProgrammerModal from '@/components/AdminNfcCardProgrammerModal';
 
 export default function DashboardOverviewPage() {
   const { 
@@ -49,6 +51,8 @@ export default function DashboardOverviewPage() {
     deliveryDrivers,
     toggleDriverStatus
   } = useNfcStore();
+
+  const [isAdminProgrammerOpen, setIsAdminProgrammerOpen] = useState(false);
 
   const totalStores = EFFINGHAM_AREA_BUSINESSES.length;
   const pendingOrders = deliveryOrders.filter(o => o.status === 'pending' || o.status === 'accepted' || o.status === 'out_for_delivery');
@@ -85,12 +89,20 @@ export default function DashboardOverviewPage() {
 
           {/* Quick Action Station */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto">
+            <button
+              onClick={() => setIsAdminProgrammerOpen(true)}
+              className="flex-1 sm:flex-initial px-5 py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
+            >
+              <Key className="w-4 h-4" />
+              <span>⚡ Program Admin Pass</span>
+            </button>
+
             <Link
               href="/ai-concierge"
-              className="flex-1 sm:flex-initial px-5 py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-initial px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all flex items-center justify-center gap-2"
             >
-              <Bot className="w-4 h-4" />
-              <span>Launch AI Food Bot</span>
+              <Bot className="w-4 h-4 text-indigo-400" />
+              <span>AI Food Bot</span>
             </Link>
 
             <Link
@@ -98,7 +110,7 @@ export default function DashboardOverviewPage() {
               className="flex-1 sm:flex-initial px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all flex items-center justify-center gap-2"
             >
               <Truck className="w-4 h-4 text-amber-400" />
-              <span>Courier Driver Radar</span>
+              <span>Courier Terminal</span>
             </Link>
           </div>
         </div>
@@ -652,6 +664,12 @@ export default function DashboardOverviewPage() {
         </div>
 
       </div>
+
+      {/* Admin NFC Card Provisioner Modal */}
+      <AdminNfcCardProgrammerModal
+        isOpen={isAdminProgrammerOpen}
+        onClose={() => setIsAdminProgrammerOpen(false)}
+      />
 
     </div>
   );

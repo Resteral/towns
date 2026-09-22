@@ -46,6 +46,10 @@ export function buildCardTargetUrl(card: NfcCardConfig, origin?: string): string
     case 'scavenger_hunt_beacon':
       return `${base}/store-hunting?beacon=${encodeURIComponent(card.huntBeaconId || card.id)}`;
 
+    case 'admin_management_pass':
+      const magicParam = card.adminMagicToken ? `?magicToken=${encodeURIComponent(card.adminMagicToken)}` : '';
+      return `${base}/tap/${card.id}${magicParam}`;
+
     case 'custom_url':
       return card.directTargetUrl || card.googleReviewUrl || `${base}/tap/${card.id}`;
 

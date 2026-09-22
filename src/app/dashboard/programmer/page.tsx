@@ -6,8 +6,9 @@ import {
   Radio, Search, Sparkles, Star, MapPin, Phone, 
   ExternalLink, QrCode, Cpu, CheckCircle2, Copy, 
   Download, ArrowRight, ShieldCheck, Plus, RefreshCw,
-  Zap, Info, Check, Filter, Layers, AlertCircle, X
+  Zap, Info, Check, Filter, Layers, AlertCircle, X, Key
 } from 'lucide-react';
+import AdminNfcCardProgrammerModal from '@/components/AdminNfcCardProgrammerModal';
 import { useNfcStore } from '@/lib/store';
 import { 
   EFFINGHAM_AREA_BUSINESSES, LocalBusiness, 
@@ -22,6 +23,7 @@ export default function NfcProgrammerPage() {
   const [selectedTown, setSelectedTown] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAdminProgrammerOpen, setIsAdminProgrammerOpen] = useState(false);
 
   // Dynamically aggregate registered town businesses (memoized)
   const allTownNames = useMemo(() => {
@@ -569,13 +571,20 @@ export default function NfcProgrammerPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            onClick={() => setIsAdminProgrammerOpen(true)}
+            className="px-5 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-2xl text-xs font-black uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-400/20 flex items-center gap-2"
+          >
+            <Key className="w-4 h-4" />
+            <span>⚡ Program Admin / Staff Pass</span>
+          </button>
           <button
             onClick={() => setShowCustomModal(true)}
-            className="px-5 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-2xl text-xs font-black uppercase tracking-wider hover:scale-105 transition-all shadow-xl shadow-amber-400/20 flex items-center gap-2"
+            className="px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-black uppercase tracking-wider hover:scale-105 active:scale-95 transition-all border border-white/10 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Any Business</span>
+            <span>Add Business</span>
           </button>
         </div>
       </div>
@@ -1308,6 +1317,12 @@ export default function NfcProgrammerPage() {
           </div>
         </div>
       )}
+
+      {/* Admin NFC Card Provisioner Modal */}
+      <AdminNfcCardProgrammerModal
+        isOpen={isAdminProgrammerOpen}
+        onClose={() => setIsAdminProgrammerOpen(false)}
+      />
 
     </div>
   );

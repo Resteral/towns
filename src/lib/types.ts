@@ -96,6 +96,7 @@ export type NfcCardProfileType =
   | 'event_vip_pass'
   | 'airbnb_wifi_plaque'
   | 'scavenger_hunt_beacon'
+  | 'admin_management_pass'
   | 'custom_url';
 
 export interface NfcCardConfig {
@@ -108,6 +109,18 @@ export interface NfcCardConfig {
   chipUid?: string;
   batchId?: string;
   notes?: string;
+
+  // Administrative & Merchant Management Provisioning Pass
+  adminAccessRole?: 'merchant' | 'driver' | 'contractor' | 'town_coordinator' | 'manager' | 'staff' | 'admin';
+  adminProvisionedUser?: string;
+  adminProvisionedEmail?: string;
+  adminProvisionedPhone?: string;
+  adminAssignedStorefrontSlug?: string;
+  adminAssignedTown?: string;
+  adminMagicToken?: string;
+  adminPortalPermissions?: string[];
+  adminDirectDashboardUrl?: string;
+  adminInstructions?: string;
 
   // Google Review Booster
   googlePlaceId?: string;
