@@ -561,7 +561,7 @@ export default function CourierErrandsPage() {
                     {paymentMethod === 'paypal' && <Check className="w-4 h-4 text-blue-400" />}
                   </div>
                   <div className="font-black text-xs text-white">PayPal</div>
-                  <div className="text-[9px] font-mono text-blue-300">paypal.me/frijj555</div>
+                  <div className="text-[9px] font-mono text-blue-300">seanhse97@gmail.com</div>
                 </button>
 
                 {/* Zelle */}
@@ -611,7 +611,7 @@ export default function CourierErrandsPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleCopy('frijj555@gmail.com', 'paypal')}
+                      onClick={() => handleCopy('seanhse97@gmail.com', 'paypal')}
                       className="text-[10px] font-mono text-blue-400 hover:underline flex items-center gap-1"
                     >
                       {copiedKey === 'paypal' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -619,10 +619,10 @@ export default function CourierErrandsPage() {
                     </button>
                   </div>
                   <p className="text-[11px] text-zinc-300 leading-snug">
-                    Send <strong className="text-white">${total.toFixed(2)}</strong> to <strong className="text-blue-300">paypal.me/frijj555</strong> or <strong className="text-white">frijj555@gmail.com</strong>.
+                    Send <strong className="text-white">${total.toFixed(2)}</strong> to <strong className="text-blue-300">paypal.me/seanhse97</strong> or <strong className="text-white">seanhse97@gmail.com</strong>.
                   </p>
                   <a
-                    href={`https://paypal.me/frijj555/${total.toFixed(2)}`}
+                    href={`https://paypal.me/seanhse97/${total.toFixed(2)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="w-full py-2.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase text-xs tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg"

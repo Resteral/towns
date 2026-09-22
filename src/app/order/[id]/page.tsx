@@ -114,7 +114,7 @@ export default function OrderTrackingPage() {
                 )}
                 {order.paymentMethod && (
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[9px] font-mono font-bold uppercase">
-                    Paid via {order.paymentMethod === 'paypal' ? 'PayPal (frijj555@gmail.com)' : order.paymentMethod === 'cash_app' ? 'Cash App' : order.paymentMethod === 'venmo' ? 'Venmo' : order.paymentMethod === 'zelle' ? 'Zelle' : order.paymentMethod === 'card' ? 'Card' : 'COD'}
+                    Paid via {order.paymentMethod === 'paypal' ? 'PayPal (seanhse97@gmail.com)' : order.paymentMethod === 'cash_app' ? 'Cash App' : order.paymentMethod === 'venmo' ? 'Venmo' : order.paymentMethod === 'zelle' ? 'Zelle' : order.paymentMethod === 'card' ? 'Card' : 'COD'}
                   </span>
                 )}
               </div>

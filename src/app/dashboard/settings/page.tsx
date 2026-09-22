@@ -27,8 +27,8 @@ export default function NotificationSettingsPage() {
   const [enableSound, setEnableSound] = useState(notificationSettings.enableSoundChime ?? true);
 
   // Merchant & Driver Payment Payout Handles
-  const [paypalEmail, setPaypalEmail] = useState('frijj555@gmail.com');
-  const [paypalHandle, setPaypalHandle] = useState('paypal.me/frijj555');
+  const [paypalEmail, setPaypalEmail] = useState('seanhse97@gmail.com');
+  const [paypalHandle, setPaypalHandle] = useState('paypal.me/seanhse97');
   const [cashAppTag, setCashAppTag] = useState('$frijj555');
   const [venmoHandle, setVenmoHandle] = useState('@Sean-Martin-NH');
   const [zellePhone, setZellePhone] = useState('(508) 507-0305');
@@ -255,7 +255,7 @@ export default function NotificationSettingsPage() {
                   type="text"
                   value={paypalEmail}
                   onChange={(e) => setPaypalEmail(e.target.value)}
-                  placeholder="frijj555@gmail.com or paypal.me/frijj555"
+                  placeholder="seanhse97@gmail.com or paypal.me/seanhse97"
                   className="w-full bg-black/40 border border-blue-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-blue-400"
                 />
               </div>

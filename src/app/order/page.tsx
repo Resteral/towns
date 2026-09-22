@@ -405,7 +405,7 @@ export default function DeliveryOrderPage() {
                       {[
                         { id: 'cash_app', name: 'Cash App', badge: '$frijj555', color: 'emerald' },
                         { id: 'venmo', name: 'Venmo', badge: '@Sean-Martin-NH', color: 'cyan' },
-                        { id: 'paypal', name: 'PayPal', badge: 'paypal.me/frijj555', color: 'blue' },
+                        { id: 'paypal', name: 'PayPal', badge: 'seanhse97@gmail.com', color: 'blue' },
                         { id: 'zelle', name: 'Zelle', badge: '508-507-0305', color: 'purple' },
                         { id: 'card', name: 'Card / Apple Pay', badge: 'Online Reader', color: 'amber' },
                         { id: 'cash_on_delivery', name: 'Cash On Hand', badge: 'At Door', color: 'zinc' },
@@ -434,20 +434,20 @@ export default function DeliveryOrderPage() {
                       <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-2">
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-xs font-black text-blue-400 block">🅿️ PayPal: frijj555@gmail.com</span>
-                            <span className="text-[10px] text-zinc-400 font-mono">paypal.me/frijj555</span>
+                            <span className="text-xs font-black text-blue-400 block">🅿️ PayPal: seanhse97@gmail.com</span>
+                            <span className="text-[10px] text-zinc-400 font-mono">paypal.me/seanhse97</span>
                           </div>
                           <div className="flex gap-2">
                             <button
                               type="button"
-                              onClick={() => copyToClipboard('frijj555@gmail.com')}
+                              onClick={() => copyToClipboard('seanhse97@gmail.com')}
                               className="px-2 py-1 bg-blue-400/20 hover:bg-blue-400/30 text-blue-300 text-[10px] font-mono rounded-lg transition-colors flex items-center gap-1"
                             >
                               {copiedHandle ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                               <span>{copiedHandle ? 'Copied' : 'Copy'}</span>
                             </button>
                             <a
-                              href={`https://paypal.me/frijj555/${total.toFixed(2)}`}
+                              href={`https://paypal.me/seanhse97/${total.toFixed(2)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 bg-blue-500 text-white text-[10px] font-black rounded-lg hover:bg-blue-400 transition-colors flex items-center gap-1 shadow-md"
