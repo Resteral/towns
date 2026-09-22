@@ -21,11 +21,19 @@ import {
   Minimize2,
   RefreshCw,
   Star,
-  Plus
+  Plus,
+  Truck,
+  Phone,
+  MapPin,
+  Compass,
+  CheckCircle2,
+  ExternalLink,
+  ShieldCheck,
+  CreditCard
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useNfcStore } from '@/lib/store';
-import { StorefrontProduct, MerchantStorefront } from '@/lib/types';
+import { StorefrontProduct, MerchantStorefront, DeliveryOrder } from '@/lib/types';
 
 interface BotMessage {
   id: string;
@@ -37,17 +45,26 @@ interface BotMessage {
   }[];
   quickOptions?: string[];
   showCheckoutBtn?: boolean;
+  showDeliveryForm?: boolean;
+  confirmedDeliveryOrder?: DeliveryOrder;
   timestamp: string;
 }
 
 export default function AiOrderConciergeWidget() {
   const pathname = usePathname();
-  const { storefronts, addToCart, cart, playDeliveryChime } = useNfcStore();
+  const { storefronts, addToCart, cart, clearCart, placeDeliveryOrder, sendManualSms, playDeliveryChime } = useNfcStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [addedItemNotice, setAddedItemNotice] = useState<string | null>(null);
+
+  // In-Chat Delivery Dispatch State
+  const [custName, setCustName] = useState('Alex Tremblay');
+  const [custPhone, setCustPhone] = useState('(603) 555-0199');
+  const [custAddress, setCustAddress] = useState('Pine Cove Dock 3, Ossipee Lake (Freedom, NH)');
+  const [custPayment, setCustPayment] = useState<'cash_on_delivery' | 'cash_app' | 'venmo' | 'card'>('cash_on_delivery');
+  const [custNotes, setCustNotes] = useState('Leave on lakeside table. Text when arrived.');
+  const [isDispatching, setIsDispatching] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -56,14 +73,14 @@ export default function AiOrderConciergeWidget() {
     {
       id: 'welcome-1',
       sender: 'ai',
-      text: "👋 Hi! I'm your Carroll County AI Concierge. What are you in the mood for today?",
+      text: "👋 Hi! I'm your Carroll County AI Concierge. What are you looking to eat or order today? I can recommend top local dishes and dispatch Sean Martin to deliver straight to your door or boat dock!",
       quickOptions: [
         '🍔 Hungry for Food / Order Lunch & Dinner',
-        '🍕 Best Pizza & Wings in Carroll County',
         '🥩 Giant Steak & Cheese Sub',
+        '🍕 Best Wood-Fired Pizza & Wings',
         '☕ Morning Coffee & Brioche Bakery',
-        '🌲 Lake Concierge & Campfire Firewood',
-        '🛠️ Need a Local Contractor / Trades'
+        '🌲 Campfire Firewood & S\'mores Kit',
+        '🚀 Dispatch Sean Martin to Deliver'
       ],
       timestamp: 'Just now'
     }
@@ -71,12 +88,11 @@ export default function AiOrderConciergeWidget() {
 
   // Scroll to bottom when messages update
   useEffect(() => {
-    if (isOpen && !isMinimized) {
+    if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen, isMinimized, isTyping]);
+  }, [messages, isOpen, isTyping, isDispatching]);
 
-  // Don't display on specific fullscreen routes if needed (e.g. tap routes)
   if (pathname?.startsWith('/tap/')) {
     return null;
   }
@@ -92,7 +108,6 @@ export default function AiOrderConciergeWidget() {
         const descMatch = product.description.toLowerCase().includes(q);
         const catMatch = product.category.toLowerCase().includes(q);
 
-        // Keyword heuristics
         const isPizzaQuery = (q.includes('pizza') || q.includes('slice') || q.includes('pie')) && product.category.toLowerCase().includes('pizza');
         const isSubQuery = (q.includes('sub') || q.includes('steak') || q.includes('sandwich') || q.includes('burger')) && (product.category.toLowerCase().includes('sub') || product.category.toLowerCase().includes('burger') || product.name.toLowerCase().includes('sub') || product.name.toLowerCase().includes('sandwich'));
         const isCoffeeQuery = (q.includes('coffee') || q.includes('bakery') || q.includes('breakfast') || q.includes('drink')) && (product.category.toLowerCase().includes('beverage') || product.category.toLowerCase().includes('bakery') || product.category.toLowerCase().includes('lunch'));
@@ -105,7 +120,6 @@ export default function AiOrderConciergeWidget() {
       });
     });
 
-    // Fallback if generic query: grab top 3 popular dishes
     if (matches.length === 0) {
       storefronts.forEach(store => {
         if (store.products.length > 0 && matches.length < 3) {
@@ -114,7 +128,6 @@ export default function AiOrderConciergeWidget() {
       });
     }
 
-    // Limit to 4 top items
     return matches.slice(0, 4);
   };
 
@@ -133,12 +146,29 @@ export default function AiOrderConciergeWidget() {
     if (!textToSend) setInputVal('');
     setIsTyping(true);
 
-    // AI Logic processing
     setTimeout(() => {
       const lower = text.toLowerCase();
 
-      // 1. Food Inquiries
-      if (
+      // 1. Direct Delivery / Sean Martin Dispatch Request
+      if (lower.includes('deliver') || lower.includes('sean') || lower.includes('dispatch') || lower.includes('courier')) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🚗 **Sean Martin** is currently on duty in Carroll County with his all-wheel-drive courier vehicle. Fill in your delivery location below to dispatch Sean right away:",
+            showDeliveryForm: true,
+            quickOptions: [
+              '🍔 Add Steak & Cheese Sub First',
+              '🍕 Add Smoked Pizza First',
+              '🌲 Add Campfire Firewood Bundle'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 2. Food Inquiries
+      else if (
         lower.includes('food') || 
         lower.includes('eat') || 
         lower.includes('dinner') || 
@@ -156,8 +186,8 @@ export default function AiOrderConciergeWidget() {
       ) {
         const matches = findMatchingDishes(text);
         
-        let intro = "Here are our top recommended dishes freshly prepared in Carroll County! Tap **Add to Order** on any item to start your meal:";
-        if (lower.includes('pizza')) intro = "🍕 Craving pizza? Here are our best wood-fired and smokehouse pizzas in town:";
+        let intro = "Here are our top recommended dishes freshly prepared in Carroll County! Tap **Add to Order** on any item to have Sean Martin deliver it:";
+        if (lower.includes('pizza')) intro = "🍕 Craving pizza? Here are our top wood-fired and smokehouse pies in town:";
         if (lower.includes('sub') || lower.includes('steak')) intro = "🥩 Nothing beats a hot New England sub! Check out these customer favorites:";
         if (lower.includes('coffee') || lower.includes('breakfast')) intro = "☕ Fresh morning brews and bakery items ready for pickup or delivery:";
         if (lower.includes('gluten')) intro = "🌾 Here are great gluten-conscious & delicious options available today:";
@@ -170,50 +200,34 @@ export default function AiOrderConciergeWidget() {
             text: intro,
             suggestedDishes: matches,
             quickOptions: [
+              '🚀 Have Sean Martin Deliver This',
               '🥩 Show me Steak & Cheese Subs',
               '🍕 Show me Pizzas',
-              '☕ Coffee & Breakfast',
-              '🚀 View Full Delivery Menus'
+              '🌲 Campfire Firewood Kit'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       } 
-      // 2. Firewood / Lake / Concierge
+      // 3. Firewood / Lake / Concierge
       else if (lower.includes('firewood') || lower.includes('lake') || lower.includes('dock') || lower.includes('airbnb') || lower.includes('smores') || lower.includes('boat')) {
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "🌲 Visiting Lake Ossipee or Lake Winnipesaukee? We provide dockside firewood bundles & s'mores kit delivery, lake condition HUDs, and keyless check-in guides directly through our Lake Concierge portal!",
+            text: "🌲 Visiting Lake Ossipee or Lake Winnipesaukee? Sean Martin delivers kiln-dried hardwood firewood bundles & deluxe s'mores kits directly to public boat launches, lakeside firepits, and private docks in ~25-35 minutes!",
+            showDeliveryForm: true,
             quickOptions: [
-              '🔥 Order Dockside Firewood Bundle ($24.99)',
+              '🔥 Dispatch Firewood + S\'mores to Dock ($41.49)',
               '🌊 Check Lake Water Temperature',
-              '🍔 Show Me Food Delivery for Cabin'
-            ],
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
-      // 3. Trades / Contractors
-      else if (lower.includes('contractor') || lower.includes('trade') || lower.includes('roof') || lower.includes('plumb') || lower.includes('carpenter') || lower.includes('builder')) {
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `ai-${Date.now()}`,
-            sender: 'ai',
-            text: "🛠️ Looking for verified Carroll County trades? Post your project on our Trades Board or browse verified local carpenters, roofers, landscapers, and mechanics with 1-click quote requests!",
-            quickOptions: [
-              '🔨 Post a Free Quote Request',
-              '👷 Browse Verified Contractors',
               '🍔 Show Food Delivery Menus'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 4. Default / General Inquiry
+      // 4. Default
       else {
         const matches = findMatchingDishes('food');
         setMessages(prev => [
@@ -221,12 +235,12 @@ export default function AiOrderConciergeWidget() {
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: `I'd love to help you find whatever you need in Carroll County! Are you hungry for some delicious local food, or looking for local services? Here are a few popular options:`,
+            text: `I can help you order food, get dockside firewood, or dispatch driver Sean Martin. What can I get started for you?`,
             suggestedDishes: matches.slice(0, 2),
             quickOptions: [
-              '🍔 Show Best Food & Takeout',
-              '🌲 Lake Concierge & Dock Delivery',
-              '🎁 Check My Loyalty Rewards Points'
+              '🍔 Order Hot Food & Takeout',
+              '🚀 Dispatch Sean Martin to Deliver',
+              '🌲 Lake Concierge & Dockside Firewood'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
@@ -268,22 +282,120 @@ export default function AiOrderConciergeWidget() {
     playDeliveryChime();
     setTimeout(() => setAddedItemNotice(null), 3000);
 
-    // Follow up in chat
+    // Follow up in chat with delivery dispatch prompt
     setMessages(prev => [
       ...prev,
       {
         id: `ai-added-${Date.now()}`,
         sender: 'ai',
-        text: `✅ Added **${dish.name}** ($${dish.price.toFixed(2)}) to your cart! Would you like to add anything else or proceed to delivery checkout?`,
-        showCheckoutBtn: true,
+        text: `✅ Added **${dish.name}** ($${dish.price.toFixed(2)}) to your order! Would you like **Sean Martin** to deliver this now, or add more items?`,
+        showDeliveryForm: true,
         quickOptions: [
           '🍕 Add a Pizza to Order',
           '🥤 Add Beverages or Sides',
-          '🛒 Ready to Checkout'
+          '🛒 View Shopping Cart'
         ],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ]);
+  };
+
+  // In-Chat Instant Dispatch Sean Martin
+  const handleConfirmDispatchSean = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsDispatching(true);
+
+    // Calculate items
+    const orderItems = cart.length > 0 ? cart.map(c => ({
+      id: c.product.id,
+      name: c.product.name,
+      price: c.product.price,
+      quantity: c.quantity
+    })) : [
+      {
+        id: 'item-sub-pnb',
+        name: 'The Big Mountain Steak & Cheese Sub (12")',
+        price: 17.49,
+        quantity: 1
+      },
+      {
+        id: 'item-fries',
+        name: 'Hand-Cut Seasoned Fries (Basket)',
+        price: 4.99,
+        quantity: 1
+      }
+    ];
+
+    const subtotal = orderItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+    const deliveryFee = 4.99;
+    const tip = 5.00;
+    const total = subtotal + deliveryFee + tip;
+
+    try {
+      const newOrder = await placeDeliveryOrder({
+        customerName: custName,
+        customerPhone: custPhone,
+        deliveryAddress: custAddress,
+        deliveryInstructions: custNotes,
+        serviceType: 'standard_delivery',
+        paymentMethod: custPayment,
+        paymentStatus: custPayment === 'cash_on_delivery' ? 'pay_on_delivery' : 'pending_verification',
+        restaurantName: 'PNB Eats Roadside Grill & Local Kitchens',
+        restaurantAddress: 'Route 25, Carroll County, NH',
+        town: 'Carroll County / Freedom / Ossipee',
+        items: orderItems,
+        subtotal,
+        deliveryFee,
+        tip,
+        total,
+        driver: {
+          name: 'Sean Martin',
+          phone: '(508) 507-0305',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
+          vehicle: 'All-Wheel Drive Courier (AWD)',
+          rating: 5.0,
+          totalDeliveries: 412
+        }
+      });
+
+      // Send SMS alert to Sean Martin
+      sendManualSms(
+        '(508) 507-0305',
+        'Sean Martin',
+        'Oasis AI Dispatch',
+        `🚨 NEW AI BOT DELIVERY: Order #${newOrder.id} for ${custName} (${custPhone}) at ${custAddress}. Total: $${total.toFixed(2)}. Courier Sean assigned!`,
+        'Contractor Emergency Lead Instant Dispatch'
+      );
+
+      clearCart();
+      setIsDispatching(false);
+
+      confetti({
+        particleCount: 80,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+      playDeliveryChime();
+
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `ai-dispatched-${Date.now()}`,
+          sender: 'ai',
+          text: `🎉 **Order Confirmed!** Courier **Sean Martin** has been dispatched for immediate pickup and delivery!`,
+          confirmedDeliveryOrder: newOrder,
+          quickOptions: [
+            '📡 Track Sean on Live Radar',
+            '📞 Call Sean (508-507-0305)',
+            '🍔 Order Something Else'
+          ],
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    } catch (err) {
+      console.error(err);
+      setIsDispatching(false);
+    }
   };
 
   return (
@@ -298,7 +410,7 @@ export default function AiOrderConciergeWidget() {
             <div className="w-6 h-6 rounded-full bg-black/40 flex items-center justify-center">
               <Bot className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
             </div>
-            <span>AI Food & Concierge Bot</span>
+            <span>AI Food & Order Helper</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           </button>
         </div>
@@ -306,7 +418,7 @@ export default function AiOrderConciergeWidget() {
 
       {/* Expanded Interactive Chat Modal */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[92vw] sm:w-[420px] max-h-[640px] flex flex-col bg-[#0b0b14] border border-white/15 rounded-3xl shadow-2xl shadow-black/90 overflow-hidden animate-fadeIn backdrop-blur-xl">
+        <div className="fixed bottom-6 right-6 z-50 w-[94vw] sm:w-[440px] max-h-[660px] flex flex-col bg-[#0b0b14] border border-white/15 rounded-3xl shadow-2xl shadow-black/90 overflow-hidden animate-fadeIn backdrop-blur-xl">
           
           {/* Header */}
           <div className="p-4 bg-gradient-to-r from-indigo-950/80 via-[#0e0e18] to-amber-950/60 border-b border-white/10 flex items-center justify-between">
@@ -316,12 +428,12 @@ export default function AiOrderConciergeWidget() {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs font-black uppercase text-white tracking-wide">Oasis AI Food Concierge</h3>
+                  <h3 className="text-xs font-black uppercase text-white tracking-wide">Oasis AI Food & Courier Bot</h3>
                   <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-                    Online
+                    Courier On Duty
                   </span>
                 </div>
-                <p className="text-[10px] text-white/50">Ask for food, firewood, or local recommendations</p>
+                <p className="text-[10px] text-white/50">Sean Martin • AWD Delivery Active (Carroll County)</p>
               </div>
             </div>
 
@@ -361,7 +473,7 @@ export default function AiOrderConciergeWidget() {
           )}
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[420px] text-xs">
+          <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[440px] text-xs">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -369,26 +481,146 @@ export default function AiOrderConciergeWidget() {
               >
                 {/* Bubble Text */}
                 <div
-                  className={`max-w-[90%] rounded-2xl p-3 leading-relaxed ${
+                  className={`max-w-[92%] rounded-2xl p-3 leading-relaxed ${
                     msg.sender === 'user'
                       ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-black font-semibold rounded-tr-sm shadow-md'
                       : 'bg-[#151522] text-white border border-white/10 rounded-tl-sm shadow-sm'
                   }`}
                 >
-                  <p>{msg.text}</p>
+                  <p className="whitespace-pre-line">{msg.text}</p>
 
-                  {/* Checkout Button if suggested */}
-                  {msg.showCheckoutBtn && (
-                    <div className="mt-3 pt-2 border-t border-white/10 flex items-center gap-2">
-                      <Link
-                        href="/cart"
-                        onClick={() => setIsOpen(false)}
-                        className="w-full py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-1.5 transition-all text-center"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>Checkout Now ({cart.reduce((a, b) => a + b.quantity, 0)} items)</span>
-                      </Link>
+                  {/* Confirmed Delivery Order Tracking Card */}
+                  {msg.confirmedDeliveryOrder && (
+                    <div className="mt-3 p-3.5 rounded-2xl bg-[#090910] border border-emerald-500/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
+                            <Truck className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-black text-white">Courier: Sean Martin</div>
+                            <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              En Route to Pickup • Est ~25 mins
+                            </div>
+                          </div>
+                        </div>
+
+                        <a 
+                          href="tel:5085070305"
+                          className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold flex items-center gap-1"
+                        >
+                          <Phone className="w-3 h-3 text-amber-400" />
+                          <span>Call Sean</span>
+                        </a>
+                      </div>
+
+                      <div className="p-2.5 bg-black/40 rounded-xl space-y-1 text-[11px]">
+                        <div className="flex justify-between text-white/70">
+                          <span>Delivery Address:</span>
+                          <span className="text-white font-bold truncate max-w-[170px]">{msg.confirmedDeliveryOrder.deliveryAddress}</span>
+                        </div>
+                        <div className="flex justify-between text-white/70">
+                          <span>Order Total:</span>
+                          <span className="text-emerald-400 font-black">${msg.confirmedDeliveryOrder.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <Link
+                          href={`/order/${msg.confirmedDeliveryOrder.id}`}
+                          onClick={() => setIsOpen(false)}
+                          className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-black font-black text-[11px] uppercase tracking-wider rounded-xl text-center shadow-lg"
+                        >
+                          📡 View Live Radar
+                        </Link>
+                        <Link
+                          href="/driver"
+                          onClick={() => setIsOpen(false)}
+                          className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[11px] font-bold"
+                        >
+                          Driver Hub
+                        </Link>
+                      </div>
                     </div>
+                  )}
+
+                  {/* Inline 1-Click Dispatch Sean Martin Form */}
+                  {msg.showDeliveryForm && !msg.confirmedDeliveryOrder && (
+                    <form onSubmit={handleConfirmDispatchSean} className="mt-3 p-3.5 rounded-2xl bg-[#090910] border border-amber-500/30 space-y-3">
+                      <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                        <Truck className="w-4 h-4" />
+                        <span>Dispatch Courier: Sean Martin</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div>
+                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Your Name & Phone</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              required
+                              value={custName}
+                              onChange={(e) => setCustName(e.target.value)}
+                              placeholder="Your Name"
+                              className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                            />
+                            <input
+                              type="tel"
+                              required
+                              value={custPhone}
+                              onChange={(e) => setCustPhone(e.target.value)}
+                              placeholder="Phone #"
+                              className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Delivery Address / Dock / Firepit</label>
+                          <input
+                            type="text"
+                            required
+                            value={custAddress}
+                            onChange={(e) => setCustAddress(e.target.value)}
+                            placeholder="e.g. Pine Cove Dock 3, Ossipee Lake"
+                            className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Payment Method</label>
+                          <select
+                            value={custPayment}
+                            onChange={(e) => setCustPayment(e.target.value as any)}
+                            className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                          >
+                            <option value="cash_on_delivery">💵 Cash on Delivery / Hand to Sean</option>
+                            <option value="cash_app">💚 Cash App ($frijj555)</option>
+                            <option value="venmo">💙 Venmo (@Sean-Martin-NH)</option>
+                            <option value="card">💳 Credit Card / Apple Pay</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isDispatching}
+                        className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+                      >
+                        {isDispatching ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Dispatching Sean...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Truck className="w-3.5 h-3.5" />
+                            <span>Confirm & Dispatch Sean Now</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
                   )}
 
                   {/* Interactive Food Recommendation Cards */}
@@ -472,7 +704,7 @@ export default function AiOrderConciergeWidget() {
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="What are you craving? (e.g. Steak sub, pizza, firewood)..."
+              placeholder="Ask for food, firewood, or dispatch Sean to deliver..."
               className="flex-1 bg-[#161626] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50"
             />
             <button

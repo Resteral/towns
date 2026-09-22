@@ -17,11 +17,15 @@ import {
   Waves,
   Wrench,
   Search,
-  Filter
+  Filter,
+  Truck,
+  Phone,
+  CheckCircle2,
+  RefreshCw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useNfcStore } from '@/lib/store';
-import { StorefrontProduct, MerchantStorefront } from '@/lib/types';
+import { StorefrontProduct, MerchantStorefront, DeliveryOrder } from '@/lib/types';
 
 interface ConciergeMsg {
   id: string;
@@ -33,27 +37,37 @@ interface ConciergeMsg {
   }[];
   quickOptions?: string[];
   showCheckoutBtn?: boolean;
+  showDeliveryForm?: boolean;
+  confirmedDeliveryOrder?: DeliveryOrder;
   timestamp: string;
 }
 
 export default function DedicatedAiConciergePage() {
-  const { storefronts, addToCart, cart, playDeliveryChime } = useNfcStore();
+  const { storefronts, addToCart, cart, clearCart, placeDeliveryOrder, sendManualSms, playDeliveryChime } = useNfcStore();
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [addedItemNotice, setAddedItemNotice] = useState<string | null>(null);
+
+  // In-Chat Dispatch State
+  const [custName, setCustName] = useState('Alex Tremblay');
+  const [custPhone, setCustPhone] = useState('(603) 555-0199');
+  const [custAddress, setCustAddress] = useState('Pine Cove Dock 3, Ossipee Lake (Freedom, NH)');
+  const [custPayment, setCustPayment] = useState<'cash_on_delivery' | 'cash_app' | 'venmo' | 'card'>('cash_on_delivery');
+  const [custNotes, setCustNotes] = useState('Leave on dock table. Text when arrived.');
+  const [isDispatching, setIsDispatching] = useState(false);
 
   const [messages, setMessages] = useState<ConciergeMsg[]>([
     {
       id: 'msg-start',
       sender: 'ai',
-      text: "👋 Welcome to the Carroll County AI Food & Concierge Assistant! What are you craving or looking for today?",
+      text: "👋 Welcome to the Carroll County AI Food & Concierge Assistant! What are you craving today? I can suggest top-rated local dishes and immediately dispatch courier Sean Martin to deliver to your door or boat dock!",
       quickOptions: [
         '🍔 Hungry for Food / Lunch & Dinner',
-        '🍕 Best Pizza & Wings in Carroll County',
         '🥩 Giant Steak & Cheese Sub',
+        '🍕 Best Wood-Fired Pizza & Wings',
         '☕ Morning Coffee & Brioche Bakery',
-        '🌾 Gluten-Free & Healthy Options',
-        '🌲 Campfire Firewood & Lake S\'mores Kit'
+        '🌲 Campfire Firewood & S\'mores Kit',
+        '🚀 Dispatch Sean Martin to Deliver'
       ],
       timestamp: 'Just now'
     }
@@ -111,7 +125,26 @@ export default function DedicatedAiConciergePage() {
     setTimeout(() => {
       const lower = text.toLowerCase();
 
-      if (
+      // 1. Delivery Request
+      if (lower.includes('deliver') || lower.includes('sean') || lower.includes('dispatch') || lower.includes('courier')) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🚗 **Sean Martin** is on duty in Carroll County with his all-wheel-drive courier vehicle. Enter your delivery location below to dispatch Sean immediately:",
+            showDeliveryForm: true,
+            quickOptions: [
+              '🍔 Add Steak & Cheese Sub First',
+              '🍕 Add Smoked Pizza First',
+              '🌲 Add Campfire Firewood Bundle'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 2. Food
+      else if (
         lower.includes('food') || 
         lower.includes('eat') || 
         lower.includes('dinner') || 
@@ -127,7 +160,7 @@ export default function DedicatedAiConciergePage() {
         lower.includes('gluten')
       ) {
         const matches = findMatchingDishes(text);
-        let intro = "Here are our top recommended dishes prepared fresh in Carroll County! Tap **Add to Order** to add any dish to your cart:";
+        let intro = "Here are our top recommended dishes prepared fresh in Carroll County! Tap **Add to Order** on any dish to have Sean Martin deliver it:";
         if (lower.includes('pizza')) intro = "🍕 Looking for hot pizza? Here are our top wood-fired & smokehouse pies:";
         if (lower.includes('sub') || lower.includes('steak')) intro = "🥩 Hot and savory subs made fresh on Route 25:";
         if (lower.includes('coffee') || lower.includes('breakfast')) intro = "☕ Single-origin espresso and artisan bakery breakfast items:";
@@ -141,27 +174,47 @@ export default function DedicatedAiConciergePage() {
             text: intro,
             suggestedDishes: matches,
             quickOptions: [
+              '🚀 Have Sean Martin Deliver This',
               '🥩 Show me Steak & Cheese Subs',
               '🍕 Show me Pizzas',
-              '☕ Coffee & Bakery Treats',
-              '🚀 View All Restaurant Menus'
+              '🌲 Campfire Firewood Kit'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
-      } else {
+      } 
+      // 3. Firewood / Lake
+      else if (lower.includes('firewood') || lower.includes('lake') || lower.includes('dock') || lower.includes('airbnb') || lower.includes('smores')) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🌲 Visiting Lake Ossipee or Lake Winnipesaukee? Sean Martin delivers kiln-dried hardwood firewood bundles & deluxe s'mores kits directly to public boat launches, lakeside firepits, and private docks in ~25-35 minutes!",
+            showDeliveryForm: true,
+            quickOptions: [
+              '🔥 Dispatch Firewood + S\'mores to Dock ($41.49)',
+              '🌊 Check Lake Water Temperature',
+              '🍔 Show Food Delivery Menus'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 4. Default
+      else {
         const matches = findMatchingDishes('food');
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "I can help you order food, find local services, or dispatch dockside firewood. Here are a few popular selections:",
+            text: "I can help you order food, get dockside firewood, or dispatch driver Sean Martin. What can I get started for you?",
             suggestedDishes: matches.slice(0, 2),
             quickOptions: [
               '🍔 Show Best Food & Takeout',
-              '🌲 Lake Concierge & Firewood',
-              '🎁 Loyalty Rewards Hub'
+              '🚀 Dispatch Sean Martin to Deliver',
+              '🌲 Lake Concierge & Firewood'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
@@ -207,16 +260,112 @@ export default function DedicatedAiConciergePage() {
       {
         id: `ai-add-${Date.now()}`,
         sender: 'ai',
-        text: `✅ Added **${dish.name}** ($${dish.price.toFixed(2)}) to your cart! You can order more or proceed straight to checkout.`,
-        showCheckoutBtn: true,
+        text: `✅ Added **${dish.name}** ($${dish.price.toFixed(2)}) to your order! Would you like **Sean Martin** to deliver this now?`,
+        showDeliveryForm: true,
         quickOptions: [
           '🍕 Add a Pizza to Order',
           '🥤 Add Beverages & Sides',
-          '🛒 Checkout Now'
+          '🛒 View Shopping Cart'
         ],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ]);
+  };
+
+  // In-Chat Instant Dispatch Sean Martin
+  const handleConfirmDispatchSean = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsDispatching(true);
+
+    const orderItems = cart.length > 0 ? cart.map(c => ({
+      id: c.product.id,
+      name: c.product.name,
+      price: c.product.price,
+      quantity: c.quantity
+    })) : [
+      {
+        id: 'item-sub-pnb',
+        name: 'The Big Mountain Steak & Cheese Sub (12")',
+        price: 17.49,
+        quantity: 1
+      },
+      {
+        id: 'item-fries',
+        name: 'Hand-Cut Seasoned Fries (Basket)',
+        price: 4.99,
+        quantity: 1
+      }
+    ];
+
+    const subtotal = orderItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+    const deliveryFee = 4.99;
+    const tip = 5.00;
+    const total = subtotal + deliveryFee + tip;
+
+    try {
+      const newOrder = await placeDeliveryOrder({
+        customerName: custName,
+        customerPhone: custPhone,
+        deliveryAddress: custAddress,
+        deliveryInstructions: custNotes,
+        serviceType: 'standard_delivery',
+        paymentMethod: custPayment,
+        paymentStatus: custPayment === 'cash_on_delivery' ? 'pay_on_delivery' : 'pending_verification',
+        restaurantName: 'PNB Eats Roadside Grill & Local Kitchens',
+        restaurantAddress: 'Route 25, Carroll County, NH',
+        town: 'Carroll County / Freedom / Ossipee',
+        items: orderItems,
+        subtotal,
+        deliveryFee,
+        tip,
+        total,
+        driver: {
+          name: 'Sean Martin',
+          phone: '(508) 507-0305',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
+          vehicle: 'All-Wheel Drive Courier (AWD)',
+          rating: 5.0,
+          totalDeliveries: 412
+        }
+      });
+
+      sendManualSms(
+        '(508) 507-0305',
+        'Sean Martin',
+        'Oasis AI Dispatch',
+        `🚨 NEW AI BOT DELIVERY: Order #${newOrder.id} for ${custName} (${custPhone}) at ${custAddress}. Total: $${total.toFixed(2)}. Courier Sean assigned!`,
+        'Contractor Emergency Lead Instant Dispatch'
+      );
+
+      clearCart();
+      setIsDispatching(false);
+
+      confetti({
+        particleCount: 80,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+      playDeliveryChime();
+
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `ai-dispatched-${Date.now()}`,
+          sender: 'ai',
+          text: `🎉 **Order Confirmed!** Courier **Sean Martin** has been dispatched for immediate pickup and delivery!`,
+          confirmedDeliveryOrder: newOrder,
+          quickOptions: [
+            '📡 Track Sean on Live Radar',
+            '📞 Call Sean (508-507-0305)',
+            '🍔 Order Something Else'
+          ],
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    } catch (err) {
+      console.error(err);
+      setIsDispatching(false);
+    }
   };
 
   return (
@@ -232,21 +381,31 @@ export default function DedicatedAiConciergePage() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Live 24/7 AI Food Concierge
+                Sean Martin On Duty • AWD Courier
               </div>
               <h1 className="text-xl md:text-2xl font-black italic uppercase tracking-tight text-white mt-1">
-                Carroll County Smart Food & Order Bot
+                Carroll County AI Food & Courier Dispatch
               </h1>
             </div>
           </div>
 
-          <Link
-            href="/cart"
-            className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 self-start sm:self-center shadow-lg shadow-amber-400/20"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>View Cart ({cart.reduce((a, b) => a + b.quantity, 0)})</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <a
+              href="tel:5085070305"
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5"
+            >
+              <Phone className="w-3.5 h-3.5 text-amber-400" />
+              <span>Call Sean</span>
+            </a>
+
+            <Link
+              href="/cart"
+              className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-amber-400/20"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Cart ({cart.reduce((a, b) => a + b.quantity, 0)})</span>
+            </Link>
+          </div>
         </div>
 
         {/* Added Item Toast */}
@@ -264,7 +423,7 @@ export default function DedicatedAiConciergePage() {
 
         {/* Main Chat Stream */}
         <div className="bg-[#0b0b14] border border-white/10 rounded-3xl p-6 space-y-5 min-h-[500px] shadow-2xl">
-          <div className="space-y-4 max-h-[560px] overflow-y-auto pr-2">
+          <div className="space-y-4 max-h-[580px] overflow-y-auto pr-2">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -277,19 +436,138 @@ export default function DedicatedAiConciergePage() {
                       : 'bg-[#141422] text-white border border-white/10 rounded-tl-sm shadow-sm'
                   }`}
                 >
-                  <p>{msg.text}</p>
+                  <p className="whitespace-pre-line">{msg.text}</p>
 
-                  {/* Checkout Button */}
-                  {msg.showCheckoutBtn && (
-                    <div className="mt-4 pt-3 border-t border-white/10">
-                      <Link
-                        href="/cart"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-black text-xs uppercase tracking-wider transition-all shadow-lg"
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        <span>Proceed to Delivery Checkout ({cart.reduce((a, b) => a + b.quantity, 0)} items)</span>
-                      </Link>
+                  {/* Confirmed Delivery Order Tracking Card */}
+                  {msg.confirmedDeliveryOrder && (
+                    <div className="mt-4 p-4 rounded-2xl bg-[#090910] border border-emerald-500/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
+                            <Truck className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-black text-white">Courier: Sean Martin</div>
+                            <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              En Route to Pickup • Est ~25 mins
+                            </div>
+                          </div>
+                        </div>
+
+                        <a 
+                          href="tel:5085070305"
+                          className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                        >
+                          <Phone className="w-3.5 h-3.5 text-amber-400" />
+                          <span>(508) 507-0305</span>
+                        </a>
+                      </div>
+
+                      <div className="p-3 bg-black/40 rounded-xl space-y-1.5 text-xs">
+                        <div className="flex justify-between text-white/70">
+                          <span>Delivery Address:</span>
+                          <span className="text-white font-bold">{msg.confirmedDeliveryOrder.deliveryAddress}</span>
+                        </div>
+                        <div className="flex justify-between text-white/70">
+                          <span>Order Total:</span>
+                          <span className="text-emerald-400 font-black">${msg.confirmedDeliveryOrder.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-1">
+                        <Link
+                          href={`/order/${msg.confirmedDeliveryOrder.id}`}
+                          className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-black font-black text-xs uppercase tracking-wider rounded-xl text-center shadow-lg"
+                        >
+                          📡 View Live GPS Radar Tracking
+                        </Link>
+                        <Link
+                          href="/driver"
+                          className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold"
+                        >
+                          Driver Hub
+                        </Link>
+                      </div>
                     </div>
+                  )}
+
+                  {/* Inline 1-Click Dispatch Sean Martin Form */}
+                  {msg.showDeliveryForm && !msg.confirmedDeliveryOrder && (
+                    <form onSubmit={handleConfirmDispatchSean} className="mt-4 p-4 rounded-2xl bg-[#090910] border border-amber-500/30 space-y-3">
+                      <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                        <Truck className="w-4 h-4" />
+                        <span>Dispatch Courier: Sean Martin (AWD Vehicle)</span>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Your Name</label>
+                            <input
+                              type="text"
+                              required
+                              value={custName}
+                              onChange={(e) => setCustName(e.target.value)}
+                              className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Mobile Phone #</label>
+                            <input
+                              type="tel"
+                              required
+                              value={custPhone}
+                              onChange={(e) => setCustPhone(e.target.value)}
+                              className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Delivery Address / Boat Dock / Cabin</label>
+                          <input
+                            type="text"
+                            required
+                            value={custAddress}
+                            onChange={(e) => setCustAddress(e.target.value)}
+                            className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Payment Method</label>
+                          <select
+                            value={custPayment}
+                            onChange={(e) => setCustPayment(e.target.value as any)}
+                            className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
+                          >
+                            <option value="cash_on_delivery">💵 Cash on Delivery / Hand to Sean</option>
+                            <option value="cash_app">💚 Cash App ($frijj555)</option>
+                            <option value="venmo">💙 Venmo (@Sean-Martin-NH)</option>
+                            <option value="card">💳 Credit Card / Apple Pay</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isDispatching}
+                        className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+                      >
+                        {isDispatching ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Dispatching Sean...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Truck className="w-4 h-4" />
+                            <span>Confirm & Dispatch Sean Now</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
                   )}
 
                   {/* Suggested Food Cards */}
@@ -370,7 +648,7 @@ export default function DedicatedAiConciergePage() {
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="Tell me what you're hungry for (e.g. 'I want a steak & cheese sub', 'pepperoni pizza', 'cold brew')..."
+              placeholder="Tell me what you're hungry for or ask Sean to deliver..."
               className="flex-1 bg-[#131320] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50"
             />
             <button
