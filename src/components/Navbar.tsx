@@ -128,6 +128,18 @@ export default function Navbar() {
               Overview
             </Link>
 
+            {/* About Us / Manifesto */}
+            <Link
+              href="/about"
+              className={`px-3 py-2 rounded-xl text-xs font-bold tracking-wide transition-all ${
+                pathname === '/about' 
+                  ? 'text-amber-400 bg-amber-400/10 shadow-sm' 
+                  : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
+              }`}
+            >
+              About
+            </Link>
+
             {/* 1. Explore Dropdown */}
             <div 
               className="relative"
@@ -137,7 +149,7 @@ export default function Navbar() {
               <button
                 onClick={() => setActiveDropdown(activeDropdown === 'explore' ? null : 'explore')}
                 className={`px-3 py-2 rounded-xl text-xs font-bold tracking-wide transition-all flex items-center gap-1.5 ${
-                  ['/directory', '/towns', '/eats', '/marketplace', '/events'].some(p => pathname?.startsWith(p)) || activeDropdown === 'explore'
+                  ['/directory', '/towns', '/eats', '/marketplace', '/events', '/about'].some(p => pathname?.startsWith(p)) || activeDropdown === 'explore'
                     ? 'text-amber-400 bg-amber-400/10' 
                     : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
                 }`}
@@ -212,6 +224,21 @@ export default function Navbar() {
                       <div className="text-[10px] text-zinc-400">Live concerts, craft fairs & community gatherings</div>
                     </div>
                   </Link>
+
+                  <div className="pt-1 mt-1 border-t border-white/5">
+                    <Link
+                      href="/about"
+                      className="p-2.5 rounded-xl hover:bg-amber-400/10 flex items-start gap-3 transition-colors group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+                        <Flame className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-black text-amber-300 group-hover:text-amber-200 transition-colors">About Us & Manifesto</div>
+                        <div className="text-[10px] text-zinc-400">Believing in the people to break the new age</div>
+                      </div>
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -558,6 +585,22 @@ export default function Navbar() {
 
             {/* Mobile Navigation Links */}
             <div className="grid grid-cols-2 gap-2.5">
+              <Link
+                href="/about"
+                className="col-span-2 p-3.5 rounded-2xl bg-gradient-to-r from-amber-400/20 via-orange-400/15 to-transparent border border-amber-400/40 text-white flex items-center justify-between hover:bg-amber-400/25 transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-400/20 flex items-center justify-center text-amber-300">
+                    <Flame className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-amber-300 block">About Us & Manifesto</span>
+                    <span className="text-[10px] text-zinc-300">Believing in the people to break the new age</span>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-amber-400" />
+              </Link>
+
               <Link
                 href="/directory"
                 className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-white flex flex-col gap-1 hover:bg-white/10 transition-colors"

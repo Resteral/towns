@@ -26,6 +26,14 @@ export default function Footer() {
               <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-amber-400" /> Instant Courier Relay</span>
               <span className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-indigo-400" /> Dual-Channel Reviews</span>
             </div>
+            <div className="pt-2">
+              <Link 
+                href="/about"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                <span>🔥 Read Founder's Manifesto →</span>
+              </Link>
+            </div>
           </div>
 
           {/* Col 2: Business Registration & Ownership */}
@@ -54,9 +62,10 @@ export default function Footer() {
           {/* Col 3: Exploration & Scavenger Trails */}
           <div className="space-y-4">
             <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400 flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5" /> Exploration & Games
+              <Compass className="w-3.5 h-3.5" /> Exploration & Movement
             </h4>
             <ul className="space-y-2.5 text-xs text-zinc-400 font-medium">
+              <li><Link href="/about" className="text-amber-300 font-bold hover:text-amber-200 transition-colors flex items-center gap-1.5"><span>🔥 About Us & Manifesto</span></Link></li>
               <li><Link href="/society" className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1.5"><span>🏛️ Sovereign Society & Vault</span></Link></li>
               <li><Link href="/store-hunting" className="text-pink-400 font-bold hover:text-pink-300 transition-colors">🛍️ Store-to-Store Circuits</Link></li>
               <li><Link href="/tourist-hunts" className="hover:text-white transition-colors">🧭 Tourist Scavenger Hunts</Link></li>
