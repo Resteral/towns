@@ -40,9 +40,10 @@ import { useNfcStore } from '@/lib/store';
 
 export default function SpreadTheWordPage() {
   const { towns, activeTown, currentUser } = useNfcStore();
-  const [activeTab, setActiveTab] = useState<'flyers' | 'social' | 'qr_mobile' | 'pitches' | 'press'>('flyers');
+  const [activeTab, setActiveTab] = useState<'flyers' | 'banners' | 'social' | 'qr_mobile' | 'pitches' | 'press'>('flyers');
   const [selectedTown, setSelectedTown] = useState<string>(activeTown?.fullName || 'Carroll County, NH');
   const [flyerType, setFlyerType] = useState<'general' | 'eats' | 'contractors' | 'scavenger'>('general');
+  const [bannerStyle, setBannerStyle] = useState<'roadside_vinyl' | 'vertical_stand' | 'window_marquee'>('roadside_vinyl');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState('https://townraise.org');
@@ -169,6 +170,19 @@ export default function SpreadTheWordPage() {
 
           <button
             type="button"
+            onClick={() => setActiveTab('banners')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeTab === 'banners'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-black shadow-lg shadow-amber-500/25 scale-105'
+                : 'bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 border border-white/10'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>2. Storefront & Vinyl Banners</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('social')}
             className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
               activeTab === 'social'
@@ -177,7 +191,7 @@ export default function SpreadTheWordPage() {
             }`}
           >
             <Share2 className="w-4 h-4" />
-            <span>2. Social & Town Group Blasts</span>
+            <span>3. Social & Group Blasts</span>
           </button>
 
           <button
@@ -190,7 +204,7 @@ export default function SpreadTheWordPage() {
             }`}
           >
             <QrCode className="w-4 h-4" />
-            <span>3. Mobile QR Scanner Mode</span>
+            <span>4. Mobile QR Scanner</span>
           </button>
 
           <button
@@ -203,7 +217,7 @@ export default function SpreadTheWordPage() {
             }`}
           >
             <Volume2 className="w-4 h-4" />
-            <span>4. 1-Minute Pitch Scripts</span>
+            <span>5. 1-Minute Pitch Scripts</span>
           </button>
 
           <button
@@ -216,7 +230,7 @@ export default function SpreadTheWordPage() {
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>5. Town Hall & Press Notice</span>
+            <span>6. Press & Town Notice</span>
           </button>
         </div>
 
@@ -383,7 +397,198 @@ export default function SpreadTheWordPage() {
         )}
 
         {/* ======================================================== */}
-        {/* TAB 2: SOCIAL MEDIA & COMMUNITY GROUP BLASTS */}
+        {/* TAB 2: PRINTABLE STOREFRONT & VINYL BANNERS */}
+        {/* ======================================================== */}
+        {activeTab === 'banners' && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            {/* Banner Controls Bar */}
+            <div className="p-6 rounded-3xl bg-[#0b0b12] border border-amber-500/20 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <div>
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 block mb-1">
+                  1. Select Target Town / Area
+                </label>
+                <select
+                  value={selectedTown}
+                  onChange={(e) => setSelectedTown(e.target.value)}
+                  className="w-full bg-[#12121c] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                >
+                  {towns.map((t) => (
+                    <option key={t.id} value={t.fullName}>
+                      {t.fullName}
+                    </option>
+                  ))}
+                  <option value="Carroll County, NH">Carroll County, NH (All Towns)</option>
+                  <option value="Western Maine & Lakes">Western Maine & Lakes Region</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 block mb-1">
+                  2. Banner Ratio & Style
+                </label>
+                <select
+                  value={bannerStyle}
+                  onChange={(e) => setBannerStyle(e.target.value as any)}
+                  className="w-full bg-[#12121c] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                >
+                  <option value="roadside_vinyl">Roadside Vinyl Banner (6ft × 2ft Wide)</option>
+                  <option value="vertical_stand">Storefront Pull-Up Stand (3ft × 6ft Tall)</option>
+                  <option value="window_marquee">Storefront Window Marquee (4ft × 2ft)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 pt-4 md:pt-0">
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 hover:scale-105 transition-all cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print / Save Banner PDF</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Banner Canvas Container */}
+            <div className="flex justify-center overflow-x-auto p-4 bg-black/40 rounded-3xl border border-white/10">
+              
+              {/* STYLE A: ROADSIDE 6x2 VINYL BANNER */}
+              {bannerStyle === 'roadside_vinyl' && (
+                <div 
+                  id="printable-banner"
+                  className="w-full max-w-5xl bg-[#09090e] border-4 border-amber-400 rounded-2xl p-6 sm:p-10 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden"
+                  style={{ minHeight: '320px' }}
+                >
+                  {/* Neon Banner Edge Stripes */}
+                  <div className="absolute top-0 left-0 bottom-0 w-3 bg-gradient-to-b from-amber-400 via-orange-500 to-amber-300" />
+                  <div className="absolute top-0 right-0 bottom-0 w-3 bg-gradient-to-b from-amber-400 via-orange-500 to-amber-300" />
+
+                  {/* Left Column: Huge Headline & Messaging */}
+                  <div className="space-y-4 pl-4 flex-1">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400 text-black font-mono font-black text-xs uppercase tracking-widest rounded-lg">
+                      <Truck className="w-4 h-4" />
+                      <span>4×4 COURIER & LOCAL FOOD DELIVERY DISPATCH</span>
+                    </div>
+
+                    <h2 className="text-3xl sm:text-5xl font-black italic tracking-tighter uppercase leading-none text-white">
+                      ORDER LOCAL. <br />
+                      <span className="text-amber-400">TOWNRAISE {selectedTown.toUpperCase()}</span>
+                    </h2>
+
+                    <p className="text-xs sm:text-sm font-bold text-slate-300 uppercase tracking-wider max-w-xl">
+                      0% Commission Local Food, Smoke Shop, Artisan Woodcraft & Hardware Delivery straight to your door.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-mono">
+                      <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 flex items-center gap-2">
+                        <Phone className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Hotline / Sean Martin: <strong className="text-amber-400">(603) 986-7104</strong></span>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 flex items-center gap-2">
+                        <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                        <span className="text-white font-bold">{shareUrl.replace('https://', '')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Massive High-Contrast QR Code */}
+                  <div className="flex flex-col items-center justify-center p-5 bg-white text-black rounded-2xl shadow-2xl shrink-0 border-2 border-amber-400 text-center space-y-2">
+                    {qrCodeDataUrl && (
+                      <img
+                        src={qrCodeDataUrl}
+                        alt="Townraise QR Code"
+                        className="w-40 h-40 object-contain rounded-lg"
+                      />
+                    )}
+                    <span className="font-mono font-black text-[11px] uppercase tracking-widest text-black">
+                      SCAN TO ORDER & EXPLORE
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* STYLE B: VERTICAL STOREFRONT PULL-UP STAND (3x6) */}
+              {bannerStyle === 'vertical_stand' && (
+                <div 
+                  id="printable-banner"
+                  className="w-full max-w-md bg-[#09090e] border-4 border-indigo-500 rounded-3xl p-8 text-white shadow-2xl space-y-6 text-center relative overflow-hidden"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-3xl font-black mx-auto shadow-xl">
+                    ⚡
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono font-bold uppercase tracking-widest">
+                      SOVEREIGN COMMERCE NODE
+                    </span>
+                    <h2 className="text-3xl font-black italic uppercase tracking-tight text-white leading-tight">
+                      TAP PHONE HERE <br />
+                      <span className="text-amber-400">INSTANT LOCAL ACCESS</span>
+                    </h2>
+                    <p className="text-xs text-zinc-300 font-mono">
+                      Serving {selectedTown} • 5★ Google Review Boosters • Restaurant Menus • Scavenger Hunts
+                    </p>
+                  </div>
+
+                  <div className="p-6 bg-white rounded-2xl text-black inline-block shadow-2xl border-2 border-amber-400">
+                    {qrCodeDataUrl && (
+                      <img
+                        src={qrCodeDataUrl}
+                        alt="QR Code"
+                        className="w-48 h-48 object-contain mx-auto"
+                      />
+                    )}
+                    <p className="font-mono font-black text-xs uppercase tracking-wider mt-2">
+                      Scan with Phone Camera
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs font-mono space-y-1">
+                    <p className="text-amber-400 font-bold">Sean Martin Lead Vanguard Dispatch</p>
+                    <p className="text-zinc-400">Phone: (603) 986-7104 • Web: {shareUrl.replace('https://', '')}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* STYLE C: STOREFRONT WINDOW MARQUEE (4x2) */}
+              {bannerStyle === 'window_marquee' && (
+                <div 
+                  id="printable-banner"
+                  className="w-full max-w-4xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-400 text-black p-8 sm:p-12 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-6 border-4 border-black"
+                >
+                  <div className="space-y-3 flex-1">
+                    <span className="px-3 py-1 bg-black text-amber-400 font-mono font-black text-xs uppercase tracking-widest rounded-md">
+                      VERIFIED INDEPENDENT MERCHANT
+                    </span>
+                    <h2 className="text-3xl sm:text-5xl font-black italic uppercase tracking-tighter leading-none text-black">
+                      SUPPORT LOCAL {selectedTown.toUpperCase()}
+                    </h2>
+                    <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-black/90">
+                      0% Commission • Delivered by Local Mountain Drivers • Powered by Townraise
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-black text-white rounded-2xl flex flex-col items-center text-center shadow-xl shrink-0 space-y-2">
+                    {qrCodeDataUrl && (
+                      <img
+                        src={qrCodeDataUrl}
+                        alt="QR Code"
+                        className="w-32 h-32 bg-white p-1.5 rounded-lg"
+                      />
+                    )}
+                    <span className="font-mono font-black text-[10px] text-amber-400 uppercase">
+                      SCAN FOR MENU & PASS
+                    </span>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 3: SOCIAL MEDIA & COMMUNITY GROUP BLASTS */}
         {/* ======================================================== */}
         {activeTab === 'social' && (
           <div className="space-y-6 animate-in fade-in duration-300 max-w-4xl mx-auto">

@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AiOrderConciergeWidget from "@/components/AiOrderConciergeWidget";
 import PwaInstallPrompt from "@/components/PwaInstallPrompt";
+import GlobalAnnouncementBanner from "@/components/GlobalAnnouncementBanner";
 
 export const viewport: Viewport = {
   themeColor: "#070709",
@@ -54,6 +55,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="min-h-screen bg-[#070709] text-slate-100 selection:bg-amber-400 selection:text-black flex flex-col justify-between">
+        <GlobalAnnouncementBanner />
         <Navbar />
         <main className="flex-1">
           {children}
