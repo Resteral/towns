@@ -79,8 +79,8 @@ export default function DedicatedAiConciergePage() {
         '📞 Call Store & Dispatch Pickup',
         '🍔 Hungry for Food / Order Lunch & Dinner',
         '🥩 PNB Eats: (603) 539-7440',
-        '🍕 Pizza Barn: (603) 539-4444',
-        '🛠️ Ace Hardware: (603) 539-6611',
+        '🍕 Pizza Barn: (603) 539-2244',
+        '🛠️ Ace Hardware: (603) 539-2666',
         '🌲 Campfire Firewood & S\'mores Kit'
       ],
       timestamp: 'Just now'
@@ -171,8 +171,8 @@ export default function DedicatedAiConciergePage() {
             showCallAheadForm: true,
             quickOptions: [
               '🍔 PNB Eats: (603) 539-7440',
-              '🍕 Pizza Barn: (603) 539-4444',
-              '🛠️ Ace Hardware: (603) 539-6611',
+              '🍕 Pizza Barn: (603) 539-2244',
+              '🛠️ Ace Hardware: (603) 539-2666',
               '☕ Oasis Roastery: (508) 507-0305'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
