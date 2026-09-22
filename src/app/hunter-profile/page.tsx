@@ -42,6 +42,8 @@ import {
   Coins
 } from 'lucide-react';
 
+import LocalStatsHUD from '@/components/LocalStatsHUD';
+
 export default function HunterProfilePage() {
   const { 
     currentUser, 
@@ -57,7 +59,7 @@ export default function HunterProfilePage() {
     playDeliveryChime
   } = useNfcStore();
 
-  const [activeTab, setActiveTab] = useState<'perks' | 'rewards_vault' | 'stamps' | 'pass'>('perks');
+  const [activeTab, setActiveTab] = useState<'local_stats' | 'perks' | 'rewards_vault' | 'stamps' | 'pass'>('local_stats');
   const [copiedVoucherCode, setCopiedVoucherCode] = useState<string | null>(null);
   const [copiedProfileId, setCopiedProfileId] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -415,6 +417,18 @@ export default function HunterProfilePage() {
         {/* Tab Navigation Controls */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/5 scrollbar-none">
           <button
+            onClick={() => setActiveTab('local_stats')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+              activeTab === 'local_stats'
+                ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-400 text-black shadow-lg shadow-emerald-500/20'
+                : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Zap className="w-4 h-4" />
+            <span>📊 Live Local Stats & Telemetry</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('perks')}
             className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === 'perks'
@@ -462,6 +476,13 @@ export default function HunterProfilePage() {
             <span>Digital Smart RFID Pass</span>
           </button>
         </div>
+
+        {/* TAB 0: LIVE LOCAL STATS & TELEMETRY */}
+        {activeTab === 'local_stats' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <LocalStatsHUD />
+          </div>
+        )}
 
         {/* TAB 1: UNLOCKED PERKS & VOUCHERS WALLET */}
         {activeTab === 'perks' && (

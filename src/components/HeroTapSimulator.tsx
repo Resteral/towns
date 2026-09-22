@@ -163,24 +163,31 @@ export default function HeroTapSimulator() {
                   </div>
 
                   {/* Live Stats Row */}
-                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/10">
-                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
-                      <span className="text-[9px] font-mono text-zinc-400 uppercase block">Reward Points</span>
-                      <span className="text-sm font-black font-mono text-amber-400">
-                        {loyaltyWallet?.userPoints || 0} PTS
+                  <div className="grid grid-cols-4 gap-1.5 pt-3 border-t border-white/10">
+                    <div className="p-2 rounded-xl bg-black/40 border border-white/5 text-center">
+                      <span className="text-[8px] font-mono text-zinc-400 uppercase block">Points</span>
+                      <span className="text-xs font-black font-mono text-amber-400">
+                        {loyaltyWallet?.userPoints || 0}
                       </span>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
-                      <span className="text-[9px] font-mono text-zinc-400 uppercase block">Card Tier</span>
-                      <span className="text-xs font-black text-emerald-400 truncate block">
+                    <div className="p-2 rounded-xl bg-black/40 border border-white/5 text-center">
+                      <span className="text-[8px] font-mono text-zinc-400 uppercase block">Tier</span>
+                      <span className="text-xs font-black text-purple-300 truncate block">
                         Lv.{cardProgression.currentLevel}
                       </span>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
-                      <span className="text-[9px] font-mono text-zinc-400 uppercase block">Multiplier</span>
-                      <span className="text-sm font-black font-mono text-indigo-300">
+                    <div className="p-2 rounded-xl bg-black/40 border border-white/5 text-center">
+                      <span className="text-[8px] font-mono text-zinc-400 uppercase block">Taps</span>
+                      <span className="text-xs font-black font-mono text-cyan-300">
+                        {(storeHunterStamps?.length || 0) + (passportStamps?.length || 0)}
+                      </span>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-black/40 border border-white/5 text-center">
+                      <span className="text-[8px] font-mono text-zinc-400 uppercase block">Multi</span>
+                      <span className="text-xs font-black font-mono text-indigo-300">
                         {cardProgression.multiplier}x
                       </span>
                     </div>
