@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, CreditCard, BarChart3, Truck, 
-  Phone, ShoppingBag, Radio, ShieldCheck, ArrowLeft, Cpu, Compass, Crown, Store 
+  Phone, ShoppingBag, Radio, ShieldCheck, ArrowLeft, Cpu, Compass, Crown, Store, Megaphone
 } from 'lucide-react';
 import { useNfcStore } from '@/lib/store';
 
@@ -21,6 +21,7 @@ export default function DashboardLayout({
   const navItems = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { href: '/dashboard/admin', label: 'Admin & NFC Menu Sales', icon: Crown, badge: '👑 Master' },
+    { href: '/dashboard/growth-kit', label: 'Growth Kit & Promos', icon: Megaphone, badge: '🚀 New' },
     { href: '/dashboard/storefront', label: 'Websites & Menus', icon: Store },
     { href: '/dashboard/town-command', label: 'Town Vanguard Command', icon: Compass },
     { href: '/dashboard/programmer', label: 'NFC Card Programmer', icon: Cpu },

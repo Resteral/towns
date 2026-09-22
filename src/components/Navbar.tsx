@@ -45,6 +45,30 @@ export default function Navbar() {
             Overview
           </Link>
           <Link
+            href="/directory"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/directory') ? 'text-amber-400' : 'text-white/80 hover:text-white'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-white/5 text-amber-300 border border-white/10 text-[9px] font-bold">Directory 🏢</span>
+          </Link>
+          <Link
+            href="/rewards"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/rewards') ? 'text-amber-400' : 'text-amber-300/90 hover:text-amber-200'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/30 text-[9px] font-bold">Rewards 🎁</span>
+          </Link>
+          <Link
+            href="/affiliate"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/affiliate') ? 'text-emerald-400' : 'text-emerald-400/90 hover:text-emerald-300'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold">Affiliate $50 💰</span>
+          </Link>
+          <Link
             href="/eats"
             className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
               pathname?.startsWith('/eats') ? 'text-amber-400' : 'text-amber-400/90 hover:text-amber-300'

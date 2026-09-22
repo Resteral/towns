@@ -8,14 +8,16 @@ import {
   MerchantStorefront, StorefrontProduct, DriverTelemetry, ProofOfDelivery, DriverShiftSummary,
   BeforeAfterShowcase, WorkRequest, ContractorQuote,
   NfcMenuProduct, NfcHardwareOrder, NfcFormFactor,
-  ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory
+  ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory,
+  DirectoryListing, DirectoryCategory, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
   INITIAL_FEEDBACKS, INITIAL_SELLERS, INITIAL_SHOUTOUTS, INITIAL_TOWNS,
   INITIAL_BEFORE_AFTER_SHOWCASES, INITIAL_WORK_REQUESTS,
   INITIAL_NFC_MENU_PRODUCTS, INITIAL_NFC_HARDWARE_ORDERS,
-  INITIAL_MANAGED_SERVICES, INITIAL_CLIENT_SUBSCRIPTIONS, INITIAL_AUTOMATION_BOTS
+  INITIAL_MANAGED_SERVICES, INITIAL_CLIENT_SUBSCRIPTIONS, INITIAL_AUTOMATION_BOTS,
+  INITIAL_DIRECTORY_LISTINGS, INITIAL_AFFILIATES, INITIAL_LOYALTY_REWARDS, DEFAULT_USER_LOYALTY_WALLET
 } from './mock-data';
 
 const STORAGE_KEYS = {
@@ -41,6 +43,10 @@ const STORAGE_KEYS = {
   MANAGED_SERVICES: 'pulpulse_managed_services_v1',
   CLIENT_SUBSCRIPTIONS: 'pulpulse_client_subscriptions_v1',
   AUTOMATION_BOTS: 'pulpulse_automation_bots_v1',
+  DIRECTORY_LISTINGS: 'pulpulse_directory_listings_v1',
+  AFFILIATES: 'pulpulse_affiliates_v1',
+  LOYALTY_REWARDS: 'pulpulse_loyalty_rewards_v1',
+  LOYALTY_WALLET: 'pulpulse_loyalty_wallet_v1',
 };
 
 const DEFAULT_DRIVER_SHIFT: DriverShiftSummary = {
@@ -1806,6 +1812,10 @@ export function useNfcStore() {
   const [managedServices, setManagedServices] = useState<ManagedServicePackage[]>(INITIAL_MANAGED_SERVICES);
   const [clientSubscriptions, setClientSubscriptions] = useState<ClientServiceSubscription[]>(INITIAL_CLIENT_SUBSCRIPTIONS);
   const [automationBots, setAutomationBots] = useState<ServiceAutomationBot[]>(INITIAL_AUTOMATION_BOTS);
+  const [directoryListings, setDirectoryListings] = useState<DirectoryListing[]>(INITIAL_DIRECTORY_LISTINGS);
+  const [affiliates, setAffiliates] = useState<AffiliateAmbassador[]>(INITIAL_AFFILIATES);
+  const [loyaltyRewards, setLoyaltyRewards] = useState<TownLoyaltyReward[]>(INITIAL_LOYALTY_REWARDS);
+  const [loyaltyWallet, setLoyaltyWallet] = useState<UserLoyaltyWallet>(DEFAULT_USER_LOYALTY_WALLET);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -1893,7 +1903,7 @@ export function useNfcStore() {
       }
 
       const storedRequests = localStorage.getItem(STORAGE_KEYS.WORK_REQUESTS);
-            const storedNfcProducts = localStorage.getItem(STORAGE_KEYS.NFC_MENU_PRODUCTS);
+      const storedNfcProducts = localStorage.getItem(STORAGE_KEYS.NFC_MENU_PRODUCTS);
       if (storedNfcProducts) {
         const parsed: NfcMenuProduct[] = JSON.parse(storedNfcProducts);
         const existingIds = new Set(parsed.map(p => p.id));
@@ -1904,7 +1914,7 @@ export function useNfcStore() {
       }
 
       const storedHardwareOrders = localStorage.getItem(STORAGE_KEYS.NFC_HARDWARE_ORDERS);
-            const storedServices = localStorage.getItem(STORAGE_KEYS.MANAGED_SERVICES);
+      const storedServices = localStorage.getItem(STORAGE_KEYS.MANAGED_SERVICES);
       if (storedServices) {
         const parsed: ManagedServicePackage[] = JSON.parse(storedServices);
         const existingIds = new Set(parsed.map(s => s.id));
@@ -1929,6 +1939,40 @@ export function useNfcStore() {
         setAutomationBots([...parsed, ...INITIAL_AUTOMATION_BOTS.filter(b => !existingIds.has(b.id))]);
       } else {
         setAutomationBots(INITIAL_AUTOMATION_BOTS);
+      }
+
+      const storedDirectory = localStorage.getItem(STORAGE_KEYS.DIRECTORY_LISTINGS);
+      if (storedDirectory) {
+        const parsed: DirectoryListing[] = JSON.parse(storedDirectory);
+        const existingIds = new Set(parsed.map(d => d.id));
+        setDirectoryListings([...parsed, ...INITIAL_DIRECTORY_LISTINGS.filter(d => !existingIds.has(d.id))]);
+      } else {
+        setDirectoryListings(INITIAL_DIRECTORY_LISTINGS);
+      }
+
+      const storedAffiliates = localStorage.getItem(STORAGE_KEYS.AFFILIATES);
+      if (storedAffiliates) {
+        const parsed: AffiliateAmbassador[] = JSON.parse(storedAffiliates);
+        const existingIds = new Set(parsed.map(a => a.id));
+        setAffiliates([...parsed, ...INITIAL_AFFILIATES.filter(a => !existingIds.has(a.id))]);
+      } else {
+        setAffiliates(INITIAL_AFFILIATES);
+      }
+
+      const storedRewards = localStorage.getItem(STORAGE_KEYS.LOYALTY_REWARDS);
+      if (storedRewards) {
+        const parsed: TownLoyaltyReward[] = JSON.parse(storedRewards);
+        const existingIds = new Set(parsed.map(r => r.id));
+        setLoyaltyRewards([...parsed, ...INITIAL_LOYALTY_REWARDS.filter(r => !existingIds.has(r.id))]);
+      } else {
+        setLoyaltyRewards(INITIAL_LOYALTY_REWARDS);
+      }
+
+      const storedWallet = localStorage.getItem(STORAGE_KEYS.LOYALTY_WALLET);
+      if (storedWallet) {
+        setLoyaltyWallet(JSON.parse(storedWallet));
+      } else {
+        setLoyaltyWallet(DEFAULT_USER_LOYALTY_WALLET);
       }
 
       if (storedHardwareOrders) {
@@ -2907,6 +2951,132 @@ export function useNfcStore() {
     playDeliveryChime();
   };
 
+  const claimDirectoryListing = (id: string, claimant: { ownerName: string; email: string; phone: string }) => {
+    setDirectoryListings(prev => {
+      const next = prev.map(d => {
+        if (d.id === id) {
+          return {
+            ...d,
+            isClaimed: true,
+            claimedBy: claimant.ownerName,
+            email: claimant.email,
+            phone: claimant.phone,
+            verifiedBadge: true,
+          };
+        }
+        return d;
+      });
+      localStorage.setItem(STORAGE_KEYS.DIRECTORY_LISTINGS, JSON.stringify(next));
+      return next;
+    });
+
+    // Award bonus loyalty points for claiming
+    awardLoyaltyPoints(100, `Claimed business listing: ${claimant.ownerName}`);
+    playDeliveryChime();
+  };
+
+  const addDirectoryListing = (listing: Omit<DirectoryListing, 'id' | 'slug' | 'viewsCount' | 'tapsCount'>) => {
+    const slug = listing.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const newListing: DirectoryListing = {
+      ...listing,
+      id: `dir-${Date.now().toString(36)}`,
+      slug,
+      viewsCount: 1,
+      tapsCount: 0,
+    };
+    setDirectoryListings(prev => {
+      const next = [newListing, ...prev];
+      localStorage.setItem(STORAGE_KEYS.DIRECTORY_LISTINGS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+    return newListing;
+  };
+
+  const registerAffiliate = (ambassador: Omit<AffiliateAmbassador, 'id' | 'code' | 'referralsCount' | 'earnedBountyTotal' | 'pendingPayout' | 'joinedDate' | 'status'>) => {
+    const code = `${ambassador.name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5)}${Math.floor(10 + Math.random() * 90)}`;
+    const newAffiliate: AffiliateAmbassador = {
+      ...ambassador,
+      id: `aff-${Date.now().toString(36)}`,
+      code,
+      referralsCount: 0,
+      earnedBountyTotal: 0,
+      pendingPayout: 0,
+      joinedDate: new Date().toISOString().split('T')[0],
+      status: 'active',
+    };
+    setAffiliates(prev => {
+      const next = [newAffiliate, ...prev];
+      localStorage.setItem(STORAGE_KEYS.AFFILIATES, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+    return newAffiliate;
+  };
+
+  const redeemLoyaltyReward = (rewardId: string): boolean => {
+    const reward = loyaltyRewards.find(r => r.id === rewardId);
+    if (!reward || loyaltyWallet.userPoints < reward.pointsCost) return false;
+
+    const redeemCode = `REWARD-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const newWallet: UserLoyaltyWallet = {
+      ...loyaltyWallet,
+      userPoints: loyaltyWallet.userPoints - reward.pointsCost,
+      redeemedRewards: [
+        {
+          rewardId,
+          rewardTitle: reward.title,
+          code: redeemCode,
+          redeemedAt: new Date().toISOString().split('T')[0],
+        },
+        ...loyaltyWallet.redeemedRewards,
+      ]
+    };
+
+    setLoyaltyWallet(newWallet);
+    localStorage.setItem(STORAGE_KEYS.LOYALTY_WALLET, JSON.stringify(newWallet));
+
+    // Increment reward claim count
+    setLoyaltyRewards(prev => {
+      const next = prev.map(r => r.id === rewardId ? { ...r, claimedCount: r.claimedCount + 1 } : r);
+      localStorage.setItem(STORAGE_KEYS.LOYALTY_REWARDS, JSON.stringify(next));
+      return next;
+    });
+
+    playDeliveryChime();
+    return true;
+  };
+
+  const awardLoyaltyPoints = (amount: number, reason?: string) => {
+    setLoyaltyWallet(prev => {
+      const nextPoints = prev.userPoints + amount;
+      const nextTaps = prev.lifetimeTaps + 1;
+      let nextLevel = prev.level;
+      let tierNum = prev.tierNumber;
+
+      if (nextPoints >= 1000) {
+        nextLevel = 'Carroll County Legend 👑';
+        tierNum = 4;
+      } else if (nextPoints >= 500) {
+        nextLevel = 'Town Vanguard Master ⚡';
+        tierNum = 3;
+      } else if (nextPoints >= 200) {
+        nextLevel = 'Town Vanguard Insider ⭐';
+        tierNum = 2;
+      }
+
+      const nextWallet: UserLoyaltyWallet = {
+        ...prev,
+        userPoints: nextPoints,
+        lifetimeTaps: nextTaps,
+        level: nextLevel,
+        tierNumber: tierNum,
+      };
+      localStorage.setItem(STORAGE_KEYS.LOYALTY_WALLET, JSON.stringify(nextWallet));
+      return nextWallet;
+    });
+  };
+
   return {
     towns,
     activeTown,
@@ -2933,6 +3103,10 @@ export function useNfcStore() {
     managedServices,
     clientSubscriptions,
     automationBots,
+    directoryListings,
+    affiliates,
+    loyaltyRewards,
+    loyaltyWallet,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -2986,5 +3160,10 @@ export function useNfcStore() {
     updateClientSubscriptionStatus,
     toggleAutomationBot,
     triggerAutomationBotManual,
+    claimDirectoryListing,
+    addDirectoryListing,
+    registerAffiliate,
+    redeemLoyaltyReward,
+    awardLoyaltyPoints,
   };
 }

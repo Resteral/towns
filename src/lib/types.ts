@@ -524,4 +524,83 @@ export interface ServiceAutomationBot {
   iconEmoji: string;
 }
 
+export type DirectoryCategory = 
+  | 'dining_bars' 
+  | 'trades_contractors' 
+  | 'lodging_cabins' 
+  | 'auto_marine' 
+  | 'health_wellness' 
+  | 'retail_artisan' 
+  | 'professional_services';
+
+export interface DirectoryListing {
+  id: string;
+  name: string;
+  slug: string;
+  category: DirectoryCategory;
+  categoryLabel: string;
+  town: string;
+  state: string;
+  address: string;
+  phone: string;
+  email?: string;
+  website?: string;
+  googleRating: number;
+  reviewCount: number;
+  isClaimed: boolean;
+  claimedBy?: string;
+  verifiedBadge: boolean;
+  nfcEnabled: boolean;
+  offersDelivery: boolean;
+  coverImage: string;
+  description: string;
+  featuredDeal?: string;
+  viewsCount: number;
+  tapsCount: number;
+  nfcCardId?: string;
+  tags: string[];
+}
+
+export interface AffiliateAmbassador {
+  id: string;
+  name: string;
+  code: string;
+  email: string;
+  phone: string;
+  town: string;
+  referralsCount: number;
+  earnedBountyTotal: number;
+  pendingPayout: number;
+  joinedDate: string;
+  status: 'active' | 'pending_review';
+}
+
+export interface TownLoyaltyReward {
+  id: string;
+  title: string;
+  businessName: string;
+  town: string;
+  pointsCost: number;
+  valueText: string;
+  description: string;
+  iconEmoji: string;
+  claimedCount: number;
+  category: 'food' | 'discount' | 'perk' | 'vip';
+}
+
+export interface UserLoyaltyWallet {
+  userPoints: number;
+  lifetimeTaps: number;
+  reviewsWritten: number;
+  level: string;
+  tierNumber: number;
+  redeemedRewards: {
+    rewardId: string;
+    rewardTitle: string;
+    code: string;
+    redeemedAt: string;
+  }[];
+}
+
+
 
