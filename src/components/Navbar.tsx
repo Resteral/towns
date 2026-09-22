@@ -69,6 +69,14 @@ export default function Navbar() {
             <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[9px] font-bold">🛠️ Trades & Work</span>
           </Link>
           <Link
+            href="/services"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/services') ? 'text-amber-400' : 'text-amber-300 hover:text-amber-200'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 text-[9px] font-bold">⚡ Services</span>
+          </Link>
+          <Link
             href="/dashboard/admin"
             className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
               pathname?.startsWith('/dashboard/admin') ? 'text-amber-400' : 'text-amber-400 hover:text-amber-300'

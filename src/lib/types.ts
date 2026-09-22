@@ -463,3 +463,65 @@ export interface NfcHardwareOrder {
   paidStatus: 'paid' | 'pay_on_delivery';
 }
 
+export type ServiceCategory = 
+  | 'reputation_reviews' 
+  | 'digital_menus_ordering' 
+  | 'airbnb_concierge' 
+  | 'courier_errand_retainer' 
+  | 'contractor_marketing' 
+  | 'hardware_management' 
+  | 'custom_automation';
+
+export interface ManagedServicePackage {
+  id: string;
+  name: string;
+  slug: string;
+  tagline: string;
+  description: string;
+  category: ServiceCategory;
+  monthlyPrice: number;
+  setupFee?: number;
+  badge?: string;
+  popular?: boolean;
+  includedDeliverables: string[];
+  automationsIncluded: string[];
+  recommendedFor: string;
+  iconEmoji: string;
+  accentColor: string;
+  activeSubscribersCount: number;
+  isPublished: boolean;
+  contractTerm: 'monthly' | 'quarterly' | 'annual';
+}
+
+export interface ClientServiceSubscription {
+  id: string;
+  clientBusinessName: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail?: string;
+  town: string;
+  packageId: string;
+  packageName: string;
+  monthlyFee: number;
+  status: 'active' | 'trial' | 'paused' | 'cancelled';
+  nextBillingDate: string;
+  startedDate: string;
+  automationsActive: boolean;
+  notes?: string;
+  totalRevenueGenerated: number;
+}
+
+export interface ServiceAutomationBot {
+  id: string;
+  title: string;
+  category: ServiceCategory;
+  description: string;
+  triggerEvent: string;
+  actionOutput: string;
+  isActive: boolean;
+  executionCount: number;
+  lastExecutedAt?: string;
+  iconEmoji: string;
+}
+
+

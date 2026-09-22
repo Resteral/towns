@@ -1,7 +1,8 @@
 import { 
   ReviewProduct, NfcCardConfig, TapLog, PrivateFeedback, 
   SellerProfile, ShoutoutPost, TownNode, BeforeAfterShowcase, WorkRequest,
-  NfcMenuProduct, NfcHardwareOrder
+  NfcMenuProduct, NfcHardwareOrder,
+  ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory
 } from './types';
 
 export const INITIAL_TOWNS: TownNode[] = [
@@ -884,3 +885,327 @@ export const INITIAL_NFC_HARDWARE_ORDERS: NfcHardwareOrder[] = [
 
 
 
+
+
+export const INITIAL_MANAGED_SERVICES: ManagedServicePackage[] = [
+  {
+    id: 'srv-reputation-engine',
+    name: 'Google 5-Star Reputation Engine & Feedback Shield',
+    slug: 'reputation-feedback-shield',
+    tagline: 'Automated SMS Review Requests & Private 1-Star Deflection System',
+    description: 'Transform every customer visit into a verified 5-star Google review. Automatically dispatches review requests after dining/delivery, intercepts negative ratings privately to resolve issues before they hit Google, and sends real-time SMS alerts to owners.',
+    category: 'reputation_reviews',
+    monthlyPrice: 99.00,
+    setupFee: 49.00,
+    badge: '★ Most Popular',
+    popular: true,
+    includedDeliverables: [
+      '2 Custom NFC Review Tap Cards & Counter Display',
+      'Automated 5-Star Filter & Negative Review Shield',
+      'Instant SMS Alert Relay for Unhappy Diners',
+      'Monthly Google Ranking & Reputation Growth Report',
+      'Google Maps & Places SEO Optimization'
+    ],
+    automationsIncluded: [
+      'Auto-Review SMS Dispatcher (15m after visit)',
+      'Negative Rating Intercept & Owner SMS Alert',
+      'Monthly Review Metric Aggregator'
+    ],
+    recommendedFor: 'Restaurants, Diners, Cafes, Auto Repair & Salons',
+    iconEmoji: '⭐',
+    accentColor: '#f59e0b',
+    activeSubscribersCount: 14,
+    isPublished: true,
+    contractTerm: 'monthly'
+  },
+  {
+    id: 'srv-digital-menu-ordering',
+    name: 'Turnkey Digital Menu & Smart Table Ordering System',
+    slug: 'turnkey-digital-menu-ordering',
+    tagline: 'Custom NFC Table Stands, Mobile Phone Menus & 0% Commission Ordering',
+    description: 'Complete hands-off digital menu management. We design, encode, and print NFC table stands, keep food prices & seasonal specials updated, enable instant mobile ordering without app downloads, and route orders to your kitchen.',
+    category: 'digital_menus_ordering',
+    monthlyPrice: 79.00,
+    setupFee: 99.00,
+    badge: 'High ROI',
+    popular: true,
+    includedDeliverables: [
+      '6 Pre-Encoded Acrylic NFC Table Stands + Table Discs',
+      'Mobile-Optimized Full Food & Beverage Menu Website',
+      'Instant 86’d Item Stock Switcher for Managers',
+      'Print-Ready Table Tent QR Tents & Window Decals',
+      'Direct CashApp, Venmo & Card Payment Integration'
+    ],
+    automationsIncluded: [
+      'Daily Specials & Weekend Brunch Menu Scheduler',
+      '1-Click Out-of-Stock Item Sync',
+      'Table Number Order Routing'
+    ],
+    recommendedFor: 'Pizzerias, Roadside Grills, Taverns, Seafood Shacks',
+    iconEmoji: '📱',
+    accentColor: '#ef4444',
+    activeSubscribersCount: 9,
+    isPublished: true,
+    contractTerm: 'monthly'
+  },
+  {
+    id: 'srv-airbnb-concierge',
+    name: 'Lake House & Airbnb Automated Guest Concierge Portal',
+    slug: 'airbnb-cabin-concierge',
+    tagline: '1-Tap Wi-Fi, Food Delivery to Docks, Firewood & House Rules for Hosts',
+    description: 'Provide an unforgettable luxury vacation experience for cabin guests. Hosts receive custom NFC fridge magnets & acrylic plaques that let guests tap for instant Wi-Fi connect, house rules, local food delivery straight to the door, and firewood dispatch.',
+    category: 'airbnb_concierge',
+    monthlyPrice: 49.00,
+    setupFee: 149.00,
+    badge: 'Host Favorite',
+    includedDeliverables: [
+      '3 Custom NFC Guest Plaques (Kitchen, Fridge & Master Bedroom)',
+      '1-Tap QR/NFC Wi-Fi Connect without Typing Passwords',
+      'Integrated Food & Grocery Delivery to Cabin/Dock',
+      'Local Firewood, Boat Rental & Errand Dispatch',
+      'Automated Checkout Guide & Trash Day Reminders'
+    ],
+    automationsIncluded: [
+      'Guest Order Routing to Sean Martin Courier',
+      'Automated Arrival Welcome Notification',
+      'Local Activities & Weather Alerts'
+    ],
+    recommendedFor: 'Lake House Owners, Short-Term Rental Hosts, Campgrounds & Motels',
+    iconEmoji: '🏡',
+    accentColor: '#10b981',
+    activeSubscribersCount: 18,
+    isPublished: true,
+    contractTerm: 'monthly'
+  },
+  {
+    id: 'srv-courier-retainer',
+    name: 'Town Vanguard Priority Courier & Errand Retainer',
+    slug: 'business-courier-retainer',
+    tagline: 'Dedicated Local Driver for Daily Supermarket, Hardware & Customer Runs',
+    description: 'Your business’s on-call private courier. Sean Martin handles daily Hannaford curbside grocery pickups, Ace Hardware emergency part runs, bank deposit drops, and delivers products directly to your customers across Effingham, Ossipee, Freedom, and Conway.',
+    category: 'courier_errand_retainer',
+    monthlyPrice: 249.00,
+    setupFee: 0.00,
+    badge: 'VIP Service',
+    includedDeliverables: [
+      'Up to 25 Dedicated Priority Errand / Delivery Trips per Month',
+      'Direct Phone & SMS Dispatch Hotline to Sean Martin (AWD Subaru Unit)',
+      'Hannaford To Go, Ace Hardware & Local Vendor Pickup Runs',
+      'Real-Time Live GPS Telemetry Link for You and Customers',
+      'Zero Per-Trip Surcharges for Retainer Clients'
+    ],
+    automationsIncluded: [
+      'Direct Dispatch Ping to Driver GPS Phone',
+      'Automatic Delivery Proof Photo Capture',
+      'Customer Arrival SMS Notification'
+    ],
+    recommendedFor: 'Busy Contractors, Auto Garages, Elderly Care & Local Retailers',
+    iconEmoji: '🚚',
+    accentColor: '#6366f1',
+    activeSubscribersCount: 6,
+    isPublished: true,
+    contractTerm: 'monthly'
+  },
+  {
+    id: 'srv-contractor-marketing',
+    name: 'Contractor Trade Showcase & Automatic Lead Dispatcher',
+    slug: 'contractor-lead-dispatcher',
+    tagline: 'Interactive Before/After Marketing, Resident Quote Funnel & SMS Lead Relay',
+    description: 'Fill your project schedule with high-budget local jobs. We publish your before/after transformation projects to the Carroll County Trade Board, run local advertising, and route homeowner work requests directly to your phone as instant SMS quote leads.',
+    category: 'contractor_marketing',
+    monthlyPrice: 129.00,
+    setupFee: 79.00,
+    badge: 'High Lead Volume',
+    includedDeliverables: [
+      'Featured Placement on the Carroll County Trades & Work Board',
+      'Interactive Split Before/After Project Showcases',
+      'Instant SMS Lead Notification whenever a Homeowner Posts a Job',
+      'Direct 1-Click Quote Submission Portal',
+      'Verified Vanguard Contractor Gold Trust Badge'
+    ],
+    automationsIncluded: [
+      'Instant Job Lead SMS Alert to Contractor Phone',
+      'Automated Homeowner Quote Dispatch',
+      'Monthly Lead ROI Analytics'
+    ],
+    recommendedFor: 'Carpenters, Tree Services, Landscapers, Excavators, Painters & Roofers',
+    iconEmoji: '🛠️',
+    accentColor: '#f97316',
+    activeSubscribersCount: 8,
+    isPublished: true,
+    contractTerm: 'monthly'
+  },
+  {
+    id: 'srv-all-in-one-os',
+    name: 'All-In-One Town Vanguard Merchant Operating Suite',
+    slug: 'all-in-one-merchant-os',
+    tagline: 'Complete Hardware, Menus, Delivery, Reputation & Errand Dominance',
+    description: 'The ultimate all-inclusive growth and operations package. Includes all NFC hardware stands, complete digital menus, Google reputation shield, VIP courier retainer, and full technical management by Sean Martin.',
+    category: 'custom_automation',
+    monthlyPrice: 399.00,
+    setupFee: 199.00,
+    badge: '👑 Master Tier',
+    includedDeliverables: [
+      'Unlimited NFC Cards, Table Stands & Badges',
+      'Complete Managed Digital Menu & Online Storefront',
+      '5-Star Reputation Engine with Google Review Automation',
+      'Full Courier Retainer with Priority Dispatch',
+      'Contractor / Merchant Featured Gold Sponsorship',
+      '24/7 Dedicated Support from Sean Martin'
+    ],
+    automationsIncluded: [
+      'All 6 Automated System Bots Active',
+      'Custom Business Logic Workflows',
+      'Bi-Weekly In-Person Hardware Maintenance'
+    ],
+    recommendedFor: 'Flagship Restaurants, Multi-Location Businesses & Town Leaders',
+    iconEmoji: '👑',
+    accentColor: '#eab308',
+    activeSubscribersCount: 4,
+    isPublished: true,
+    contractTerm: 'annual'
+  }
+];
+
+export const INITIAL_CLIENT_SUBSCRIPTIONS: ClientServiceSubscription[] = [
+  {
+    id: 'sub-pnb-eats',
+    clientBusinessName: 'PNB Eats Roadside Grill',
+    contactName: 'Gary Collins',
+    contactPhone: '(603) 539-7440',
+    contactEmail: 'gary@pnbeats.com',
+    town: 'Effingham, NH',
+    packageId: 'srv-digital-menu-ordering',
+    packageName: 'Turnkey Digital Menu & Smart Table Ordering System',
+    monthlyFee: 79.00,
+    status: 'active',
+    nextBillingDate: '2026-10-01',
+    startedDate: '2026-06-01',
+    automationsActive: true,
+    notes: '8 acrylic table stands active. Weekend brunch scheduler active.',
+    totalRevenueGenerated: 316.00
+  },
+  {
+    id: 'sub-pizza-barn',
+    clientBusinessName: 'Pizza Barn & Smokehouse',
+    contactName: 'Dan Sullivan',
+    contactPhone: '(603) 539-2244',
+    town: 'Center Ossipee, NH',
+    packageId: 'srv-reputation-engine',
+    packageName: 'Google 5-Star Reputation Engine & Feedback Shield',
+    monthlyFee: 99.00,
+    status: 'active',
+    nextBillingDate: '2026-10-05',
+    startedDate: '2026-05-15',
+    automationsActive: true,
+    notes: 'Negative review shield prevented 4 public 2-star reviews. 4.9 rating maintained.',
+    totalRevenueGenerated: 396.00
+  },
+  {
+    id: 'sub-ossipee-lake-cabin',
+    clientBusinessName: 'Pine Cove Waterfront Chalet (Airbnb)',
+    contactName: 'Sarah Jenkins',
+    contactPhone: '(603) 641-9400',
+    town: 'Freedom, NH',
+    packageId: 'srv-airbnb-concierge',
+    packageName: 'Lake House & Airbnb Automated Guest Concierge Portal',
+    monthlyFee: 49.00,
+    status: 'active',
+    nextBillingDate: '2026-10-10',
+    startedDate: '2026-07-01',
+    automationsActive: true,
+    notes: '3 guest plaques in cabin. Guests have ordered $480 in food delivery.',
+    totalRevenueGenerated: 147.00
+  },
+  {
+    id: 'sub-walts-woodcraft',
+    clientBusinessName: "Walt's Artisan Woodcraft & Decking",
+    contactName: 'Walter Henderson',
+    contactPhone: '(603) 539-8120',
+    town: 'Effingham, NH',
+    packageId: 'srv-contractor-marketing',
+    packageName: 'Contractor Trade Showcase & Automatic Lead Dispatcher',
+    monthlyFee: 129.00,
+    status: 'active',
+    nextBillingDate: '2026-10-15',
+    startedDate: '2026-06-15',
+    automationsActive: true,
+    notes: 'Won 3 deck replacement contracts ($24,000 total) through trade board leads.',
+    totalRevenueGenerated: 387.00
+  }
+];
+
+export const INITIAL_AUTOMATION_BOTS: ServiceAutomationBot[] = [
+  {
+    id: 'bot-auto-review-sms',
+    title: 'Auto-Review SMS Dispatcher',
+    category: 'reputation_reviews',
+    description: 'Automatically pings diners via SMS 15 minutes after food delivery or table check to request a 5-star Google review.',
+    triggerEvent: 'Order Marked Delivered OR Table NFC Tapped',
+    actionOutput: 'Sends Personalized SMS with Smart Review Link',
+    isActive: true,
+    executionCount: 428,
+    lastExecutedAt: new Date(Date.now() - 45 * 60000).toISOString(),
+    iconEmoji: '⭐'
+  },
+  {
+    id: 'bot-negative-review-shield',
+    title: 'Negative Feedback Shield & Owner Alert Bot',
+    category: 'reputation_reviews',
+    description: 'Immediately intercepts ratings of 1, 2, or 3 stars, routes feedback to private owner inbox, and sends urgent SMS alert to the manager’s phone.',
+    triggerEvent: 'Rating < 4 Stars Selected on Feedback Form',
+    actionOutput: 'Diverts from Google & Sends Urgent Manager SMS',
+    isActive: true,
+    executionCount: 23,
+    lastExecutedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    iconEmoji: '🛡️'
+  },
+  {
+    id: 'bot-driver-dispatch-gps',
+    title: 'Courier Route & Live GPS Broadcast Bot',
+    category: 'courier_errand_retainer',
+    description: 'Automatically notifies Sean Martin on order placement and provides customer with real-time GPS vehicle tracking telemetry.',
+    triggerEvent: 'New Food / Grocery / Errand Order Submitted',
+    actionOutput: 'Pings Courier Phone & Broadcasts GPS Coordinates',
+    isActive: true,
+    executionCount: 342,
+    lastExecutedAt: new Date(Date.now() - 15 * 60000).toISOString(),
+    iconEmoji: '🚚'
+  },
+  {
+    id: 'bot-specials-scheduler',
+    title: 'Daily Specials & Weekend Menu Scheduler',
+    category: 'digital_menus_ordering',
+    description: 'Automatically activates weekend brunch items on Saturday/Sunday mornings and enables happy hour pricing on weekday afternoons.',
+    triggerEvent: 'Scheduled Cron Timer (Fri 4pm & Sat 8am)',
+    actionOutput: 'Swaps Digital Menu Catalog Items & Pricing',
+    isActive: true,
+    executionCount: 64,
+    lastExecutedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    iconEmoji: '⏰'
+  },
+  {
+    id: 'bot-contractor-lead-relay',
+    title: 'Contractor Job Lead Instant SMS Relay',
+    category: 'contractor_marketing',
+    description: 'When a homeowner posts a work request, this bot matches verified local contractors by trade category and sends them an instant quote prompt.',
+    triggerEvent: 'Homeowner Work Request Submitted',
+    actionOutput: 'Dispatches Instant SMS Lead Alerts to Contractors',
+    isActive: true,
+    executionCount: 89,
+    lastExecutedAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+    iconEmoji: '🛠️'
+  },
+  {
+    id: 'bot-monthly-recurring-billing',
+    title: 'Monthly Recurring Service Auto-Invoicing',
+    category: 'custom_automation',
+    description: 'Generates monthly billing statements, calculates Vanguard commission cuts, and transmits payment receipts to retainer clients.',
+    triggerEvent: '1st Day of Month Recurring Trigger',
+    actionOutput: 'Sends Digital Invoice & Generates Vanguard MRR Report',
+    isActive: true,
+    executionCount: 12,
+    lastExecutedAt: '2026-09-01T00:00:00Z',
+    iconEmoji: '💵'
+  }
+];

@@ -7,13 +7,15 @@ import {
   SellerProfile, ShoutoutPost, TownNode, UserMembership, MembershipTier,
   MerchantStorefront, StorefrontProduct, DriverTelemetry, ProofOfDelivery, DriverShiftSummary,
   BeforeAfterShowcase, WorkRequest, ContractorQuote,
-  NfcMenuProduct, NfcHardwareOrder, NfcFormFactor
+  NfcMenuProduct, NfcHardwareOrder, NfcFormFactor,
+  ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
   INITIAL_FEEDBACKS, INITIAL_SELLERS, INITIAL_SHOUTOUTS, INITIAL_TOWNS,
   INITIAL_BEFORE_AFTER_SHOWCASES, INITIAL_WORK_REQUESTS,
-  INITIAL_NFC_MENU_PRODUCTS, INITIAL_NFC_HARDWARE_ORDERS
+  INITIAL_NFC_MENU_PRODUCTS, INITIAL_NFC_HARDWARE_ORDERS,
+  INITIAL_MANAGED_SERVICES, INITIAL_CLIENT_SUBSCRIPTIONS, INITIAL_AUTOMATION_BOTS
 } from './mock-data';
 
 const STORAGE_KEYS = {
@@ -36,6 +38,9 @@ const STORAGE_KEYS = {
   WORK_REQUESTS: 'pulpulse_work_requests_v1',
   NFC_MENU_PRODUCTS: 'pulpulse_nfc_menu_products_v1',
   NFC_HARDWARE_ORDERS: 'pulpulse_nfc_hardware_orders_v1',
+  MANAGED_SERVICES: 'pulpulse_managed_services_v1',
+  CLIENT_SUBSCRIPTIONS: 'pulpulse_client_subscriptions_v1',
+  AUTOMATION_BOTS: 'pulpulse_automation_bots_v1',
 };
 
 const DEFAULT_DRIVER_SHIFT: DriverShiftSummary = {
@@ -1798,6 +1803,9 @@ export function useNfcStore() {
   const [workRequests, setWorkRequests] = useState<WorkRequest[]>(INITIAL_WORK_REQUESTS);
   const [nfcMenuProducts, setNfcMenuProducts] = useState<NfcMenuProduct[]>(INITIAL_NFC_MENU_PRODUCTS);
   const [nfcHardwareOrders, setNfcHardwareOrders] = useState<NfcHardwareOrder[]>(INITIAL_NFC_HARDWARE_ORDERS);
+  const [managedServices, setManagedServices] = useState<ManagedServicePackage[]>(INITIAL_MANAGED_SERVICES);
+  const [clientSubscriptions, setClientSubscriptions] = useState<ClientServiceSubscription[]>(INITIAL_CLIENT_SUBSCRIPTIONS);
+  const [automationBots, setAutomationBots] = useState<ServiceAutomationBot[]>(INITIAL_AUTOMATION_BOTS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -1896,6 +1904,33 @@ export function useNfcStore() {
       }
 
       const storedHardwareOrders = localStorage.getItem(STORAGE_KEYS.NFC_HARDWARE_ORDERS);
+            const storedServices = localStorage.getItem(STORAGE_KEYS.MANAGED_SERVICES);
+      if (storedServices) {
+        const parsed: ManagedServicePackage[] = JSON.parse(storedServices);
+        const existingIds = new Set(parsed.map(s => s.id));
+        setManagedServices([...parsed, ...INITIAL_MANAGED_SERVICES.filter(s => !existingIds.has(s.id))]);
+      } else {
+        setManagedServices(INITIAL_MANAGED_SERVICES);
+      }
+
+      const storedSubs = localStorage.getItem(STORAGE_KEYS.CLIENT_SUBSCRIPTIONS);
+      if (storedSubs) {
+        const parsed: ClientServiceSubscription[] = JSON.parse(storedSubs);
+        const existingIds = new Set(parsed.map(s => s.id));
+        setClientSubscriptions([...parsed, ...INITIAL_CLIENT_SUBSCRIPTIONS.filter(s => !existingIds.has(s.id))]);
+      } else {
+        setClientSubscriptions(INITIAL_CLIENT_SUBSCRIPTIONS);
+      }
+
+      const storedBots = localStorage.getItem(STORAGE_KEYS.AUTOMATION_BOTS);
+      if (storedBots) {
+        const parsed: ServiceAutomationBot[] = JSON.parse(storedBots);
+        const existingIds = new Set(parsed.map(b => b.id));
+        setAutomationBots([...parsed, ...INITIAL_AUTOMATION_BOTS.filter(b => !existingIds.has(b.id))]);
+      } else {
+        setAutomationBots(INITIAL_AUTOMATION_BOTS);
+      }
+
       if (storedHardwareOrders) {
         const parsed: NfcHardwareOrder[] = JSON.parse(storedHardwareOrders);
         const existingIds = new Set(parsed.map(o => o.id));
@@ -2759,6 +2794,93 @@ export function useNfcStore() {
     });
   };
 
+  
+  // --- MANAGED SERVICES & AUTOMATION HANDLERS ---
+  const addManagedService = (pkgData: Omit<ManagedServicePackage, 'id' | 'activeSubscribersCount'>) => {
+    const newPkg: ManagedServicePackage = {
+      ...pkgData,
+      id: `srv-${Date.now().toString(36)}`,
+      activeSubscribersCount: 0,
+    };
+    setManagedServices(prev => {
+      const next = [newPkg, ...prev];
+      localStorage.setItem(STORAGE_KEYS.MANAGED_SERVICES, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+    return newPkg;
+  };
+
+  const updateManagedService = (id: string, updates: Partial<ManagedServicePackage>) => {
+    setManagedServices(prev => {
+      const next = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+      localStorage.setItem(STORAGE_KEYS.MANAGED_SERVICES, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const deleteManagedService = (id: string) => {
+    setManagedServices(prev => {
+      const next = prev.filter(s => s.id !== id);
+      localStorage.setItem(STORAGE_KEYS.MANAGED_SERVICES, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const enrollClientSubscription = (subData: Omit<ClientServiceSubscription, 'id' | 'startedDate' | 'totalRevenueGenerated'>) => {
+    const newSub: ClientServiceSubscription = {
+      ...subData,
+      id: `sub-${Date.now().toString(36)}`,
+      startedDate: new Date().toISOString().split('T')[0],
+      totalRevenueGenerated: subData.monthlyFee,
+    };
+    setClientSubscriptions(prev => {
+      const next = [newSub, ...prev];
+      localStorage.setItem(STORAGE_KEYS.CLIENT_SUBSCRIPTIONS, JSON.stringify(next));
+      return next;
+    });
+
+    // Increment package subscriber count
+    setManagedServices(prev => {
+      const next = prev.map(pkg => pkg.id === subData.packageId ? { ...pkg, activeSubscribersCount: (pkg.activeSubscribersCount || 0) + 1 } : pkg);
+      localStorage.setItem(STORAGE_KEYS.MANAGED_SERVICES, JSON.stringify(next));
+      return next;
+    });
+
+    playDeliveryChime();
+    return newSub;
+  };
+
+  const updateClientSubscriptionStatus = (id: string, status: ClientServiceSubscription['status']) => {
+    setClientSubscriptions(prev => {
+      const next = prev.map(s => s.id === id ? { ...s, status } : s);
+      localStorage.setItem(STORAGE_KEYS.CLIENT_SUBSCRIPTIONS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
+  const toggleAutomationBot = (id: string) => {
+    setAutomationBots(prev => {
+      const next = prev.map(b => b.id === id ? { ...b, isActive: !b.isActive } : b);
+      localStorage.setItem(STORAGE_KEYS.AUTOMATION_BOTS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const triggerAutomationBotManual = (id: string) => {
+    setAutomationBots(prev => {
+      const next = prev.map(b => b.id === id ? { 
+        ...b, 
+        executionCount: b.executionCount + 1,
+        lastExecutedAt: new Date().toISOString()
+      } : b);
+      localStorage.setItem(STORAGE_KEYS.AUTOMATION_BOTS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
   const addStorefrontProduct = (storefrontId: string, product: StorefrontProduct) => {
     setStorefronts(prev => {
       const next = prev.map(sf => {
@@ -2808,6 +2930,9 @@ export function useNfcStore() {
     workRequests,
     nfcMenuProducts,
     nfcHardwareOrders,
+    managedServices,
+    clientSubscriptions,
+    automationBots,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -2854,5 +2979,12 @@ export function useNfcStore() {
     toggleStorefrontProductStock,
     updateStorefrontProductPrice,
     addStorefrontProduct,
+    addManagedService,
+    updateManagedService,
+    deleteManagedService,
+    enrollClientSubscription,
+    updateClientSubscriptionStatus,
+    toggleAutomationBot,
+    triggerAutomationBotManual,
   };
 }
