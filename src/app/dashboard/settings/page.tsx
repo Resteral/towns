@@ -16,6 +16,9 @@ export default function NotificationSettingsPage() {
   const [twilioSid, setTwilioSid] = useState(notificationSettings.twilioAccountSid || '');
   const [twilioAuth, setTwilioAuth] = useState(notificationSettings.twilioAuthToken || '');
   const [twilioFromNumber, setTwilioFromNumber] = useState(notificationSettings.twilioPhoneNumber || '');
+  const [enableWhatsApp, setEnableWhatsApp] = useState(notificationSettings.enableWhatsApp ?? false);
+  const [whatsappPhone, setWhatsappPhone] = useState(notificationSettings.whatsappPhone || '');
+  const [whatsappApiKey, setWhatsappApiKey] = useState(notificationSettings.whatsappApiKey || '');
   const [enableTelegram, setEnableTelegram] = useState(notificationSettings.enableTelegram ?? false);
   const [telegramToken, setTelegramToken] = useState(notificationSettings.telegramBotToken || '');
   const [telegramChatId, setTelegramChatId] = useState(notificationSettings.telegramChatId || '');
@@ -36,6 +39,9 @@ export default function NotificationSettingsPage() {
       twilioAccountSid: twilioSid,
       twilioAuthToken: twilioAuth,
       twilioPhoneNumber: twilioFromNumber,
+      enableWhatsApp,
+      whatsappPhone,
+      whatsappApiKey,
       enableTelegram,
       telegramBotToken: telegramToken,
       telegramChatId,
@@ -85,6 +91,9 @@ export default function NotificationSettingsPage() {
             twilioAccountSid: twilioSid,
             twilioAuthToken: twilioAuth,
             twilioPhoneNumber: twilioFromNumber,
+            enableWhatsApp,
+            whatsappPhone,
+            whatsappApiKey,
             enableTelegram,
             telegramBotToken: telegramToken,
             telegramChatId,
@@ -259,7 +268,75 @@ export default function NotificationSettingsPage() {
           )}
         </div>
 
-        {/* Method 3: Telegram Bot Relay (Zero Latency & 100% Free Push Notifications with Sound) */}
+        {/* Method 3: WhatsApp Direct Push Relay (Free via CallMeBot / Twilio) */}
+        <div className="bg-[#0e0e14] border border-white/10 rounded-3xl p-6 md:p-8 space-y-6">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-black">
+                WA
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-black italic text-white uppercase">WhatsApp Instant Relay</h3>
+                  <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold uppercase rounded-md border border-emerald-500/30">
+                    Direct to WhatsApp • Free
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-400">
+                  Sends full order tickets and GPS navigation links straight to your personal WhatsApp chat.
+                </p>
+              </div>
+            </div>
+
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={enableWhatsApp}
+                onChange={(e) => setEnableWhatsApp(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          {enableWhatsApp && (
+            <div className="space-y-4 pt-2 border-t border-white/5 animate-in fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 mb-1.5 block">Your WhatsApp Phone Number (with Country Code)</label>
+                  <input
+                    type="tel"
+                    value={whatsappPhone}
+                    onChange={(e) => setWhatsappPhone(e.target.value)}
+                    placeholder="e.g. +15085070305"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-400 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 mb-1.5 block">WhatsApp API Key (from CallMeBot)</label>
+                  <input
+                    type="password"
+                    value={whatsappApiKey}
+                    onChange={(e) => setWhatsappApiKey(e.target.value)}
+                    placeholder="e.g. 123456"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-400 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-emerald-950/20 border border-emerald-500/20 rounded-2xl text-[11px] text-zinc-300 space-y-1">
+                <p className="font-bold text-emerald-300">How to activate WhatsApp alerts in 30 seconds:</p>
+                <ol className="list-decimal list-inside space-y-0.5 text-zinc-400">
+                  <li>In WhatsApp, add the contact phone number: <b>+34 941 01 96 50</b> (CallMeBot).</li>
+                  <li>Send the exact text message: <code>I allow callmebot to send me messages</code></li>
+                  <li>Wait 10 seconds — CallMeBot will reply on WhatsApp with your personal <b>API Key</b>. Paste it above and click Save!</li>
+                </ol>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Method 4: Telegram Bot Relay (Zero Latency & 100% Free Push Notifications with Sound) */}
         <div className="bg-[#0e0e14] border border-white/10 rounded-3xl p-6 md:p-8 space-y-6">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">

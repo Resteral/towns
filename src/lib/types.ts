@@ -283,6 +283,9 @@ export interface NotificationSettings {
   twilioAccountSid?: string;
   twilioAuthToken?: string;
   twilioPhoneNumber?: string;
+  enableWhatsApp?: boolean;
+  whatsappPhone?: string;
+  whatsappApiKey?: string;
   enableTelegram: boolean;
   telegramBotToken?: string;
   telegramChatId?: string;

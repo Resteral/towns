@@ -8,7 +8,28 @@ export async function sendOrderPhoneNotification(
   const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.deliveryAddress)}`;
   const itemsText = order.items.map(item => `• ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toFixed(2)})`).join('\n');
 
-  // 1. Telegram Bot Relay with 1-Tap Google Maps GPS & Call Buttons
+  // 1. WhatsApp Instant Relay (via CallMeBot or Twilio WhatsApp)
+  if (settings.enableWhatsApp) {
+    const waPhone = (settings.whatsappPhone || settings.phoneNumber || process.env.COURIER_DISPATCH_PHONE || '15085070305').replace(/[^0-9]/g, '');
+    const waApiKey = settings.whatsappApiKey || process.env.WHATSAPP_API_KEY;
+
+    if (waApiKey && waPhone) {
+      try {
+        const waText = `🚨 *NEW DELIVERY ORDER #${order.orderNumber}* 🚨\n\n👤 *Customer:* ${order.customerName}\n📞 *Phone:* ${order.customerPhone}\n📍 *Address:* ${order.deliveryAddress}\n\n📝 *Notes:* ${order.deliveryInstructions || 'None'}\n\n🛍️ *Items:*\n${itemsText}\n\n💰 *Tip:* $${order.tip.toFixed(2)}\n💵 *TOTAL:* *$${order.total.toFixed(2)}*\n\n🗺️ *GPS Navigation:* ${mapLink}`;
+
+        const waUrl = `https://api.callmebot.com/whatsapp.php?phone=${waPhone}&text=${encodeURIComponent(waText)}&apikey=${waApiKey.trim()}`;
+        const response = await fetch(waUrl);
+
+        if (response.ok) {
+          channels.push(`WhatsApp (+${waPhone})`);
+        }
+      } catch (e) {
+        console.error('WhatsApp notification failed', e);
+      }
+    }
+  }
+
+  // 2. Telegram Bot Relay with 1-Tap Google Maps GPS & Call Buttons
   if (settings.enableTelegram && settings.telegramBotToken && settings.telegramChatId) {
     try {
       const telegramMessage = `
@@ -58,7 +79,7 @@ ${itemsText}
     }
   }
 
-  // 2. Twilio Carrier SMS Relay
+  // 3. Twilio Carrier SMS Relay
   const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID || settings.twilioAccountSid;
   const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || settings.twilioAuthToken;
   const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER || settings.twilioPhoneNumber;
@@ -98,7 +119,7 @@ ${itemsText}
     }
   }
 
-  // 3. Discord Webhook Relay
+  // 4. Discord Webhook Relay
   if (settings.enableDiscord && settings.discordWebhookUrl) {
     try {
       const discordPayload = {
@@ -148,8 +169,8 @@ ${itemsText}
     }
   }
 
-  // 4. Fallback / Client Sound / SMS
-  if (settings.enableSms && settings.phoneNumber && !channels.some(c => c.includes('Twilio'))) {
+  // 5. Fallback / Client Sound / SMS
+  if (settings.enableSms && settings.phoneNumber && !channels.some(c => c.includes('Twilio') || c.includes('WhatsApp'))) {
     channels.push(`Mobile Contact: ${settings.phoneNumber}`);
   }
 
