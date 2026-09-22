@@ -21,7 +21,7 @@ import {
 import { useNfcStore } from '@/lib/store';
 
 export default function RewardsPage() {
-  const { loyaltyRewards, loyaltyWallet, redeemLoyaltyReward, awardLoyaltyPoints } = useNfcStore();
+  const { loyaltyRewards, loyaltyWallet, redeemLoyaltyReward, awardLoyaltyPoints, currentUser } = useNfcStore();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'catalog' | 'vouchers' | 'earn'>('catalog');
   const [redemptionFeedback, setRedemptionFeedback] = useState<string | null>(null);
@@ -54,14 +54,27 @@ export default function RewardsPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-xs font-black uppercase tracking-widest mb-4">
             <Gift className="w-4 h-4 text-amber-400 animate-pulse" />
-            Oasis Town Loyalty Pass & Rewards Hub
+            Townraise Citizen Loyalty Pass & Rewards Hub
           </div>
-          <h1 className="text-4xl md:text-5xl font-black italic tracking-tight uppercase">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight uppercase">
             Earn Points Every Time You <br />
             <span className="bg-gradient-to-r from-amber-400 via-amber-200 to-indigo-400 bg-clip-text text-transparent">
               Tap, Review & Dine Local
             </span>
           </h1>
+
+          {/* Connected Account Bar */}
+          <div className="mt-4 inline-flex items-center gap-3 p-2 px-4 rounded-2xl bg-white/5 border border-white/10 text-xs">
+            <span className="text-base">{currentUser?.avatar || '👤'}</span>
+            <span className="text-zinc-300">Logged in as <strong className="text-white">{currentUser?.name || 'Local Resident'}</strong></span>
+            <span className="text-amber-400 font-mono font-bold">• {loyaltyWallet.userPoints} Points</span>
+            <Link
+              href="/hunter-profile"
+              className="ml-2 px-3 py-1 rounded-xl bg-amber-400 text-black font-black text-[10px] uppercase tracking-wider hover:scale-105 transition-transform"
+            >
+              My Profile & Pass ➔
+            </Link>
+          </div>
         </div>
 
         {/* Digital Pass HUD Card */}
@@ -71,14 +84,14 @@ export default function RewardsPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10 mb-8">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 text-black font-black flex items-center justify-center text-3xl shadow-xl shadow-amber-400/20">
-                ⭐
+                {currentUser?.avatar || '⭐'}
               </div>
               <div>
                 <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest block">
-                  Official Town Pass Holder
+                  Official Town Pass Holder: {currentUser?.name || 'Citizen'}
                 </span>
                 <h3 className="text-2xl font-black text-white">{loyaltyWallet.level}</h3>
-                <span className="text-xs text-white/50">Tier {loyaltyWallet.tierNumber} • Carroll County Resident</span>
+                <span className="text-xs text-white/50">Tier {loyaltyWallet.tierNumber} • {currentUser?.town || 'Effingham'}, NH Resident</span>
               </div>
             </div>
 

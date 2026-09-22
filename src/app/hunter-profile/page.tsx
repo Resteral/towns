@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { calculateCardProgression } from '@/lib/card-leveling';
-import NfcCardLevelWidget from '@/components/NfcCardLevelWidget';
 import confetti from 'canvas-confetti';
 import { 
   ShoppingBag, 
@@ -39,7 +38,8 @@ import {
   Navigation,
   Calendar,
   Ticket,
-  Printer
+  Printer,
+  Coins
 } from 'lucide-react';
 
 export default function HunterProfilePage() {
@@ -51,15 +51,19 @@ export default function HunterProfilePage() {
     storeHuntCircuits, 
     tapInStoreBeacon, 
     loyaltyWallet,
+    loyaltyRewards,
+    redeemLoyaltyReward,
+    awardLoyaltyPoints,
     playDeliveryChime
   } = useNfcStore();
 
-  const [activeTab, setActiveTab] = useState<'perks' | 'stamps' | 'pass' | 'settings'>('perks');
+  const [activeTab, setActiveTab] = useState<'perks' | 'rewards_vault' | 'stamps' | 'pass'>('perks');
   const [copiedVoucherCode, setCopiedVoucherCode] = useState<string | null>(null);
   const [copiedProfileId, setCopiedProfileId] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCheckingInSim, setIsCheckingInSim] = useState(false);
   const [quickCheckInSuccess, setQuickCheckInSuccess] = useState<string | null>(null);
+  const [redeemSuccessMsg, setRedeemSuccessMsg] = useState<string | null>(null);
 
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -123,6 +127,18 @@ export default function HunterProfilePage() {
     confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
   };
 
+  const handleRedeemRewardFromProfile = (rewardId: string, title: string) => {
+    const success = redeemLoyaltyReward(rewardId);
+    if (success) {
+      setRedeemSuccessMsg(`✓ Successfully redeemed "${title}"! Voucher code added to your wallet.`);
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      setTimeout(() => setRedeemSuccessMsg(null), 4000);
+    } else {
+      setRedeemSuccessMsg('⚠️ Insufficient account points. Visit and tap more local shops to earn points!');
+      setTimeout(() => setRedeemSuccessMsg(null), 3500);
+    }
+  };
+
   // Quick Demo Check-In Simulator for first unvisited store
   const unvisitedSpots = useMemo(() => {
     const visitedSet = new Set(storeHunterStamps.map(s => s.spotId));
@@ -143,7 +159,7 @@ export default function HunterProfilePage() {
       const res = tapInStoreBeacon(circuitId, spot.id, 'nfc');
       setIsCheckingInSim(false);
       if (res.success) {
-        setQuickCheckInSuccess(`✓ Checked in at ${spot.storeName}! Earned +${res.pointsEarned} Pts!`);
+        setQuickCheckInSuccess(`✓ Checked in at ${spot.storeName}! Earned +${res.pointsEarned} Pts for your account!`);
         confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
         setTimeout(() => setQuickCheckInSuccess(null), 4000);
       }
@@ -173,23 +189,23 @@ export default function HunterProfilePage() {
               <span>← Store Circuits</span>
             </Link>
             <Link
-              href="/society"
+              href="/rewards"
               className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-mono font-bold text-amber-300 transition-colors flex items-center gap-1.5"
             >
-              <span>🏛️ Sovereign Vault</span>
+              <span>🎁 Rewards Hub</span>
             </Link>
             <Link
-              href="/leaderboard"
-              className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono font-bold text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+              href="/society"
+              className="px-3.5 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-xs font-mono font-bold text-purple-300 transition-colors flex items-center gap-1.5"
             >
-              <span>🏆 Town Rankings</span>
+              <span>🏛️ Sovereign Vault</span>
             </Link>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono font-bold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-              <span>Hunter Passport Active</span>
+            <span className="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono font-bold flex items-center gap-1.5">
+              <Coins className="w-3.5 h-3.5 text-amber-400" />
+              <span>{loyaltyWallet.userPoints} Account Points</span>
             </span>
           </div>
         </div>
@@ -245,7 +261,7 @@ export default function HunterProfilePage() {
                     {copiedProfileId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-zinc-500" />}
                   </button>
                   <span>•</span>
-                  <span>Member Since 2026</span>
+                  <span className="text-amber-400 font-bold">{loyaltyWallet.level}</span>
                 </div>
               </div>
             </div>
@@ -265,11 +281,11 @@ export default function HunterProfilePage() {
               </div>
 
               <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 text-center min-w-[90px]">
-                <div className="text-[10px] uppercase font-mono text-zinc-400">Points</div>
+                <div className="text-[10px] uppercase font-mono text-zinc-400">Account Pts</div>
                 <div className="text-xl sm:text-2xl font-black text-amber-400">
-                  +{storeHunterStamps.reduce((acc, s) => acc + s.pointsEarned, 0)}
+                  {loyaltyWallet.userPoints}
                 </div>
-                <div className="text-[9px] text-zinc-500 font-mono">Store XP</div>
+                <div className="text-[9px] text-zinc-500 font-mono">Redeemable</div>
               </div>
             </div>
           </div>
@@ -301,11 +317,20 @@ export default function HunterProfilePage() {
               <span className="font-bold">{quickCheckInSuccess}</span>
             </div>
             <Link
-              href="/society"
+              href="/rewards"
               className="text-[11px] font-black uppercase text-amber-300 hover:text-amber-200 underline"
             >
-              Open Vault ➔
+              Redeem Rewards ➔
             </Link>
+          </div>
+        )}
+
+        {redeemSuccessMsg && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold">{redeemSuccessMsg}</span>
+            </div>
           </div>
         )}
 
@@ -315,7 +340,7 @@ export default function HunterProfilePage() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-purple-400" />
-                <span>Customize Your Store Hunter Profile</span>
+                <span>Customize Your Account & Hunter Profile</span>
               </h3>
               <button
                 type="button"
@@ -398,7 +423,19 @@ export default function HunterProfilePage() {
             }`}
           >
             <Gift className="w-4 h-4" />
-            <span>My Unlocked Perks & Vouchers ({unlockedPerks.length})</span>
+            <span>Store Perks & Vouchers ({unlockedPerks.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('rewards_vault')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+              activeTab === 'rewards_vault'
+                ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-black shadow-lg shadow-amber-400/20'
+                : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Coins className="w-4 h-4" />
+            <span>Account Rewards Vault ({loyaltyWallet.userPoints} Pts)</span>
           </button>
 
           <button
@@ -410,7 +447,7 @@ export default function HunterProfilePage() {
             }`}
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>My Store Stamp Passport ({storeHunterStamps.length})</span>
+            <span>Store Stamp Passport ({storeHunterStamps.length})</span>
           </button>
 
           <button
@@ -559,7 +596,124 @@ export default function HunterProfilePage() {
           </div>
         )}
 
-        {/* TAB 2: STAMP PASSPORT COLLECTION */}
+        {/* TAB 2: ACCOUNT REWARDS VAULT & TOWN PERKS */}
+        {activeTab === 'rewards_vault' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Rewards Balance Banner */}
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-purple-500/15 border border-amber-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-xs font-mono text-amber-300 font-bold">
+                  <Coins className="w-4 h-4 text-amber-400" />
+                  <span>Your Account Point Balance</span>
+                </div>
+                <div className="text-3xl font-black text-white flex items-baseline gap-2">
+                  <span className="text-amber-400 font-mono">{loyaltyWallet.userPoints}</span>
+                  <span className="text-xs text-zinc-400 font-normal">Points Available for Redemption</span>
+                </div>
+                <p className="text-xs text-zinc-400">
+                  Earned by tapping NFC check-in beacons, reviewing local merchants, and completing tourist hunts.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href="/rewards"
+                  className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all"
+                >
+                  Full Catalog Hub ➔
+                </Link>
+              </div>
+            </div>
+
+            {/* Redeemed Vouchers Section */}
+            {loyaltyWallet.redeemedRewards.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <Ticket className="w-4 h-4 text-emerald-400" />
+                  <span>Your Redeemed Account Rewards ({loyaltyWallet.redeemedRewards.length})</span>
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {loyaltyWallet.redeemedRewards.map((item, idx) => (
+                    <div
+                      key={`${item.code}-${idx}`}
+                      className="p-4 rounded-2xl bg-[#0e0d16] border border-emerald-500/30 flex items-center justify-between gap-3 shadow-lg"
+                    >
+                      <div>
+                        <div className="text-xs font-black text-white">{item.rewardTitle}</div>
+                        <div className="text-[10px] font-mono text-zinc-500">Redeemed {item.redeemedAt}</div>
+                        <div className="text-xs font-mono font-black text-emerald-400 mt-1">{item.code}</div>
+                      </div>
+
+                      <button
+                        onClick={() => handleCopyVoucher(item.code)}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold flex items-center gap-1.5"
+                      >
+                        {copiedVoucherCode === item.code ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedVoucherCode === item.code ? 'Copied' : 'Copy'}</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Available Town Rewards to Redeem */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                <Gift className="w-4 h-4 text-amber-400" />
+                <span>Available Regional Merchant Rewards</span>
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {loyaltyRewards.map((reward) => {
+                  const canAfford = loyaltyWallet.userPoints >= reward.pointsCost;
+                  return (
+                    <div
+                      key={reward.id}
+                      className="p-5 rounded-3xl bg-[#0e0d16] border border-white/10 hover:border-amber-500/30 transition-all flex flex-col justify-between gap-4 shadow-xl"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-2xl">{reward.iconEmoji}</span>
+                            <div>
+                              <div className="text-[10px] font-mono text-amber-400 uppercase">{reward.businessName} • {reward.town}</div>
+                              <h4 className="text-sm font-black text-white">{reward.title}</h4>
+                            </div>
+                          </div>
+                          <span className="px-2.5 py-0.5 rounded-full bg-white/5 text-amber-300 text-[10px] font-black font-mono">
+                            {reward.valueText}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-400 leading-relaxed">{reward.description}</p>
+                      </div>
+
+                      <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+                        <span className="text-sm font-black text-amber-400 font-mono">
+                          {reward.pointsCost} <span className="text-[10px] text-zinc-500">PTS</span>
+                        </span>
+
+                        <button
+                          onClick={() => handleRedeemRewardFromProfile(reward.id, reward.title)}
+                          disabled={!canAfford}
+                          className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                            canAfford
+                              ? 'bg-amber-400 hover:bg-amber-300 text-black shadow-md shadow-amber-400/20 active:scale-95'
+                              : 'bg-white/5 text-zinc-600 cursor-not-allowed border border-white/5'
+                          }`}
+                        >
+                          {canAfford ? 'Redeem with Points' : 'Need More Points'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: STAMP PASSPORT COLLECTION */}
         {activeTab === 'stamps' && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex items-center justify-between">
@@ -568,7 +722,7 @@ export default function HunterProfilePage() {
                   Your Digital Store Passport ({storeHunterStamps.length} Stamps)
                 </h3>
                 <p className="text-xs text-zinc-400">
-                  Every in-store beacon tap earns +25 Pts and pushes your ranking towards Milestone Chests.
+                  Every in-store beacon tap earns +25 to +35 Pts and pushes your ranking towards Milestone Chests.
                 </p>
               </div>
 
@@ -623,7 +777,7 @@ export default function HunterProfilePage() {
           </div>
         )}
 
-        {/* TAB 3: SMART RFID CITIZEN PASS PREVIEW */}
+        {/* TAB 4: SMART RFID CITIZEN PASS PREVIEW */}
         {activeTab === 'pass' && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="max-w-md mx-auto space-y-4">
@@ -660,8 +814,8 @@ export default function HunterProfilePage() {
                     <div className="text-amber-400 font-bold">{cardProgression.multiplier}x XP</div>
                   </div>
                   <div>
-                    <div className="text-[9px] text-zinc-500 uppercase">Stamps</div>
-                    <div className="text-white font-bold">{storeHunterStamps.length} Shops</div>
+                    <div className="text-[9px] text-zinc-500 uppercase">Points</div>
+                    <div className="text-white font-bold">{loyaltyWallet.userPoints} Pts</div>
                   </div>
                   <div>
                     <div className="text-[9px] text-zinc-500 uppercase">Status</div>
