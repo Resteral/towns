@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, CreditCard, BarChart3, Truck, 
-  Phone, ShoppingBag, Radio, ShieldCheck, ArrowLeft, Cpu, Compass, Crown, Store, Megaphone
+  Phone, ShoppingBag, Radio, ShieldCheck, ArrowLeft, Cpu, Compass, Crown, Store, Megaphone,
+  Bot, ChefHat
 } from 'lucide-react';
 import { useNfcStore } from '@/lib/store';
 
@@ -14,13 +15,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { deliveryOrders, feedbacks, userMembership } = useNfcStore();
+  const { deliveryOrders, feedbacks, userMembership, tableTickets } = useNfcStore();
   const pendingOrdersCount = deliveryOrders.filter(o => o.status === 'pending').length;
   const newFeedbackCount = feedbacks.filter(f => f.status === 'new').length;
+  const newTableOrdersCount = tableTickets.filter(t => t.status === 'new_order').length;
 
   const navItems = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { href: '/dashboard/admin', label: 'Admin & NFC Menu Sales', icon: Crown, badge: '👑 Master' },
+    { href: '/dashboard/admin', label: 'Admin & Automation Suite', icon: Crown, badge: '👑 Master' },
+    { href: '/dashboard/ai-assistant', label: 'AI Menu & Review Assistant', icon: Bot, badge: '🧠 AI' },
+    { href: '/dashboard/kitchen', label: 'Kitchen Display (KDS)', icon: ChefHat, badge: newTableOrdersCount > 0 ? `${newTableOrdersCount} table` : undefined },
     { href: '/dashboard/growth-kit', label: 'Growth Kit & Promos', icon: Megaphone, badge: '🚀 New' },
     { href: '/dashboard/storefront', label: 'Websites & Menus', icon: Store },
     { href: '/dashboard/town-command', label: 'Town Vanguard Command', icon: Compass },

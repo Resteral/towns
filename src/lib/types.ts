@@ -602,5 +602,64 @@ export interface UserLoyaltyWallet {
   }[];
 }
 
+export interface TownEvent {
+  id: string;
+  title: string;
+  organizer: string;
+  town: string;
+  venueAddress: string;
+  date: string;
+  time: string;
+  category: 'live_music' | 'market_fair' | 'food_drink' | 'community' | 'outdoors';
+  categoryLabel: string;
+  description: string;
+  coverImage: string;
+  attendeesCount: number;
+  isUserRsvpd?: boolean;
+  nfcPassActive: boolean;
+  pointsReward: number;
+  priceText: string;
+  ticketLink?: string;
+  tags: string[];
+}
+
+export interface DineInTableTicket {
+  id: string;
+  tableNumber: string;
+  restaurantId: string;
+  restaurantName: string;
+  customerName: string;
+  customerPhone?: string;
+  items: {
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+    notes?: string;
+  }[];
+  subtotal: number;
+  tax: number;
+  tip: number;
+  total: number;
+  status: 'new_order' | 'in_kitchen' | 'served' | 'paid_closed';
+  paidStatus: 'paid_card' | 'pay_at_table';
+  orderedAt: string;
+  kitchenNotes?: string;
+}
+
+export interface LocalConditionsReport {
+  town: string;
+  temperatureF: number;
+  condition: string;
+  iconEmoji: string;
+  lakeOssipeeTempF: number;
+  lakeStatus: string;
+  mountainForecast: string;
+  courierRoadStatus: 'roads_clear_rapid' | 'light_traffic' | 'winter_caution';
+  activeDriverCount: number;
+  lastUpdated: string;
+}
+
+
 
 

@@ -3,7 +3,8 @@ import {
   SellerProfile, ShoutoutPost, TownNode, BeforeAfterShowcase, WorkRequest,
   NfcMenuProduct, NfcHardwareOrder,
   ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory,
-  DirectoryListing, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet
+  DirectoryListing, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet,
+  TownEvent, DineInTableTicket, LocalConditionsReport
 } from './types';
 
 export const INITIAL_TOWNS: TownNode[] = [
@@ -1508,4 +1509,143 @@ export const DEFAULT_USER_LOYALTY_WALLET: UserLoyaltyWallet = {
     }
   ]
 };
+
+export const INITIAL_EVENTS: TownEvent[] = [
+  {
+    id: 'evt-acoustic-pizza-barn',
+    title: 'Live Acoustic & Craft Beer Night',
+    organizer: 'Pizza Barn & Smokehouse',
+    town: 'Center Ossipee, NH',
+    venueAddress: '89 Main St, Center Ossipee',
+    date: 'This Friday, Sept 25',
+    time: '7:00 PM – 10:30 PM',
+    category: 'live_music',
+    categoryLabel: 'Live Music & BBQ',
+    description: 'Local country & classic rock acoustic sets by Mountain Sound Duo. Wood-fired pizza specials, craft cider flights, and outdoor fire pit patio seating.',
+    coverImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
+    attendeesCount: 48,
+    isUserRsvpd: true,
+    nfcPassActive: true,
+    pointsReward: 25,
+    priceText: 'Free Entry / Tap Table for Specials',
+    tags: ['Live Music', 'Patio Firepit', 'Pizza Specials', 'All Ages']
+  },
+  {
+    id: 'evt-effingham-farmers-market',
+    title: 'Effingham Harvest & Artisan Fair',
+    organizer: 'Effingham Town Community Guild',
+    town: 'Effingham, NH',
+    venueAddress: 'Town Common, Route 153',
+    date: 'Saturday, Sept 26',
+    time: '9:00 AM – 1:30 PM',
+    category: 'market_fair',
+    categoryLabel: 'Farmers Market & Crafts',
+    description: 'Fresh local sourdough breads, NH maple syrup, handmade cutting boards by Walt Henderson, wildflower honey, and hot breakfast sandwiches.',
+    coverImage: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&auto=format&fit=crop&q=80',
+    attendeesCount: 112,
+    isUserRsvpd: false,
+    nfcPassActive: true,
+    pointsReward: 35,
+    priceText: 'Free Admission',
+    tags: ['Farmers Market', 'Local Artisans', 'Organic Produce', 'Maple Syrup']
+  },
+  {
+    id: 'evt-ossipee-lake-regatta',
+    title: 'Ossipee Lake Sunset Boat Flotilla & BBQ',
+    organizer: 'Freedom Lake Association & OasisTap',
+    town: 'Freedom, NH',
+    venueAddress: 'Ossipee Lake Public Ramp',
+    date: 'Sunday, Sept 27',
+    time: '4:30 PM – 8:00 PM',
+    category: 'outdoors',
+    categoryLabel: 'Lake Recreation & Flotilla',
+    description: 'Pontoon boats, kayaks, and jet skis gathering at Pine Cove bay. PNB Eats food boat delivery available right to your boat anchor point!',
+    coverImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80',
+    attendeesCount: 76,
+    isUserRsvpd: false,
+    nfcPassActive: true,
+    pointsReward: 50,
+    priceText: 'Free Flotilla Meetup',
+    tags: ['Lake Gathering', 'Boat Delivery', 'Sunset BBQ', 'Freedom NH']
+  },
+  {
+    id: 'evt-wolfeboro-trivia-chowder',
+    title: 'Lake Winnipesaukee Trivia & Clam Chowder Cup',
+    organizer: 'Wolfeboro Lakeside Tavern',
+    town: 'Wolfeboro, NH',
+    venueAddress: '90 N Main St, Wolfeboro',
+    date: 'Next Tuesday, Sept 29',
+    time: '6:30 PM – 9:00 PM',
+    category: 'food_drink',
+    categoryLabel: 'Pub Trivia & Chowder',
+    description: '6 rounds of general knowledge & local NH history trivia. \$100 first prize tavern gift card. Fresh steaming bread bowls of clam chowder.',
+    coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop&q=80',
+    attendeesCount: 34,
+    isUserRsvpd: false,
+    nfcPassActive: true,
+    pointsReward: 25,
+    priceText: '$5 Team Entry / Free Spectators',
+    tags: ['Pub Trivia', 'Cash Prizes', 'Seafood', 'Lake Winnipesaukee']
+  }
+];
+
+export const INITIAL_TABLE_TICKETS: DineInTableTicket[] = [
+  {
+    id: 'tkt-pnb-4',
+    tableNumber: 'Table 4 (Patio Booth)',
+    restaurantId: 'sf-pnb-eats',
+    restaurantName: 'PNB Eats Roadside Grill',
+    customerName: 'Mark & Sarah',
+    customerPhone: '(603) 555-0912',
+    items: [
+      { id: 'item-1', name: 'The Big Mountain Steak & Cheese Sub (12" Giant)', quantity: 1, price: 17.49, notes: 'Extra mushrooms & aioli' },
+      { id: 'item-2', name: 'Crispy Chicken Bacon Ranch Sub (8" Reg)', quantity: 1, price: 12.99 },
+      { id: 'item-3', name: 'Hand-Cut Seasoned Fries (Basket)', quantity: 1, price: 4.99 },
+      { id: 'item-4', name: 'Fountain Root Beer', quantity: 2, price: 5.50 }
+    ],
+    subtotal: 40.97,
+    tax: 3.48,
+    tip: 8.00,
+    total: 52.45,
+    status: 'in_kitchen',
+    paidStatus: 'paid_card',
+    orderedAt: new Date(Date.now() - 12 * 60000).toISOString(),
+    kitchenNotes: 'Order tapped via Table 4 acrylic stand. Hot food priority.'
+  },
+  {
+    id: 'tkt-pizza-barn-7',
+    tableNumber: 'Table 7 (Main Dining)',
+    restaurantId: 'sf-pizza-barn',
+    restaurantName: 'Pizza Barn & Smokehouse',
+    customerName: 'Dave K.',
+    customerPhone: '(603) 555-3311',
+    items: [
+      { id: 'item-5', name: '16" Smoked Pulled Pork & Jalapeno Pizza', quantity: 1, price: 21.99 },
+      { id: 'item-6', name: 'Buffalo Wings (12pc, Blue Cheese)', quantity: 1, price: 14.50 },
+      { id: 'item-7', name: 'Local Draft IPA Flight', quantity: 1, price: 11.00 }
+    ],
+    subtotal: 47.49,
+    tax: 4.04,
+    tip: 10.00,
+    total: 61.53,
+    status: 'new_order',
+    paidStatus: 'paid_card',
+    orderedAt: new Date(Date.now() - 3 * 60000).toISOString(),
+    kitchenNotes: 'Dine-In NFC tap. Blue cheese on side.'
+  }
+];
+
+export const DEFAULT_LOCAL_CONDITIONS: LocalConditionsReport = {
+  town: 'Carroll County, NH',
+  temperatureF: 68,
+  condition: 'Clear & Crisp Mountain Air',
+  iconEmoji: '☀️',
+  lakeOssipeeTempF: 71,
+  lakeStatus: 'Calm Water / Docks Open',
+  mountainForecast: 'Sunny, 62°F on Mt. Chocorua / 5-10mph breeze',
+  courierRoadStatus: 'roads_clear_rapid',
+  activeDriverCount: 1,
+  lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+};
+
 

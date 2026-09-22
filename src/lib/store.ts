@@ -9,7 +9,8 @@ import {
   BeforeAfterShowcase, WorkRequest, ContractorQuote,
   NfcMenuProduct, NfcHardwareOrder, NfcFormFactor,
   ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory,
-  DirectoryListing, DirectoryCategory, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet
+  DirectoryListing, DirectoryCategory, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet,
+  TownEvent, DineInTableTicket, LocalConditionsReport
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
@@ -17,7 +18,8 @@ import {
   INITIAL_BEFORE_AFTER_SHOWCASES, INITIAL_WORK_REQUESTS,
   INITIAL_NFC_MENU_PRODUCTS, INITIAL_NFC_HARDWARE_ORDERS,
   INITIAL_MANAGED_SERVICES, INITIAL_CLIENT_SUBSCRIPTIONS, INITIAL_AUTOMATION_BOTS,
-  INITIAL_DIRECTORY_LISTINGS, INITIAL_AFFILIATES, INITIAL_LOYALTY_REWARDS, DEFAULT_USER_LOYALTY_WALLET
+  INITIAL_DIRECTORY_LISTINGS, INITIAL_AFFILIATES, INITIAL_LOYALTY_REWARDS, DEFAULT_USER_LOYALTY_WALLET,
+  INITIAL_EVENTS, INITIAL_TABLE_TICKETS, DEFAULT_LOCAL_CONDITIONS
 } from './mock-data';
 
 const STORAGE_KEYS = {
@@ -47,6 +49,9 @@ const STORAGE_KEYS = {
   AFFILIATES: 'pulpulse_affiliates_v1',
   LOYALTY_REWARDS: 'pulpulse_loyalty_rewards_v1',
   LOYALTY_WALLET: 'pulpulse_loyalty_wallet_v1',
+  EVENTS: 'pulpulse_events_v1',
+  TABLE_TICKETS: 'pulpulse_table_tickets_v1',
+  LOCAL_CONDITIONS: 'pulpulse_local_conditions_v1',
 };
 
 const DEFAULT_DRIVER_SHIFT: DriverShiftSummary = {
@@ -1816,6 +1821,9 @@ export function useNfcStore() {
   const [affiliates, setAffiliates] = useState<AffiliateAmbassador[]>(INITIAL_AFFILIATES);
   const [loyaltyRewards, setLoyaltyRewards] = useState<TownLoyaltyReward[]>(INITIAL_LOYALTY_REWARDS);
   const [loyaltyWallet, setLoyaltyWallet] = useState<UserLoyaltyWallet>(DEFAULT_USER_LOYALTY_WALLET);
+  const [events, setEvents] = useState<TownEvent[]>(INITIAL_EVENTS);
+  const [tableTickets, setTableTickets] = useState<DineInTableTicket[]>(INITIAL_TABLE_TICKETS);
+  const [localConditions, setLocalConditions] = useState<LocalConditionsReport>(DEFAULT_LOCAL_CONDITIONS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -1973,6 +1981,31 @@ export function useNfcStore() {
         setLoyaltyWallet(JSON.parse(storedWallet));
       } else {
         setLoyaltyWallet(DEFAULT_USER_LOYALTY_WALLET);
+      }
+
+      const storedEvents = localStorage.getItem(STORAGE_KEYS.EVENTS);
+      if (storedEvents) {
+        const parsed: TownEvent[] = JSON.parse(storedEvents);
+        const existingIds = new Set(parsed.map(e => e.id));
+        setEvents([...parsed, ...INITIAL_EVENTS.filter(e => !existingIds.has(e.id))]);
+      } else {
+        setEvents(INITIAL_EVENTS);
+      }
+
+      const storedTickets = localStorage.getItem(STORAGE_KEYS.TABLE_TICKETS);
+      if (storedTickets) {
+        const parsed: DineInTableTicket[] = JSON.parse(storedTickets);
+        const existingIds = new Set(parsed.map(t => t.id));
+        setTableTickets([...parsed, ...INITIAL_TABLE_TICKETS.filter(t => !existingIds.has(t.id))]);
+      } else {
+        setTableTickets(INITIAL_TABLE_TICKETS);
+      }
+
+      const storedConditions = localStorage.getItem(STORAGE_KEYS.LOCAL_CONDITIONS);
+      if (storedConditions) {
+        setLocalConditions(JSON.parse(storedConditions));
+      } else {
+        setLocalConditions(DEFAULT_LOCAL_CONDITIONS);
       }
 
       if (storedHardwareOrders) {
@@ -3077,6 +3110,88 @@ export function useNfcStore() {
     });
   };
 
+  const rsvpToEvent = (eventId: string) => {
+    setEvents(prev => {
+      const next = prev.map(e => {
+        if (e.id === eventId) {
+          const isNowRsvpd = !e.isUserRsvpd;
+          return {
+            ...e,
+            isUserRsvpd: isNowRsvpd,
+            attendeesCount: isNowRsvpd ? e.attendeesCount + 1 : Math.max(0, e.attendeesCount - 1)
+          };
+        }
+        return e;
+      });
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(next));
+      return next;
+    });
+
+    awardLoyaltyPoints(25, 'RSVP to Community Event');
+    playDeliveryChime();
+  };
+
+  const addTownEvent = (eventData: Omit<TownEvent, 'id' | 'attendeesCount' | 'isUserRsvpd'>) => {
+    const newEvent: TownEvent = {
+      ...eventData,
+      id: `evt-${Date.now().toString(36)}`,
+      attendeesCount: 1,
+      isUserRsvpd: true,
+    };
+    setEvents(prev => {
+      const next = [newEvent, ...prev];
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(next));
+      return next;
+    });
+    awardLoyaltyPoints(50, 'Submitted new town event');
+    playDeliveryChime();
+    return newEvent;
+  };
+
+  const submitDineInTableOrder = (ticketData: Omit<DineInTableTicket, 'id' | 'orderedAt' | 'status'>) => {
+    const newTicket: DineInTableTicket = {
+      ...ticketData,
+      id: `tkt-${Date.now().toString(36)}`,
+      orderedAt: new Date().toISOString(),
+      status: 'new_order',
+    };
+    setTableTickets(prev => {
+      const next = [newTicket, ...prev];
+      localStorage.setItem(STORAGE_KEYS.TABLE_TICKETS, JSON.stringify(next));
+      return next;
+    });
+
+    awardLoyaltyPoints(20, `Dine-In Table Order at ${ticketData.restaurantName}`);
+    playDeliveryChime();
+    return newTicket;
+  };
+
+  const updateTableTicketStatus = (ticketId: string, status: DineInTableTicket['status']) => {
+    setTableTickets(prev => {
+      const next = prev.map(t => t.id === ticketId ? { ...t, status } : t);
+      localStorage.setItem(STORAGE_KEYS.TABLE_TICKETS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
+  const importAiScannedMenu = (restaurantId: string, parsedProducts: StorefrontProduct[]) => {
+    setStorefronts(prev => {
+      const next = prev.map(sf => {
+        if (sf.id === restaurantId) {
+          return {
+            ...sf,
+            products: [...parsedProducts, ...sf.products]
+          };
+        }
+        return sf;
+      });
+      localStorage.setItem(STORAGE_KEYS.STOREFRONTS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
   return {
     towns,
     activeTown,
@@ -3107,6 +3222,9 @@ export function useNfcStore() {
     affiliates,
     loyaltyRewards,
     loyaltyWallet,
+    events,
+    tableTickets,
+    localConditions,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -3165,5 +3283,10 @@ export function useNfcStore() {
     registerAffiliate,
     redeemLoyaltyReward,
     awardLoyaltyPoints,
+    rsvpToEvent,
+    addTownEvent,
+    submitDineInTableOrder,
+    updateTableTicketStatus,
+    importAiScannedMenu,
   };
 }

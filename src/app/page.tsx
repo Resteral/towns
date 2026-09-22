@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import HeroTapSimulator from '@/components/HeroTapSimulator';
 import CardCustomizerModal from '@/components/CardCustomizerModal';
+import LocalConditionsHUD from '@/components/LocalConditionsHUD';
 import { ReviewProduct } from '@/lib/types';
 import { 
   Radio, Sparkles, ShieldCheck, Zap, TrendingUp, Star, 
@@ -26,7 +27,12 @@ export default function HomePage() {
   const newRevenueProjected = Math.round(estimatedReviewsPerMonth * 1.8 * avgTicket);
 
   return (
-    <div className="relative min-h-screen pt-28 pb-32 overflow-hidden">
+    <div className="relative min-h-screen pt-20 pb-32 overflow-hidden">
+      
+      {/* Hyper-Local Mountain & Lake Conditions HUD */}
+      <div className="mb-6">
+        <LocalConditionsHUD />
+      </div>
       
       {/* Background Cyber Ambient Lights */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none -z-10">

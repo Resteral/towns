@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useNfcStore } from '@/lib/store';
 import TownSelector from '@/components/TownSelector';
-import { Sparkles, ShoppingBag, LayoutDashboard, Radio, Truck, MessageSquare, Compass, Crown, Wrench } from 'lucide-react';
+import SpotlightSearch from '@/components/SpotlightSearch';
+import { Sparkles, ShoppingBag, LayoutDashboard, Radio, Truck, MessageSquare, Compass, Crown, Wrench, Search } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -51,6 +52,14 @@ export default function Navbar() {
             }`}
           >
             <span className="px-1.5 py-0.5 rounded bg-white/5 text-amber-300 border border-white/10 text-[9px] font-bold">Directory 🏢</span>
+          </Link>
+          <Link
+            href="/events"
+            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-1 ${
+              pathname?.startsWith('/events') ? 'text-pink-400' : 'text-pink-400/90 hover:text-pink-300'
+            }`}
+          >
+            <span className="px-1.5 py-0.5 rounded bg-pink-500/10 text-pink-400 border border-pink-500/30 text-[9px] font-bold">Events 📅</span>
           </Link>
           <Link
             href="/rewards"
@@ -178,7 +187,20 @@ export default function Navbar() {
         </nav>
 
         {/* Right CTA / Town Selector, Cart, Portal */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {/* Spotlight Search Trigger Button */}
+          <button
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+            }}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-mono text-white/60 hover:text-white transition-all"
+            title="Press Cmd+K or Ctrl+K to Search"
+          >
+            <Search className="w-3.5 h-3.5 text-amber-400" />
+            <span>Search</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[8px] font-mono">⌘K</kbd>
+          </button>
+
           {/* Town Selector Component */}
           <TownSelector />
 
@@ -213,6 +235,7 @@ export default function Navbar() {
           </Link>
         </div>
       </div>
+      <SpotlightSearch />
     </header>
   );
 }
