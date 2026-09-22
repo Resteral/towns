@@ -415,9 +415,9 @@ export const INITIAL_CARDS: NfcCardConfig[] = [
   {
     id: 'card-oasis-main',
     cardName: 'Main Counter Station 1',
-    businessName: 'Oasis Coffee & Craft Bakery',
+    businessName: 'Oasis Artisan Roastery & Bakehouse',
     googlePlaceId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
-    googleReviewUrl: 'https://www.google.com/search?q=Oasis+Coffee+Bakery+Effingham+NH',
+    googleReviewUrl: 'https://www.google.com/search?q=Oasis+Artisan+Roastery+Effingham+NH',
     yelpUrl: 'https://yelp.com',
     tripAdvisorUrl: 'https://tripadvisor.com',
     mode: 'smart_funnel',
@@ -425,8 +425,8 @@ export const INITIAL_CARDS: NfcCardConfig[] = [
     customHeadline: 'How was your artisan experience today at Oasis?',
     logoUrl: '☕',
     primaryColor: '#f59e0b',
-    assignedLocation: 'Effingham Main St',
-    assignedStaff: 'Dave M.',
+    assignedLocation: 'Historic Route 153',
+    assignedStaff: 'Sean Martin',
     active: true,
     totalTaps: 428,
     googleConversions: 379,
@@ -435,44 +435,44 @@ export const INITIAL_CARDS: NfcCardConfig[] = [
     town: 'Effingham, NH'
   },
   {
-    id: 'card-oasis-drive-thru',
-    cardName: 'Drive-Thru Window Tap',
-    businessName: 'Oasis Coffee & Craft Bakery',
-    googlePlaceId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
-    googleReviewUrl: 'https://www.google.com/search?q=Oasis+Coffee+Bakery+Effingham+NH',
+    id: 'card-pnb-main',
+    cardName: 'Register Counter Station',
+    businessName: 'PNB Eats Roadside Grill',
+    googlePlaceId: 'ChIJ_yXq6zN64okRTG3n6qN8Eff',
+    googleReviewUrl: 'https://www.google.com/search?q=PNB+Eats+Effingham+NH',
     mode: 'smart_funnel',
     thresholdStars: 4,
-    customHeadline: 'Did our team brighten your drive today?',
-    logoUrl: '🚗',
-    primaryColor: '#4f46e5',
-    assignedLocation: 'Effingham Main St',
-    assignedStaff: 'Sarah K.',
+    customHeadline: 'Did our team serve up a 5-star meal for you today?',
+    logoUrl: '🥪',
+    primaryColor: '#f59e0b',
+    assignedLocation: 'NH-25 Main Counter',
+    assignedStaff: 'PNB Front Team',
     active: true,
-    totalTaps: 312,
-    googleConversions: 284,
-    privateFeedbacksCount: 14,
+    totalTaps: 184,
+    googleConversions: 172,
+    privateFeedbacksCount: 6,
     createdAt: '2026-08-10T14:30:00Z',
     town: 'Effingham, NH'
   },
   {
-    id: 'card-demo-vip',
-    cardName: 'VIP Direct Link Card',
-    businessName: 'Apex Precision Automotive',
-    googlePlaceId: 'ChIJL6Q0p_uuEmsR4063v1g7x90',
-    googleReviewUrl: 'https://www.google.com/search?q=Apex+Precision+Automotive+NH',
-    mode: 'direct_google',
-    thresholdStars: 5,
-    customHeadline: 'Leave us a review on Google!',
-    logoUrl: '🏎️',
-    primaryColor: '#10b981',
-    assignedLocation: 'Bay 3',
-    assignedStaff: 'Walt R.',
+    id: 'card-mountain-grainery',
+    cardName: 'Main Register Review Beacon',
+    businessName: 'Mountain Grainery Ace Hardware',
+    googlePlaceId: 'ChIJQ13bEzl64okRVG1wL384Oss',
+    googleReviewUrl: 'https://www.google.com/search?q=Mountain+Grainery+Ace+Hardware+Ossipee+NH',
+    mode: 'smart_funnel',
+    thresholdStars: 4,
+    customHeadline: 'Did our team help you find everything for your project?',
+    logoUrl: '🔨',
+    primaryColor: '#ef4444',
+    assignedLocation: 'Route 16 Register 1',
+    assignedStaff: 'Ace Service Team',
     active: true,
-    totalTaps: 165,
-    googleConversions: 165,
-    privateFeedbacksCount: 0,
+    totalTaps: 310,
+    googleConversions: 295,
+    privateFeedbacksCount: 15,
     createdAt: '2026-08-15T09:15:00Z',
-    town: 'Conway, NH'
+    town: 'Ossipee, NH'
   }
 ];
 
@@ -1590,51 +1590,7 @@ export const INITIAL_EVENTS: TownEvent[] = [
   }
 ];
 
-export const INITIAL_TABLE_TICKETS: DineInTableTicket[] = [
-  {
-    id: 'tkt-pnb-4',
-    tableNumber: 'Table 4 (Patio Booth)',
-    restaurantId: 'sf-pnb-eats',
-    restaurantName: 'PNB Eats Roadside Grill',
-    customerName: 'Mark & Sarah',
-    customerPhone: '(603) 555-0912',
-    items: [
-      { id: 'item-1', name: 'The Big Mountain Steak & Cheese Sub (12" Giant)', quantity: 1, price: 17.49, notes: 'Extra mushrooms & aioli' },
-      { id: 'item-2', name: 'Crispy Chicken Bacon Ranch Sub (8" Reg)', quantity: 1, price: 12.99 },
-      { id: 'item-3', name: 'Hand-Cut Seasoned Fries (Basket)', quantity: 1, price: 4.99 },
-      { id: 'item-4', name: 'Fountain Root Beer', quantity: 2, price: 5.50 }
-    ],
-    subtotal: 40.97,
-    tax: 3.48,
-    tip: 8.00,
-    total: 52.45,
-    status: 'in_kitchen',
-    paidStatus: 'paid_card',
-    orderedAt: new Date(Date.now() - 12 * 60000).toISOString(),
-    kitchenNotes: 'Order tapped via Table 4 acrylic stand. Hot food priority.'
-  },
-  {
-    id: 'tkt-pizza-barn-7',
-    tableNumber: 'Table 7 (Main Dining)',
-    restaurantId: 'sf-pizza-barn',
-    restaurantName: 'Pizza Barn & Smokehouse',
-    customerName: 'Dave K.',
-    customerPhone: '(603) 555-3311',
-    items: [
-      { id: 'item-5', name: '16" Smoked Pulled Pork & Jalapeno Pizza', quantity: 1, price: 21.99 },
-      { id: 'item-6', name: 'Buffalo Wings (12pc, Blue Cheese)', quantity: 1, price: 14.50 },
-      { id: 'item-7', name: 'Local Draft IPA Flight', quantity: 1, price: 11.00 }
-    ],
-    subtotal: 47.49,
-    tax: 4.04,
-    tip: 10.00,
-    total: 61.53,
-    status: 'new_order',
-    paidStatus: 'paid_card',
-    orderedAt: new Date(Date.now() - 3 * 60000).toISOString(),
-    kitchenNotes: 'Dine-In NFC tap. Blue cheese on side.'
-  }
-];
+export const INITIAL_TABLE_TICKETS: DineInTableTicket[] = [];
 
 export const DEFAULT_LOCAL_CONDITIONS: LocalConditionsReport = {
   town: 'Carroll County, NH',
@@ -1764,103 +1720,9 @@ export const INITIAL_SMS_WORKFLOWS: SmsAutomationWorkflow[] = [
   }
 ];
 
-export const INITIAL_SMS_LOGS: SmsLogMessage[] = [
-  {
-    id: 'log-1',
-    workflowId: 'sms-missed-call-textback',
-    workflowName: 'Instant Missed Call Auto-Text Back',
-    recipientPhone: '(603) 555-4912',
-    recipientName: 'Jason Miller',
-    businessName: "Walt's Artisan Woodcraft",
-    messageBody: 'Hi! Sorry we missed your call at Walt\'s Artisan Woodcraft. We are currently on a job. How can we help you today? Text us here for a fast quote or booking!',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 14 * 60000).toISOString(),
-    direction: 'outbound',
-    cost: 0.0079
-  },
-  {
-    id: 'log-2',
-    workflowId: 'sms-missed-call-textback',
-    workflowName: 'Instant Missed Call Auto-Text Back',
-    recipientPhone: '(603) 555-4912',
-    recipientName: 'Jason Miller',
-    businessName: "Walt's Artisan Woodcraft",
-    messageBody: 'Hi Walt! Need a 24x16ft composite deck built on Ossipee Lake before October. Can you come by for an estimate this week?',
-    status: 'replied',
-    timestamp: new Date(Date.now() - 11 * 60000).toISOString(),
-    direction: 'inbound',
-    cost: 0.0000
-  },
-  {
-    id: 'log-3',
-    workflowId: 'sms-review-booster',
-    workflowName: 'Smart 5-Star Review Invite',
-    recipientPhone: '(603) 555-8812',
-    recipientName: 'Amanda Clark',
-    businessName: 'PNB Eats Roadside Grill',
-    messageBody: 'Hi Amanda! Thanks for dining with PNB Eats on Route 25. If you enjoyed your meal, could you take 30s to leave us a 5-star Google review? Tap here: https://oasistap.com/tap/pnb',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 45 * 60000).toISOString(),
-    direction: 'outbound',
-    cost: 0.0079
-  },
-  {
-    id: 'log-4',
-    workflowId: 'sms-table-ready',
-    workflowName: 'Digital Table Buzzer Text',
-    recipientPhone: '(603) 555-2199',
-    recipientName: 'Robert Vance',
-    businessName: 'Pizza Barn & Smokehouse',
-    messageBody: 'Robert, your table at Pizza Barn & Smokehouse is ready! Please head to the host stand within 5 minutes. See you inside! 🍽️',
-    status: 'delivered',
-    timestamp: new Date(Date.now() - 95 * 60000).toISOString(),
-    direction: 'outbound',
-    cost: 0.0079
-  }
-];
+export const INITIAL_SMS_LOGS: SmsLogMessage[] = [];
 
-export const INITIAL_SMS_SUBSCRIBERS: SmsSubscriberContact[] = [
-  {
-    id: 'sub-c1',
-    phone: '(603) 555-4912',
-    name: 'Jason Miller',
-    town: 'Effingham, NH',
-    optInSource: 'nfc_tap',
-    subscribedDate: '2026-08-14',
-    isActive: true,
-    tags: ['Diner VIP', 'Homeowner', 'Effingham']
-  },
-  {
-    id: 'sub-c2',
-    phone: '(603) 555-8812',
-    name: 'Amanda Clark',
-    town: 'Center Ossipee, NH',
-    optInSource: 'online_checkout',
-    subscribedDate: '2026-08-20',
-    isActive: true,
-    tags: ['Pizza Lover', 'Weekly Takeout', 'Ossipee']
-  },
-  {
-    id: 'sub-c3',
-    phone: '(603) 555-2199',
-    name: 'Robert Vance',
-    town: 'Freedom, NH',
-    optInSource: 'website_vip_club',
-    subscribedDate: '2026-09-02',
-    isActive: true,
-    tags: ['Lakefront Resident', 'Airbnb Host', 'Freedom']
-  },
-  {
-    id: 'sub-c4',
-    phone: '(603) 555-7301',
-    name: 'Elena Rostova',
-    town: 'Wolfeboro, NH',
-    optInSource: 'in_store',
-    subscribedDate: '2026-09-10',
-    isActive: true,
-    tags: ['VIP Diner', 'Wolfeboro']
-  }
-];
+export const INITIAL_SMS_SUBSCRIBERS: SmsSubscriberContact[] = [];
 
 
 

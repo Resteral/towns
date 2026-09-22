@@ -19,16 +19,23 @@ export default function AnalyticsPage() {
   const fiveStarTaps = tapLogs.filter(l => l.ratingSelected && l.ratingSelected >= 4).length;
   const shieldedTaps = tapLogs.filter(l => l.ratingSelected && l.ratingSelected < 4).length;
 
-  // Mock hourly distribution
-  const hourlyData = [
-    { hour: '9 AM', taps: 14 },
-    { hour: '11 AM', taps: 48 },
-    { hour: '1 PM', taps: 86 },
-    { hour: '3 PM', taps: 52 },
-    { hour: '5 PM', taps: 94 },
-    { hour: '7 PM', taps: 68 },
-    { hour: '9 PM', taps: 30 },
-  ];
+  // Live hourly tap telemetry computed from actual logs
+  const hourBuckets = ['9 AM', '11 AM', '1 PM', '3 PM', '5 PM', '7 PM', '9 PM'];
+  const hourlyData = hourBuckets.map(h => {
+    const count = tapLogs.filter(l => {
+      const date = new Date(l.timestamp);
+      const hour = date.getHours();
+      if (h === '9 AM' && hour >= 8 && hour < 10) return true;
+      if (h === '11 AM' && hour >= 10 && hour < 12) return true;
+      if (h === '1 PM' && hour >= 12 && hour < 14) return true;
+      if (h === '3 PM' && hour >= 14 && hour < 16) return true;
+      if (h === '5 PM' && hour >= 16 && hour < 18) return true;
+      if (h === '7 PM' && hour >= 18 && hour < 20) return true;
+      if (h === '9 PM' && hour >= 20) return true;
+      return false;
+    }).length;
+    return { hour: h, taps: count };
+  });
 
   return (
     <div className="space-y-10">
