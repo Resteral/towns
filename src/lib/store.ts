@@ -11,7 +11,8 @@ import {
   ManagedServicePackage, ClientServiceSubscription, ServiceAutomationBot, ServiceCategory,
   DirectoryListing, DirectoryCategory, AffiliateAmbassador, TownLoyaltyReward, UserLoyaltyWallet,
   TownEvent, DineInTableTicket, LocalConditionsReport,
-  SmsAutomationWorkflow, SmsLogMessage, SmsSubscriberContact, SmsWorkflowCategory
+  SmsAutomationWorkflow, SmsLogMessage, SmsSubscriberContact, SmsWorkflowCategory,
+  UserProfile, DeliveryDriverMember, AuthSession, UserRole
 } from './types';
 import { 
   INITIAL_PRODUCTS, INITIAL_CARDS, INITIAL_TAP_LOGS, 
@@ -57,7 +58,185 @@ const STORAGE_KEYS = {
   SMS_WORKFLOWS: 'pulpulse_sms_workflows_v1',
   SMS_LOGS: 'pulpulse_sms_logs_v1',
   SMS_SUBSCRIBERS: 'pulpulse_sms_subscribers_v1',
+  AUTH_USER: 'pulpulse_auth_user_v2',
+  DELIVERY_DRIVERS: 'pulpulse_delivery_drivers_v2',
 };
+
+export const INITIAL_DELIVERY_DRIVERS: DeliveryDriverMember[] = [
+  {
+    id: 'driver-sean',
+    name: 'Sean Martin',
+    phone: '(508) 507-0305',
+    email: 'frijj555@gmail.com',
+    avatar: '👑',
+    town: 'Effingham',
+    state: 'NH',
+    vehicleName: 'Silver Subaru Outback (AWD Vanguard Unit)',
+    vehiclePlate: 'NH-VANGUARD',
+    isOnline: true,
+    status: 'online_ready',
+    specialties: ['Express Food Delivery', 'Lake Dockside Firewood', 'Ace Hardware & Tools', 'Hannaford Curbside', 'Emergency Errand Runs'],
+    rating: 5.0,
+    reviewsCount: 156,
+    deliveriesCompleted: 342,
+    joinedDate: '2026-01-01',
+    preferredTowns: ['Effingham', 'Center Ossipee', 'Freedom', 'Wakefield', 'Conway'],
+    activeShiftStart: 'Today at 7:30 AM',
+    hourlyRateEstimate: '$9.99 flat base + $1.50/mi',
+    currentLocation: 'Route 25 & 153 Corridor',
+    canDeliverFood: true,
+    canDeliverGroceries: true,
+    canDeliverHardware: true,
+    canDeliverFirewood: true
+  },
+  {
+    id: 'driver-jake',
+    name: 'Jake Reynolds',
+    phone: '(603) 539-8822',
+    email: 'jake.r@gmail.com',
+    avatar: '🛻',
+    town: 'Center Ossipee',
+    state: 'NH',
+    vehicleName: 'Ford F-150 SuperCrew 4x4 (Bed & Heavy Haul)',
+    vehiclePlate: 'NH-539R',
+    isOnline: true,
+    status: 'online_ready',
+    specialties: ['Wood Pellets & Feed Bags', 'Heavy Hardware', 'Campground Supply', 'Restaurant Takeout'],
+    rating: 4.9,
+    reviewsCount: 42,
+    deliveriesCompleted: 128,
+    joinedDate: '2026-03-01',
+    preferredTowns: ['Center Ossipee', 'West Ossipee', 'Effingham', 'Freedom'],
+    activeShiftStart: 'Today at 8:15 AM',
+    hourlyRateEstimate: '$9.99 base flat',
+    currentLocation: 'Route 16 Corridor',
+    canDeliverFood: true,
+    canDeliverGroceries: true,
+    canDeliverHardware: true,
+    canDeliverFirewood: true
+  },
+  {
+    id: 'driver-amanda',
+    name: 'Amanda Vance',
+    phone: '(603) 539-4419',
+    email: 'amanda.v@gmail.com',
+    avatar: '🚙',
+    town: 'Freedom',
+    state: 'NH',
+    vehicleName: 'Toyota RAV4 Hybrid AWD',
+    vehiclePlate: 'NH-441V',
+    isOnline: true,
+    status: 'online_ready',
+    specialties: ['Hannaford To Go Curbside', 'Deli & Morning Bakery', 'Lakeside Cabins', 'Prescription Pickup'],
+    rating: 5.0,
+    reviewsCount: 38,
+    deliveriesCompleted: 94,
+    joinedDate: '2026-04-15',
+    preferredTowns: ['Freedom', 'Wakefield', 'Sanbornville', 'Effingham'],
+    activeShiftStart: 'Today at 9:00 AM',
+    hourlyRateEstimate: '$8.99 base flat',
+    currentLocation: 'Ossipee Lake / Freedom Village',
+    canDeliverFood: true,
+    canDeliverGroceries: true,
+    canDeliverHardware: false,
+    canDeliverFirewood: false
+  },
+  {
+    id: 'driver-dave',
+    name: 'Dave Miller',
+    phone: '(603) 539-7710',
+    email: 'dave.m@gmail.com',
+    avatar: '🚗',
+    town: 'Wakefield',
+    state: 'NH',
+    vehicleName: 'Subaru Crosstrek AWD',
+    vehiclePlate: 'NH-771D',
+    isOnline: false,
+    status: 'off_duty',
+    specialties: ['Evening Diner Runs', 'Weekend Errand Runner', 'Pizza Barn Delivery'],
+    rating: 4.8,
+    reviewsCount: 26,
+    deliveriesCompleted: 62,
+    joinedDate: '2026-05-01',
+    preferredTowns: ['Wakefield', 'Sanbornville', 'Union'],
+    hourlyRateEstimate: '$9.99 base flat',
+    currentLocation: 'Wakefield / Sanbornville',
+    canDeliverFood: true,
+    canDeliverGroceries: true,
+    canDeliverHardware: false,
+    canDeliverFirewood: false
+  }
+];
+
+export const PRESET_USERS: UserProfile[] = [
+  {
+    id: 'user-sean',
+    name: 'Sean Martin',
+    email: 'frijj555@gmail.com',
+    phone: '(508) 507-0305',
+    role: 'driver',
+    avatar: '👑',
+    town: 'Effingham',
+    state: 'NH',
+    badge: 'Founding Vanguard & Courier Lead',
+    isDriver: true,
+    driverMemberId: 'driver-sean',
+    createdAt: '2026-01-01'
+  },
+  {
+    id: 'user-jake',
+    name: 'Jake Reynolds',
+    email: 'jake.r@gmail.com',
+    phone: '(603) 539-8822',
+    role: 'driver',
+    avatar: '🛻',
+    town: 'Center Ossipee',
+    state: 'NH',
+    badge: 'Community Courier Driver (4x4)',
+    isDriver: true,
+    driverMemberId: 'driver-jake',
+    createdAt: '2026-03-01'
+  },
+  {
+    id: 'user-gary',
+    name: 'Gary Collins (PNB Eats)',
+    email: 'gary@pnbeats.com',
+    phone: '(603) 539-7440',
+    role: 'merchant',
+    avatar: '🥪',
+    town: 'Effingham',
+    state: 'NH',
+    badge: 'Verified Restaurant Owner',
+    isDriver: false,
+    createdAt: '2026-01-15'
+  },
+  {
+    id: 'user-alex',
+    name: 'Alex Tremblay',
+    email: 'alex.tremblay@gmail.com',
+    phone: '(603) 555-0199',
+    role: 'resident',
+    avatar: '🌲',
+    town: 'Freedom',
+    state: 'NH',
+    badge: 'Lake Ossipee Resident / Diner',
+    isDriver: false,
+    createdAt: '2026-06-01'
+  },
+  {
+    id: 'user-walt',
+    name: 'Walter Henderson (Walt\'s Woodcraft)',
+    email: 'walt@waltswoodcraft.com',
+    phone: '(603) 539-8120',
+    role: 'contractor',
+    avatar: '🔨',
+    town: 'Effingham',
+    state: 'NH',
+    badge: 'Verified Master Carpenter',
+    isDriver: false,
+    createdAt: '2026-02-01'
+  }
+];
 
 const DEFAULT_DRIVER_SHIFT: DriverShiftSummary = {
   isOnline: true,
@@ -1832,11 +2011,29 @@ export function useNfcStore() {
   const [smsWorkflows, setSmsWorkflows] = useState<SmsAutomationWorkflow[]>(INITIAL_SMS_WORKFLOWS);
   const [smsLogs, setSmsLogs] = useState<SmsLogMessage[]>(INITIAL_SMS_LOGS);
   const [smsSubscribers, setSmsSubscribers] = useState<SmsSubscriberContact[]>(INITIAL_SMS_SUBSCRIBERS);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(PRESET_USERS[0]);
+  const [deliveryDrivers, setDeliveryDrivers] = useState<DeliveryDriverMember[]>(INITIAL_DELIVERY_DRIVERS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
     try {
+      const storedUser = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+      if (storedUser) {
+        setCurrentUser(JSON.parse(storedUser));
+      } else {
+        setCurrentUser(PRESET_USERS[0]);
+      }
+
+      const storedDrivers = localStorage.getItem(STORAGE_KEYS.DELIVERY_DRIVERS);
+      if (storedDrivers) {
+        const parsed: DeliveryDriverMember[] = JSON.parse(storedDrivers);
+        const existingIds = new Set(parsed.map(d => d.id));
+        setDeliveryDrivers([...parsed, ...INITIAL_DELIVERY_DRIVERS.filter(d => !existingIds.has(d.id))]);
+      } else {
+        setDeliveryDrivers(INITIAL_DELIVERY_DRIVERS);
+      }
+
       const storedTowns = localStorage.getItem(STORAGE_KEYS.TOWNS);
       if (storedTowns) setTowns(JSON.parse(storedTowns));
 
@@ -3328,6 +3525,119 @@ export function useNfcStore() {
     return newSub;
   };
 
+  const loginUser = (user: UserProfile) => {
+    setCurrentUser(user);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
+    playDeliveryChime();
+    return user;
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
+    localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+  };
+
+  const registerUser = (userData: Omit<UserProfile, 'id' | 'createdAt'>) => {
+    const newUser: UserProfile = {
+      ...userData,
+      id: `user-${Date.now().toString(36)}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setCurrentUser(newUser);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(newUser));
+
+    if (newUser.isDriver) {
+      const newDriver: DeliveryDriverMember = {
+        id: `driver-${Date.now().toString(36)}`,
+        name: newUser.name,
+        phone: newUser.phone,
+        email: newUser.email,
+        avatar: newUser.avatar || '🚗',
+        town: newUser.town,
+        state: newUser.state,
+        vehicleName: 'Personal Vehicle',
+        isOnline: true,
+        status: 'online_ready',
+        specialties: ['Express Town Delivery', 'Errand Runs'],
+        rating: 5.0,
+        reviewsCount: 1,
+        deliveriesCompleted: 0,
+        joinedDate: new Date().toISOString().split('T')[0],
+        preferredTowns: [newUser.town],
+        activeShiftStart: 'Just joined today',
+        hourlyRateEstimate: '$9.99 flat base',
+        currentLocation: `${newUser.town}, NH`,
+        canDeliverFood: true,
+        canDeliverGroceries: true,
+        canDeliverHardware: false,
+        canDeliverFirewood: false
+      };
+      setDeliveryDrivers(prev => {
+        const next = [newDriver, ...prev];
+        localStorage.setItem(STORAGE_KEYS.DELIVERY_DRIVERS, JSON.stringify(next));
+        return next;
+      });
+      newUser.driverMemberId = newDriver.id;
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(newUser));
+    }
+
+    awardLoyaltyPoints(100, 'Welcome Bonus: Joined Carroll County Hub');
+    playDeliveryChime();
+    return newUser;
+  };
+
+  const toggleDriverStatus = (driverId: string, customStatus?: DeliveryDriverMember['status']) => {
+    setDeliveryDrivers(prev => {
+      const next = prev.map(driver => {
+        if (driver.id === driverId) {
+          const newStatus = customStatus || (driver.status === 'online_ready' ? 'off_duty' : 'online_ready');
+          const isOnline = newStatus !== 'off_duty';
+          return {
+            ...driver,
+            status: newStatus,
+            isOnline,
+            activeShiftStart: isOnline ? (driver.activeShiftStart || 'Just started') : undefined
+          };
+        }
+        return driver;
+      });
+      localStorage.setItem(STORAGE_KEYS.DELIVERY_DRIVERS, JSON.stringify(next));
+      return next;
+    });
+    playDeliveryChime();
+  };
+
+  const registerAsDriver = (driverData: Omit<DeliveryDriverMember, 'id' | 'rating' | 'reviewsCount' | 'deliveriesCompleted' | 'joinedDate'>) => {
+    const newDriver: DeliveryDriverMember = {
+      ...driverData,
+      id: `driver-${Date.now().toString(36)}`,
+      rating: 5.0,
+      reviewsCount: 1,
+      deliveriesCompleted: 0,
+      joinedDate: new Date().toISOString().split('T')[0],
+      isOnline: true,
+      status: 'online_ready'
+    };
+    setDeliveryDrivers(prev => {
+      const next = [newDriver, ...prev];
+      localStorage.setItem(STORAGE_KEYS.DELIVERY_DRIVERS, JSON.stringify(next));
+      return next;
+    });
+    if (currentUser) {
+      const updatedUser: UserProfile = {
+        ...currentUser,
+        isDriver: true,
+        driverMemberId: newDriver.id,
+        role: 'driver'
+      };
+      setCurrentUser(updatedUser);
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+    }
+    awardLoyaltyPoints(150, 'Registered as Verified Carroll County Delivery Driver');
+    playDeliveryChime();
+    return newDriver;
+  };
+
   return {
     towns,
     activeTown,
@@ -3364,6 +3674,8 @@ export function useNfcStore() {
     smsWorkflows,
     smsLogs,
     smsSubscribers,
+    currentUser,
+    deliveryDrivers,
     isLoaded,
     addShoutout,
     reactToShoutout,
@@ -3432,5 +3744,10 @@ export function useNfcStore() {
     sendManualSms,
     broadcastSmsCampaign,
     addSmsSubscriber,
+    loginUser,
+    logoutUser,
+    registerUser,
+    toggleDriverStatus,
+    registerAsDriver,
   };
 }

@@ -719,6 +719,56 @@ export interface SmsSubscriberContact {
   tags: string[];
 }
 
+export type UserRole = 'driver' | 'resident' | 'merchant' | 'contractor' | 'admin';
+
+export interface DeliveryDriverMember {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  avatar: string;
+  town: string;
+  state: string;
+  vehicleName: string;
+  vehiclePlate?: string;
+  isOnline: boolean;
+  status: 'online_ready' | 'on_delivery' | 'off_duty';
+  specialties: string[];
+  rating: number;
+  reviewsCount: number;
+  deliveriesCompleted: number;
+  joinedDate: string;
+  preferredTowns: string[];
+  activeShiftStart?: string;
+  hourlyRateEstimate?: string;
+  currentLocation?: string;
+  canDeliverFood: boolean;
+  canDeliverGroceries: boolean;
+  canDeliverHardware: boolean;
+  canDeliverFirewood: boolean;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: UserRole;
+  avatar: string;
+  town: string;
+  state: string;
+  badge: string;
+  isDriver: boolean;
+  driverMemberId?: string;
+  createdAt: string;
+}
+
+export interface AuthSession {
+  currentUser: UserProfile | null;
+  isAuthenticated: boolean;
+}
+
+
 
 
 
