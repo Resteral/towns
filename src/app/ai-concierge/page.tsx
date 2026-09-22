@@ -20,12 +20,15 @@ import {
   Filter,
   Truck,
   Phone,
+  PhoneCall,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  Store
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useNfcStore } from '@/lib/store';
 import { StorefrontProduct, MerchantStorefront, DeliveryOrder } from '@/lib/types';
+import { EFFINGHAM_AREA_BUSINESSES, LocalBusiness } from '@/lib/local-businesses';
 
 interface ConciergeMsg {
   id: string;
@@ -35,9 +38,11 @@ interface ConciergeMsg {
     dish: StorefrontProduct;
     store: MerchantStorefront;
   }[];
+  suggestedBusinesses?: LocalBusiness[];
   quickOptions?: string[];
   showCheckoutBtn?: boolean;
   showDeliveryForm?: boolean;
+  showCallAheadForm?: boolean;
   confirmedDeliveryOrder?: DeliveryOrder;
   timestamp: string;
 }
@@ -56,22 +61,42 @@ export default function DedicatedAiConciergePage() {
   const [custNotes, setCustNotes] = useState('Leave on dock table. Text when arrived.');
   const [isDispatching, setIsDispatching] = useState(false);
 
+  // Call-Ahead State
+  const [callStoreId, setCallStoreId] = useState<string>(EFFINGHAM_AREA_BUSINESSES[0]?.id || 'biz-eff-pnb-eats');
+  const [callPickupType, setCallPickupType] = useState<'paid_phone' | 'prepay_sean' | 'cash_delivery'>('paid_phone');
+  const [callPickupNameOrCode, setCallPickupNameOrCode] = useState('Alex - Order #42');
+  const [callEstimatedCost, setCallEstimatedCost] = useState('28.50');
+  const [callItemDescription, setCallItemDescription] = useState('2 Large subs + fries from the grill');
+
+  const selectedCallBiz = EFFINGHAM_AREA_BUSINESSES.find(b => b.id === callStoreId) || EFFINGHAM_AREA_BUSINESSES[0];
+
   const [messages, setMessages] = useState<ConciergeMsg[]>([
     {
       id: 'msg-start',
       sender: 'ai',
-      text: "👋 Welcome to the Carroll County AI Food & Concierge Assistant! What are you craving today? I can suggest top-rated local dishes and immediately dispatch courier Sean Martin to deliver to your door or boat dock!",
+      text: "👋 Welcome to the Carroll County AI Food & Call-In Courier Assistant! \n\n📞 Looking to call a local business? I will look up their **direct phone number** so you can call in your order. You can either pay the store over the phone, or prepay courier **Sean Martin** to pay for and pick up your items!",
       quickOptions: [
-        '🍔 Hungry for Food / Lunch & Dinner',
-        '🥩 Giant Steak & Cheese Sub',
-        '🍕 Best Wood-Fired Pizza & Wings',
-        '☕ Morning Coffee & Brioche Bakery',
-        '🌲 Campfire Firewood & S\'mores Kit',
-        '🚀 Dispatch Sean Martin to Deliver'
+        '📞 Call Store & Dispatch Pickup',
+        '🍔 Hungry for Food / Order Lunch & Dinner',
+        '🥩 PNB Eats: (603) 539-7440',
+        '🍕 Pizza Barn: (603) 539-4444',
+        '🛠️ Ace Hardware: (603) 539-6611',
+        '🌲 Campfire Firewood & S\'mores Kit'
       ],
       timestamp: 'Just now'
     }
   ]);
+
+  // Find matching businesses
+  const findMatchingBusinesses = (query: string): LocalBusiness[] => {
+    const q = query.toLowerCase();
+    return EFFINGHAM_AREA_BUSINESSES.filter(biz => 
+      biz.name.toLowerCase().includes(q) || 
+      biz.town.toLowerCase().includes(q) || 
+      biz.description.toLowerCase().includes(q) ||
+      biz.category.toLowerCase().includes(q)
+    ).slice(0, 3);
+  };
 
   // Find matching dishes
   const findMatchingDishes = (query: string) => {
@@ -125,25 +150,55 @@ export default function DedicatedAiConciergePage() {
     setTimeout(() => {
       const lower = text.toLowerCase();
 
-      // 1. Delivery Request
-      if (lower.includes('deliver') || lower.includes('sean') || lower.includes('dispatch') || lower.includes('courier')) {
+      // 1. Call-Ahead / Store Pickup / Prepay Requests
+      if (
+        lower.includes('call') || 
+        lower.includes('phone') || 
+        lower.includes('number') || 
+        lower.includes('prepay') || 
+        lower.includes('pickup') || 
+        lower.includes('retrieve') ||
+        lower.includes('hardware')
+      ) {
+        const matchingBiz = findMatchingBusinesses(text);
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "🚗 **Sean Martin** is on duty in Carroll County with his all-wheel-drive courier vehicle. Enter your delivery location below to dispatch Sean immediately:",
-            showDeliveryForm: true,
+            text: `📞 Here is the direct business phone directory and courier pickup launcher!\n\nCall the business directly to place your order, pay over the phone (or prepay Sean), and Sean will pick it up and deliver it:`,
+            suggestedBusinesses: matchingBiz.length > 0 ? matchingBiz : EFFINGHAM_AREA_BUSINESSES.slice(0, 3),
+            showCallAheadForm: true,
             quickOptions: [
-              '🍔 Add Steak & Cheese Sub First',
-              '🍕 Add Smoked Pizza First',
-              '🌲 Add Campfire Firewood Bundle'
+              '🍔 PNB Eats: (603) 539-7440',
+              '🍕 Pizza Barn: (603) 539-4444',
+              '🛠️ Ace Hardware: (603) 539-6611',
+              '☕ Oasis Roastery: (508) 507-0305'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 2. Food
+      // 2. Direct Delivery / Sean Martin Dispatch
+      else if (lower.includes('deliver') || lower.includes('sean') || lower.includes('dispatch') || lower.includes('courier')) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🚗 **Sean Martin** is on duty in Carroll County with his all-wheel-drive courier vehicle. You can order directly below, or call any local store to place an order for Sean to retrieve:",
+            showDeliveryForm: true,
+            showCallAheadForm: true,
+            quickOptions: [
+              '📞 Call Store & Dispatch Pickup',
+              '🍔 Add Steak & Cheese Sub First',
+              '🍕 Add Smoked Pizza First'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 3. Food
       else if (
         lower.includes('food') || 
         lower.includes('eat') || 
@@ -160,61 +215,60 @@ export default function DedicatedAiConciergePage() {
         lower.includes('gluten')
       ) {
         const matches = findMatchingDishes(text);
-        let intro = "Here are our top recommended dishes prepared fresh in Carroll County! Tap **Add to Order** on any dish to have Sean Martin deliver it:";
-        if (lower.includes('pizza')) intro = "🍕 Looking for hot pizza? Here are our top wood-fired & smokehouse pies:";
-        if (lower.includes('sub') || lower.includes('steak')) intro = "🥩 Hot and savory subs made fresh on Route 25:";
-        if (lower.includes('coffee') || lower.includes('breakfast')) intro = "☕ Single-origin espresso and artisan bakery breakfast items:";
-        if (lower.includes('gluten')) intro = "🌾 Here are great gluten-conscious options:";
+        const matchingBiz = findMatchingBusinesses(text);
 
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: intro,
+            text: "Here are top recommended dishes and direct phone numbers for local kitchens in Carroll County. You can order online or call ahead for Sean to pick up:",
             suggestedDishes: matches,
+            suggestedBusinesses: matchingBiz.slice(0, 2),
             quickOptions: [
-              '🚀 Have Sean Martin Deliver This',
+              '🚀 Have Sean Deliver This',
+              '📞 Call Store to Place Order',
               '🥩 Show me Steak & Cheese Subs',
-              '🍕 Show me Pizzas',
-              '🌲 Campfire Firewood Kit'
+              '🍕 Show me Pizzas'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       } 
-      // 3. Firewood / Lake
+      // 4. Firewood / Lake
       else if (lower.includes('firewood') || lower.includes('lake') || lower.includes('dock') || lower.includes('airbnb') || lower.includes('smores')) {
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "🌲 Visiting Lake Ossipee or Lake Winnipesaukee? Sean Martin delivers kiln-dried hardwood firewood bundles & deluxe s'mores kits directly to public boat launches, lakeside firepits, and private docks in ~25-35 minutes!",
+            text: "🌲 Visiting Lake Ossipee or Lake Winnipesaukee? Sean Martin delivers kiln-dried hardwood firewood bundles & deluxe s'mores kits directly to boat launches, lakeside firepits, and private docks in ~25-35 minutes!",
             showDeliveryForm: true,
             quickOptions: [
               '🔥 Dispatch Firewood + S\'mores to Dock ($41.49)',
-              '🌊 Check Lake Water Temperature',
-              '🍔 Show Food Delivery Menus'
+              '📞 Call Freedom Village Store: (603) 539-7400',
+              '🌊 Check Lake Water Temperature'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 4. Default
+      // 5. Default
       else {
         const matches = findMatchingDishes('food');
+        const bizList = EFFINGHAM_AREA_BUSINESSES.slice(0, 2);
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "I can help you order food, get dockside firewood, or dispatch driver Sean Martin. What can I get started for you?",
+            text: "I can look up direct business phone numbers, help you order food, or dispatch driver Sean Martin to pick up pre-paid orders. What would you like to do?",
             suggestedDishes: matches.slice(0, 2),
+            suggestedBusinesses: bizList,
             quickOptions: [
-              '🍔 Show Best Food & Takeout',
-              '🚀 Dispatch Sean Martin to Deliver',
-              '🌲 Lake Concierge & Firewood'
+              '📞 Call Store & Dispatch Pickup',
+              '🍔 Order Hot Food & Takeout',
+              '🌲 Lake Concierge & Dockside Firewood'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
@@ -272,53 +326,48 @@ export default function DedicatedAiConciergePage() {
     ]);
   };
 
-  // In-Chat Instant Dispatch Sean Martin
-  const handleConfirmDispatchSean = async (e: React.FormEvent) => {
+  // In-Chat Call-Ahead & Prepay Store Pickup Dispatch
+  const handleConfirmCallAheadPickup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsDispatching(true);
 
-    const orderItems = cart.length > 0 ? cart.map(c => ({
-      id: c.product.id,
-      name: c.product.name,
-      price: c.product.price,
-      quantity: c.quantity
-    })) : [
-      {
-        id: 'item-sub-pnb',
-        name: 'The Big Mountain Steak & Cheese Sub (12")',
-        price: 17.49,
-        quantity: 1
-      },
-      {
-        id: 'item-fries',
-        name: 'Hand-Cut Seasoned Fries (Basket)',
-        price: 4.99,
-        quantity: 1
-      }
-    ];
-
-    const subtotal = orderItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+    const estCost = parseFloat(callEstimatedCost) || 0;
     const deliveryFee = 4.99;
-    const tip = 5.00;
-    const total = subtotal + deliveryFee + tip;
+    const tip = 4.00;
+    const total = (callPickupType === 'paid_phone' ? 0 : estCost) + deliveryFee + tip;
+
+    const paymentMethod = callPickupType === 'prepay_sean' ? 'cash_app' : callPickupType === 'cash_delivery' ? 'cash_on_delivery' : 'card';
+    const paymentStatus = callPickupType === 'paid_phone' ? 'prepaid' : 'pay_on_delivery';
 
     try {
       const newOrder = await placeDeliveryOrder({
         customerName: custName,
         customerPhone: custPhone,
         deliveryAddress: custAddress,
-        deliveryInstructions: custNotes,
-        serviceType: 'standard_delivery',
-        paymentMethod: custPayment,
-        paymentStatus: custPayment === 'cash_on_delivery' ? 'pay_on_delivery' : 'pending_verification',
-        restaurantName: 'PNB Eats Roadside Grill & Local Kitchens',
-        restaurantAddress: 'Route 25, Carroll County, NH',
-        town: 'Carroll County / Freedom / Ossipee',
-        items: orderItems,
-        subtotal,
+        deliveryInstructions: `[CALL-AHEAD PICKUP] Store: ${selectedCallBiz.name}. Order/Name: "${callPickupNameOrCode}". Notes: ${custNotes}`,
+        serviceType: callPickupType === 'paid_phone' ? 'store_pickup' : 'prepaid_buy',
+        paymentMethod,
+        paymentStatus,
+        restaurantName: selectedCallBiz.name,
+        restaurantAddress: selectedCallBiz.address,
+        pickupStoreName: selectedCallBiz.name,
+        pickupStoreAddress: selectedCallBiz.address,
+        pickupOrderCode: callPickupNameOrCode,
+        estimatedItemCost: estCost,
+        town: selectedCallBiz.town,
+        items: [
+          {
+            id: `pickup-${Date.now()}`,
+            name: `${selectedCallBiz.name} Call-In Pickup (${callItemDescription || 'Customer Order'})`,
+            price: estCost,
+            quantity: 1,
+            notes: `Pickup Name/Code: "${callPickupNameOrCode}". Payment mode: ${callPickupType}`
+          }
+        ],
+        subtotal: estCost,
         deliveryFee,
         tip,
-        total,
+        total: total === 0 ? deliveryFee + tip : total,
         driver: {
           name: 'Sean Martin',
           phone: '(508) 507-0305',
@@ -332,12 +381,11 @@ export default function DedicatedAiConciergePage() {
       sendManualSms(
         '(508) 507-0305',
         'Sean Martin',
-        'Oasis AI Dispatch',
-        `🚨 NEW AI BOT DELIVERY: Order #${newOrder.id} for ${custName} (${custPhone}) at ${custAddress}. Total: $${total.toFixed(2)}. Courier Sean assigned!`,
+        'Oasis Call-In Dispatch',
+        `🚨 NEW CALL-AHEAD PICKUP: Order #${newOrder.id} at ${selectedCallBiz.name} (${selectedCallBiz.phone || 'N/A'}) under "${callPickupNameOrCode}". Deliver to ${custAddress}. Mode: ${callPickupType}.`,
         'Contractor Emergency Lead Instant Dispatch'
       );
 
-      clearCart();
       setIsDispatching(false);
 
       confetti({
@@ -350,9 +398,9 @@ export default function DedicatedAiConciergePage() {
       setMessages(prev => [
         ...prev,
         {
-          id: `ai-dispatched-${Date.now()}`,
+          id: `ai-pickup-dispatched-${Date.now()}`,
           sender: 'ai',
-          text: `🎉 **Order Confirmed!** Courier **Sean Martin** has been dispatched for immediate pickup and delivery!`,
+          text: `🎉 **Pickup Dispatched to Sean Martin!** \n\nSean has received the alert to pick up your order at **${selectedCallBiz.name}** under name **"${callPickupNameOrCode}"** and deliver it directly to **${custAddress}**!`,
           confirmedDeliveryOrder: newOrder,
           quickOptions: [
             '📡 Track Sean on Live Radar',
@@ -381,10 +429,10 @@ export default function DedicatedAiConciergePage() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Sean Martin On Duty • AWD Courier
+                Call-Ahead & Courier Pickup Active • Sean Martin
               </div>
               <h1 className="text-xl md:text-2xl font-black italic uppercase tracking-tight text-white mt-1">
-                Carroll County AI Food & Courier Dispatch
+                Carroll County AI Call & Courier Dispatch
               </h1>
             </div>
           </div>
@@ -430,13 +478,48 @@ export default function DedicatedAiConciergePage() {
                 className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[90%] md:max-w-[80%] rounded-2xl p-4 leading-relaxed text-xs md:text-sm ${
+                  className={`max-w-[94%] md:max-w-[85%] rounded-2xl p-4 leading-relaxed text-xs md:text-sm ${
                     msg.sender === 'user'
                       ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-black font-semibold rounded-tr-sm shadow-md'
                       : 'bg-[#141422] text-white border border-white/10 rounded-tl-sm shadow-sm'
                   }`}
                 >
                   <p className="whitespace-pre-line">{msg.text}</p>
+
+                  {/* Suggested Business Phone Cards */}
+                  {msg.suggestedBusinesses && msg.suggestedBusinesses.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <span className="text-[11px] uppercase tracking-wider text-amber-300 font-bold block">
+                        📞 Direct Store Numbers (Tap to Call):
+                      </span>
+                      {msg.suggestedBusinesses.map((biz) => (
+                        <div
+                          key={biz.id}
+                          className="p-3 rounded-xl bg-[#0c0c16] border border-white/10 flex items-center justify-between gap-3 hover:border-amber-400/40 transition-all"
+                        >
+                          <div className="min-w-0">
+                            <div className="font-bold text-white text-xs truncate flex items-center gap-1.5">
+                              <span>{biz.logoEmoji}</span>
+                              <span>{biz.name}</span>
+                            </div>
+                            <p className="text-[10px] text-white/50 truncate">{biz.address}</p>
+                          </div>
+
+                          {biz.phone ? (
+                            <a
+                              href={`tel:${biz.phone.replace(/[^0-9]/g, '')}`}
+                              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs rounded-lg shadow-sm flex items-center gap-1.5 shrink-0 transition-all"
+                            >
+                              <PhoneCall className="w-3.5 h-3.5" />
+                              <span>{biz.phone}</span>
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-white/40">In-Store</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Confirmed Delivery Order Tracking Card */}
                   {msg.confirmedDeliveryOrder && (
@@ -450,7 +533,7 @@ export default function DedicatedAiConciergePage() {
                             <div className="text-sm font-black text-white">Courier: Sean Martin</div>
                             <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
                               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                              En Route to Pickup • Est ~25 mins
+                              En Route to Pickup • Est ~20 mins
                             </div>
                           </div>
                         </div>
@@ -465,6 +548,10 @@ export default function DedicatedAiConciergePage() {
                       </div>
 
                       <div className="p-3 bg-black/40 rounded-xl space-y-1.5 text-xs">
+                        <div className="flex justify-between text-white/70">
+                          <span>Pickup Store:</span>
+                          <span className="text-amber-400 font-bold">{msg.confirmedDeliveryOrder.restaurantName}</span>
+                        </div>
                         <div className="flex justify-between text-white/70">
                           <span>Delivery Address:</span>
                           <span className="text-white font-bold">{msg.confirmedDeliveryOrder.deliveryAddress}</span>
@@ -492,68 +579,149 @@ export default function DedicatedAiConciergePage() {
                     </div>
                   )}
 
-                  {/* Inline 1-Click Dispatch Sean Martin Form */}
-                  {msg.showDeliveryForm && !msg.confirmedDeliveryOrder && (
-                    <form onSubmit={handleConfirmDispatchSean} className="mt-4 p-4 rounded-2xl bg-[#090910] border border-amber-500/30 space-y-3">
-                      <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
-                        <Truck className="w-4 h-4" />
-                        <span>Dispatch Courier: Sean Martin (AWD Vehicle)</span>
+                  {/* CALL-AHEAD & PREPAY STORE PICKUP FORM */}
+                  {msg.showCallAheadForm && !msg.confirmedDeliveryOrder && (
+                    <form onSubmit={handleConfirmCallAheadPickup} className="mt-4 p-4 rounded-2xl bg-[#090910] border border-emerald-500/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-emerald-400 font-black text-xs">
+                          <PhoneCall className="w-4 h-4" />
+                          <span>Call & Courier Pickup Dispatch</span>
+                        </div>
+                        <span className="text-[10px] bg-emerald-500/10 text-emerald-300 px-2.5 py-0.5 rounded-full font-bold border border-emerald-500/20">
+                          Sean Martin Courier
+                        </span>
                       </div>
 
-                      <div className="space-y-2.5">
+                      <div className="space-y-3">
+                        {/* Store Selector */}
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Select Store to Pick Up From</label>
+                          <select
+                            value={callStoreId}
+                            onChange={(e) => setCallStoreId(e.target.value)}
+                            className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                          >
+                            {EFFINGHAM_AREA_BUSINESSES.map((biz) => (
+                              <option key={biz.id} value={biz.id}>
+                                {biz.logoEmoji} {biz.name} ({biz.town}) — {biz.phone || 'No phone listed'}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Call Store Action Banner */}
+                        {selectedCallBiz.phone && (
+                          <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl flex items-center justify-between text-xs">
+                            <div>
+                              <span className="text-[10px] text-indigo-300 font-bold block">1. Call {selectedCallBiz.name}:</span>
+                              <span className="text-white font-mono font-bold text-sm">{selectedCallBiz.phone}</span>
+                            </div>
+                            <a
+                              href={`tel:${selectedCallBiz.phone.replace(/[^0-9]/g, '')}`}
+                              className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs rounded-lg flex items-center gap-1.5 shadow-sm"
+                            >
+                              <PhoneCall className="w-3.5 h-3.5" />
+                              <span>Call Store Now</span>
+                            </a>
+                          </div>
+                        )}
+
+                        {/* Payment Strategy Choice */}
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-white/50 block mb-1">2. How are you paying for the items?</label>
+                          <div className="space-y-1.5">
+                            {[
+                              { id: 'paid_phone', label: '💳 I Paid Store Over the Phone', desc: 'Pickup fee only ($4.99) — give Sean your name or order #' },
+                              { id: 'prepay_sean', label: '💚 Prepay Sean to Pay at Store', desc: 'Prepay items via Cash App ($frijj555) / Venmo (@Sean-Martin-NH)' },
+                              { id: 'cash_delivery', label: '💵 Cash on Delivery', desc: 'Hand cash to Sean for items + delivery at your door/dock' },
+                            ].map((opt) => (
+                              <button
+                                type="button"
+                                key={opt.id}
+                                onClick={() => setCallPickupType(opt.id as any)}
+                                className={`w-full p-2.5 rounded-xl border text-left transition-all ${
+                                  callPickupType === opt.id
+                                    ? 'bg-amber-500/15 border-amber-500/60 text-white shadow-sm'
+                                    : 'bg-white/[0.02] border-white/5 text-white/60 hover:text-white'
+                                }`}
+                              >
+                                <div className="text-xs font-bold">{opt.label}</div>
+                                <div className="text-[10px] text-white/40 mt-0.5">{opt.desc}</div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Order Name / Code */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Pickup Name or Order #</label>
+                            <input
+                              type="text"
+                              required
+                              value={callPickupNameOrCode}
+                              onChange={(e) => setCallPickupNameOrCode(e.target.value)}
+                              placeholder="e.g. Sarah - Order #18"
+                              className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
+                            />
+                          </div>
+
+                          {callPickupType !== 'paid_phone' && (
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Estimated Item Cost ($)</label>
+                              <input
+                                type="number"
+                                step="0.50"
+                                required
+                                value={callEstimatedCost}
+                                onChange={(e) => setCallEstimatedCost(e.target.value)}
+                                placeholder="25.00"
+                                className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Customer Location */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Your Name</label>
+                            <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Your Name & Phone</label>
                             <input
                               type="text"
                               required
                               value={custName}
                               onChange={(e) => setCustName(e.target.value)}
-                              className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
+                              placeholder="Your Name"
+                              className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white mb-1.5"
                             />
-                          </div>
-                          <div>
-                            <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Mobile Phone #</label>
                             <input
                               type="tel"
                               required
                               value={custPhone}
                               onChange={(e) => setCustPhone(e.target.value)}
+                              placeholder="Your Phone #"
                               className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
                             />
                           </div>
-                        </div>
-
-                        <div>
-                          <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Delivery Address / Boat Dock / Cabin</label>
-                          <input
-                            type="text"
-                            required
-                            value={custAddress}
-                            onChange={(e) => setCustAddress(e.target.value)}
-                            className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Payment Method</label>
-                          <select
-                            value={custPayment}
-                            onChange={(e) => setCustPayment(e.target.value as any)}
-                            className="w-full bg-[#141420] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white"
-                          >
-                            <option value="cash_on_delivery">💵 Cash on Delivery / Hand to Sean</option>
-                            <option value="cash_app">💚 Cash App ($frijj555)</option>
-                            <option value="venmo">💙 Venmo (@Sean-Martin-NH)</option>
-                            <option value="card">💳 Credit Card / Apple Pay</option>
-                          </select>
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-white/50 block mb-0.5">Delivery Address / Dock / Cabin</label>
+                            <textarea
+                              rows={3}
+                              required
+                              value={custAddress}
+                              onChange={(e) => setCustAddress(e.target.value)}
+                              placeholder="e.g. Pine Cove Dock 3, Ossipee Lake"
+                              className="w-full bg-[#141420] border border-white/10 rounded-xl p-2 text-xs text-white"
+                            />
+                          </div>
                         </div>
                       </div>
 
+                      {/* Submit Dispatch */}
                       <button
                         type="submit"
                         disabled={isDispatching}
-                        className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+                        className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
                       >
                         {isDispatching ? (
                           <>
@@ -563,7 +731,7 @@ export default function DedicatedAiConciergePage() {
                         ) : (
                           <>
                             <Truck className="w-4 h-4" />
-                            <span>Confirm & Dispatch Sean Now</span>
+                            <span>Dispatch Sean to Pick Up & Deliver</span>
                           </>
                         )}
                       </button>
@@ -648,7 +816,7 @@ export default function DedicatedAiConciergePage() {
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="Tell me what you're hungry for or ask Sean to deliver..."
+              placeholder="Ask for a business phone number, food, or dispatch Sean..."
               className="flex-1 bg-[#131320] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50"
             />
             <button
