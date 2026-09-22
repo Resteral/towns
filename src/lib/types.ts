@@ -80,16 +80,77 @@ export interface ShoutoutPost {
   town?: string;
 }
 
+export type NfcCardProfileType = 
+  | 'digital_biz_card'
+  | 'google_review_booster'
+  | 'menu_tap_to_order'
+  | 'loyalty_rewards'
+  | 'event_vip_pass'
+  | 'airbnb_wifi_plaque'
+  | 'scavenger_hunt_beacon'
+  | 'custom_url';
+
 export interface NfcCardConfig {
   id: string;
   cardName: string;
   businessName: string;
+  profileType?: NfcCardProfileType;
+  hardwareFormFactor?: 'pvc_card' | 'acrylic_stand' | 'keychain_fob' | 'badge_lanyard' | 'disc_sticker' | 'wood_plaque' | 'counter_mat' | 'metal_card';
+  chipType?: 'NTAG213' | 'NTAG215' | 'NTAG216' | 'MifareUltralight';
+  chipUid?: string;
+  batchId?: string;
+  notes?: string;
+
+  // Google Review Booster
   googlePlaceId?: string;
   googleReviewUrl: string;
   yelpUrl?: string;
   tripAdvisorUrl?: string;
   mode: 'smart_funnel' | 'direct_google' | 'multi_hub';
   thresholdStars: number;
+
+  // Digital Business Card (vCard)
+  contactFullName?: string;
+  contactTitle?: string;
+  contactCompany?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  contactWebsite?: string;
+  contactAddress?: string;
+  contactLinkedIn?: string;
+  contactInstagram?: string;
+  contactFacebook?: string;
+  contactBio?: string;
+
+  // Restaurant / Bar Tap-to-Order Menu
+  storefrontSlug?: string;
+  tableNumber?: string;
+  tipLinkUrl?: string;
+
+  // Loyalty & Rewards
+  loyaltyWalletId?: string;
+  pointsMultiplier?: number;
+  mysteryDiscountCode?: string;
+
+  // Event & Festival VIP Pass
+  eventName?: string;
+  ticketTier?: 'VIP' | 'General' | 'Artist' | 'Staff' | 'All_Access';
+  ticketId?: string;
+
+  // Lakehouse & Airbnb Wi-Fi
+  wifiSsid?: string;
+  wifiPassword?: string;
+  wifiAuthType?: 'WPA' | 'WEP' | 'nopass';
+  cabinHouseGuideUrl?: string;
+
+  // Scavenger Hunt & Mystery Beacons
+  huntBeaconId?: string;
+  huntSecretPerk?: string;
+
+  // Custom Direct Target URL
+  directTargetUrl?: string;
+
+  // Presentation & Operations
   customHeadline?: string;
   logoUrl?: string;
   primaryColor?: string;
