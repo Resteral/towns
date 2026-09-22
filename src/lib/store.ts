@@ -28,6 +28,7 @@ import {
 } from './mock-data';
 import { INITIAL_TOURIST_HUNTS, INITIAL_USER_STAMPS } from './tourist-hunts-data';
 import { INITIAL_STORE_CIRCUITS, INITIAL_STORE_HUNTER_STAMPS } from './store-hunting-data';
+import { sendAppNotification } from './push-notifications';
 
 const STORAGE_KEYS = {
   CARDS: 'pulpulse_cards_v1',
@@ -2230,6 +2231,15 @@ export function useNfcStore() {
     const updated = [newFeedback, ...feedbacks];
     setFeedbacks(updated);
     localStorage.setItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(updated));
+
+    sendAppNotification({
+      title: `💬 Private Customer Feedback (${data.rating}★)`,
+      body: `"${data.feedbackText}" - ${data.businessName || 'Business'} (${newFeedback.town})`,
+      url: `/dashboard/feedback`,
+      tag: `feedback-${newFeedback.id}`,
+      soundType: 'feedback'
+    });
+
     return newFeedback;
   };
 
@@ -2373,6 +2383,16 @@ export function useNfcStore() {
         privateFeedbacksCount: action === 'private_feedback' ? (card.privateFeedbacksCount || 0) + 1 : card.privateFeedbacksCount,
       };
       updateCard(cardId, updatedCard);
+
+      if (action === 'google_redirect' || action === 'direct_redirect') {
+        sendAppNotification({
+          title: `⚡ 5-Star Google Review Boost!`,
+          body: `${card.businessName} converted a 5-star tap to Google Reviews in ${card.assignedLocation || card.town}!`,
+          url: `/dashboard/analytics`,
+          tag: `tap-${cardId}`,
+          soundType: 'tap'
+        });
+      }
     }
   };
 
@@ -2397,6 +2417,14 @@ export function useNfcStore() {
     setFeedbacks(updated);
     localStorage.setItem(STORAGE_KEYS.FEEDBACKS, JSON.stringify(updated));
     recordTap(cardId, 'private_feedback', rating);
+
+    sendAppNotification({
+      title: `💬 New Customer Feedback (${rating}★)`,
+      body: `"${feedbackText}" - ${card?.businessName || 'Store'}`,
+      url: `/dashboard/feedback`,
+      tag: `feedback-${newFeedback.id}`,
+      soundType: 'feedback'
+    });
   };
 
   // Cart Handlers
@@ -2466,6 +2494,14 @@ export function useNfcStore() {
     if (notificationSettings.enableSoundChime) {
       playDeliveryChime();
     }
+
+    sendAppNotification({
+      title: `🚚 New Delivery Order #${newOrder.orderNumber}!`,
+      body: `${newOrder.customerName} ordered from ${newOrder.restaurantName || newOrder.pickupStoreName || 'Local Store'} ($${newOrder.total.toFixed(2)}) - ${newOrder.town || 'Carroll County'}`,
+      url: `/dashboard/delivery`,
+      tag: `order-${newOrder.id}`,
+      soundType: 'order'
+    });
 
     try {
       await fetch('/api/notify', {
