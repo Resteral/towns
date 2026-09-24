@@ -406,6 +406,61 @@ export interface UserMembership {
   customBadge?: string;
 }
 
+export type StorefrontThemePreset = 
+  | 'emerald_nature' 
+  | 'cyber_neon' 
+  | 'amber_gold' 
+  | 'rustic_artisan' 
+  | 'sunset_flame' 
+  | 'ocean_deep' 
+  | 'minimal_slate' 
+  | 'custom';
+
+export type StorefrontHeroStyle = 
+  | 'banner_cover' 
+  | 'split_minimal' 
+  | 'cyber_card' 
+  | 'fullscreen_showcase' 
+  | 'clean_header';
+
+export interface StorefrontGalleryImage {
+  id: string;
+  url: string;
+  title: string;
+  caption?: string;
+  category?: string;
+}
+
+export interface StorefrontTestimonial {
+  id: string;
+  customerName: string;
+  rating: number;
+  reviewText: string;
+  date: string;
+  source: 'google' | 'verified_tap' | 'direct';
+  customerAvatar?: string;
+}
+
+export interface StorefrontFaq {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface StorefrontCustomCta {
+  id: string;
+  label: string;
+  url: string;
+  icon?: string;
+  style: 'primary' | 'secondary' | 'outline' | 'amber' | 'emerald' | 'courier';
+}
+
+export interface OperatingDayHours {
+  open: string;
+  close: string;
+  isClosed: boolean;
+}
+
 export interface MerchantStorefront {
   id: string;
   slug: string;
@@ -413,6 +468,7 @@ export interface MerchantStorefront {
   tagline: string;
   description: string;
   logoEmoji: string;
+  customLogoUrl?: string;
   coverImageUrl?: string;
   phone: string;
   email?: string;
@@ -433,6 +489,60 @@ export interface MerchantStorefront {
   products: StorefrontProduct[];
   isPublished: boolean;
   createdAt: string;
+
+  // Extreme Profile Customization Fields
+  themePreset?: StorefrontThemePreset;
+  heroStyle?: StorefrontHeroStyle;
+  customFont?: 'font-sans' | 'font-serif' | 'font-mono' | 'font-heading';
+  primaryColor?: string;
+  secondaryColor?: string;
+  backgroundColor?: string;
+  cardBackgroundColor?: string;
+  textColor?: string;
+
+  // Identity & Storytelling
+  foundedYear?: string;
+  detailedBio?: string;
+  ownerName?: string;
+  ownerRole?: string;
+  ownerAvatarUrl?: string;
+  badges?: string[];
+
+  // Announcement Bar
+  enableAnnouncement?: boolean;
+  announcementText?: string;
+  announcementBgColor?: string;
+  announcementTextColor?: string;
+  announcementLink?: string;
+
+  // Operating Schedule
+  operatingHours?: { [day: string]: OperatingDayHours };
+  statusMessage?: string;
+  emergencyDispatchActive?: boolean;
+  afterHoursEmergencyPhone?: string;
+
+  // Showcase & Socials
+  galleryImages?: StorefrontGalleryImage[];
+  testimonials?: StorefrontTestimonial[];
+  faqs?: StorefrontFaq[];
+  customCtas?: StorefrontCustomCta[];
+
+  // Social & Web Links
+  instagramUrl?: string;
+  facebookUrl?: string;
+  tiktokUrl?: string;
+  youtubeUrl?: string;
+  websiteUrl?: string;
+  whatsappPhone?: string;
+  yelpUrl?: string;
+  tripAdvisorUrl?: string;
+
+  // Coverage & Courier Operations
+  serviceRadiusMiles?: number;
+  coveredTowns?: string[];
+  isCourierDeliveryAvailable?: boolean;
+  courierNotes?: string;
+  linkedNfcCardId?: string;
 }
 
 export type TradeCategory = 

@@ -166,13 +166,14 @@ const INITIAL_STOREFRONTS: MerchantStorefront[] = [
     tagline: 'Single-Origin Nitro Cold Brews, Hearth Sourdough & Morning Brioche',
     description: 'Effingham’s flagship specialty cafe featuring hearth-baked sourdough bread, single-origin espressos, and artisan brunch boxes.',
     logoEmoji: '☕',
+    customLogoUrl: '',
     coverImageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&auto=format&fit=crop&q=80',
     phone: '(508) 507-0305',
     email: 'frijj555@gmail.com',
     address: 'Historic Route 153, Effingham, NH 03882',
     town: 'Effingham',
     state: 'NH',
-    accentColor: '#6366f1',
+    accentColor: '#f59e0b',
     deliveryFee: 2.99,
     minOrder: 10.00,
     estimatedPrepTime: '15-20 mins',
@@ -185,6 +186,144 @@ const INITIAL_STOREFRONTS: MerchantStorefront[] = [
     listOnMarketplace: true,
     isPublished: true,
     createdAt: new Date(Date.now() - 90 * 86400000).toISOString(),
+
+    // Extreme Customization Fields
+    themePreset: 'amber_gold',
+    heroStyle: 'banner_cover',
+    customFont: 'font-sans',
+    primaryColor: '#f59e0b',
+    secondaryColor: '#ea580c',
+    backgroundColor: '#070709',
+    cardBackgroundColor: '#0e0e13',
+    textColor: '#ffffff',
+
+    foundedYear: '2023',
+    detailedBio: 'Founded in the foothills of Carroll County, Oasis Artisan Roastery & Bakehouse combines old-world hearth baking with precision specialty coffee roasting. Every loaf of sourdough undergoes a 36-hour natural fermentation, and every batch of single-origin coffee is roasted in small batches to preserve its distinct origin notes.',
+    ownerName: 'Sean Martin',
+    ownerRole: 'Founder & Master Baker',
+    ownerAvatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+    badges: [
+      '👑 Founding Vanguard Hub',
+      '🍞 100% Hearth Sourdough',
+      '☕ Direct Trade Single-Origin',
+      '🛻 4x4 Express Courier Delivery',
+      '⭐ 5-Star Top Rated Business'
+    ],
+
+    enableAnnouncement: true,
+    announcementText: '🔥 Fresh Morning Sourdough & Hot Brioche Cinnamon Rolls just came out of the wood-fired hearth! Tap to order express delivery.',
+    announcementBgColor: '#f59e0b',
+    announcementTextColor: '#000000',
+    announcementLink: '#catalog',
+
+    operatingHours: {
+      Monday: { open: '07:00 AM', close: '04:00 PM', isClosed: false },
+      Tuesday: { open: '07:00 AM', close: '04:00 PM', isClosed: false },
+      Wednesday: { open: '07:00 AM', close: '04:00 PM', isClosed: false },
+      Thursday: { open: '07:00 AM', close: '05:00 PM', isClosed: false },
+      Friday: { open: '07:00 AM', close: '06:00 PM', isClosed: false },
+      Saturday: { open: '07:00 AM', close: '06:00 PM', isClosed: false },
+      Sunday: { open: '08:00 AM', close: '03:00 PM', isClosed: false }
+    },
+    statusMessage: 'Open Today • Fresh Baking All Day',
+    emergencyDispatchActive: true,
+    afterHoursEmergencyPhone: '(508) 507-0305',
+
+    galleryImages: [
+      {
+        id: 'gal-1',
+        url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80',
+        title: 'Artisan Espresso Bar & Roastery',
+        caption: 'Handcrafted espresso pulls and nitro cold brew taps in Effingham.'
+      },
+      {
+        id: 'gal-2',
+        url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80',
+        title: 'Hearth Wood-Fired Sourdough',
+        caption: 'Blistered artisan crusts baked fresh every single morning.'
+      },
+      {
+        id: 'gal-3',
+        url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&auto=format&fit=crop&q=80',
+        title: 'Farmhouse Avocado & Poached Egg Toast',
+        caption: 'Topped with local pasture eggs, heirloom tomatoes, and microgreens.'
+      },
+      {
+        id: 'gal-4',
+        url: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=800&auto=format&fit=crop&q=80',
+        title: 'Nitro Cold Brew Growlers',
+        caption: 'Steeped for 24 hours with dark chocolate and hazelnut notes.'
+      }
+    ],
+
+    testimonials: [
+      {
+        id: 'test-1',
+        customerName: 'Sarah Jenkins',
+        rating: 5,
+        reviewText: 'The best sourdough bread in New Hampshire hands down! The nitro cold brew growler delivered right to my cabin made my whole weekend.',
+        date: '2 days ago',
+        source: 'google'
+      },
+      {
+        id: 'test-2',
+        customerName: 'Marcus Vance',
+        rating: 5,
+        reviewText: 'Sean Martin delivered my morning brunch box and hot coffee in under 20 minutes in the snow. Extraordinary service and quality!',
+        date: '1 week ago',
+        source: 'verified_tap'
+      },
+      {
+        id: 'test-3',
+        customerName: 'Elena Rostova',
+        rating: 5,
+        reviewText: 'I tap my NFC card at the table and my order comes out hot and fresh. The maple cinnamon rolls are out of this world.',
+        date: '2 weeks ago',
+        source: 'google'
+      }
+    ],
+
+    faqs: [
+      {
+        id: 'faq-1',
+        question: 'How fast is local courier delivery in Carroll County?',
+        answer: 'Our dedicated 4x4 courier courier Sean Martin delivers anywhere in Effingham, Ossipee, Freedom, and surrounding towns usually within 15 to 30 minutes of oven prep.'
+      },
+      {
+        id: 'faq-2',
+        question: 'Do you offer gluten-sensitive or vegan options?',
+        answer: 'Yes! We have certified vegan organic parfaits, oat/almond milk specialty drinks, and avocado toasts.'
+      },
+      {
+        id: 'faq-3',
+        question: 'Can I pre-order catering or weekend brunch boxes in bulk?',
+        answer: 'Absolutely! You can order directly through this website or call/text (508) 507-0305 24 hours in advance for custom brunch setups.'
+      }
+    ],
+
+    customCtas: [
+      {
+        id: 'cta-courier',
+        label: '🛻 Book 4x4 Courier Hotline',
+        url: 'tel:5085070305',
+        style: 'courier'
+      },
+      {
+        id: 'cta-catering',
+        label: '📋 Request Custom Catering',
+        url: '/contact',
+        style: 'amber'
+      }
+    ],
+
+    instagramUrl: 'https://instagram.com/townraise',
+    facebookUrl: 'https://facebook.com/townraise',
+    websiteUrl: 'https://townraise.org',
+    serviceRadiusMiles: 25,
+    coveredTowns: ['Effingham', 'Ossipee', 'Freedom', 'Tamworth', 'Wakefield', 'Wolfeboro'],
+    isCourierDeliveryAvailable: true,
+    courierNotes: '4x4 AWD Vanguard Unit equipped for all weather and mountain road delivery.',
+
     products: [
       {
         id: 'oas-prod-1',
