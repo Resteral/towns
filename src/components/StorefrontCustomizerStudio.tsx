@@ -326,6 +326,94 @@ export default function StorefrontCustomizerStudio({
     }));
   };
 
+  // Product Management Modal State
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [prodName, setProdName] = useState('');
+  const [prodPrice, setProdPrice] = useState('9.99');
+  const [prodCategory, setProdCategory] = useState('Main Menu');
+  const [prodDesc, setProdDesc] = useState('');
+  const [prodBadge, setProdBadge] = useState('');
+  const [prodImage, setProdImage] = useState('');
+  const [prodInStock, setProdInStock] = useState(true);
+
+  const handleOpenNewProductModal = () => {
+    setEditingProductId(null);
+    setProdName('');
+    setProdPrice('9.99');
+    setProdCategory('Main Menu');
+    setProdDesc('');
+    setProdBadge('');
+    setProdImage('');
+    setProdInStock(true);
+    setShowProductModal(true);
+  };
+
+  const handleOpenEditProductModal = (p: StorefrontProduct) => {
+    setEditingProductId(p.id);
+    setProdName(p.name);
+    setProdPrice(p.price.toString());
+    setProdCategory(p.category);
+    setProdDesc(p.description);
+    setProdBadge(p.badge || '');
+    setProdImage(p.imageUrl || '');
+    setProdInStock(p.inStock);
+    setShowProductModal(true);
+  };
+
+  const handleSaveProductModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prodName.trim()) return;
+
+    if (editingProductId) {
+      setFormData(prev => ({
+        ...prev,
+        products: prev.products.map(p => p.id === editingProductId ? {
+          ...p,
+          name: prodName.trim(),
+          price: parseFloat(prodPrice) || 9.99,
+          category: prodCategory.trim() || 'Main Menu',
+          description: prodDesc.trim(),
+          badge: prodBadge.trim() || undefined,
+          imageUrl: prodImage.trim() || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80',
+          inStock: prodInStock
+        } : p)
+      }));
+    } else {
+      const newProd: StorefrontProduct = {
+        id: `prod-${Date.now().toString(36)}`,
+        name: prodName.trim(),
+        price: parseFloat(prodPrice) || 9.99,
+        category: prodCategory.trim() || 'Main Menu',
+        description: prodDesc.trim() || 'Fresh artisan preparation.',
+        badge: prodBadge.trim() || undefined,
+        imageUrl: prodImage.trim() || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80',
+        inStock: prodInStock
+      };
+      setFormData(prev => ({
+        ...prev,
+        products: [newProd, ...prev.products]
+      }));
+    }
+
+    setShowProductModal(false);
+    playDeliveryChime();
+  };
+
+  const handleToggleProductStock = (productId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      products: prev.products.map(p => p.id === productId ? { ...p, inStock: !p.inStock } : p)
+    }));
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      products: prev.products.filter(p => p.id !== productId)
+    }));
+  };
+
   return (
     <div className="space-y-8 pb-20">
       
@@ -1259,35 +1347,80 @@ export default function StorefrontCustomizerStudio({
                     Manage active products, prices, categories, and stock availability.
                   </p>
                 </div>
-                <span className="text-xs font-mono text-amber-400 font-bold">
-                  {formData.products.length} Items
-                </span>
+                <button
+                  type="button"
+                  onClick={handleOpenNewProductModal}
+                  className="px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-1.5 hover:scale-105"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Item</span>
+                </button>
               </div>
 
               <div className="space-y-3">
-                {formData.products.map((prod, idx) => (
+                {formData.products.map((prod) => (
                   <div
                     key={prod.id}
-                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-4"
+                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-4 group hover:border-white/15 transition-all"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3.5">
                       {prod.imageUrl ? (
-                        <img src={prod.imageUrl} alt={prod.name} className="w-12 h-12 rounded-xl object-cover" />
+                        <img src={prod.imageUrl} alt={prod.name} className="w-14 h-14 rounded-xl object-cover shrink-0" />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-lg">🍔</div>
+                        <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-xl shrink-0">🍔</div>
                       )}
                       <div>
-                        <h4 className="text-xs font-bold text-white">{prod.name}</h4>
-                        <p className="text-[10px] text-zinc-400">{prod.category} • ${prod.price.toFixed(2)}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">
+                            {prod.name}
+                          </h4>
+                          {prod.badge && (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9px] font-mono font-bold uppercase">
+                              {prod.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">
+                          {prod.category} • <strong className="text-white">${prod.price.toFixed(2)}</strong>
+                        </p>
+                        {prod.description && (
+                          <p className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">
+                            {prod.description}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase ${
-                        prod.inStock ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
-                      }`}>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleProductStock(prod.id)}
+                        className={`px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold uppercase transition-all ${
+                          prod.inStock 
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20' 
+                            : 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
+                        }`}
+                      >
                         {prod.inStock ? 'In Stock' : 'Out of Stock'}
-                      </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditProductModal(prod)}
+                        className="p-2 text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                        title="Edit Item"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProduct(prod.id)}
+                        className="p-2 text-zinc-500 hover:text-red-400 bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                        title="Delete Item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -1484,6 +1617,148 @@ export default function StorefrontCustomizerStudio({
         </div>
 
       </div>
+
+      {/* Product Create / Edit Modal */}
+      {showProductModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-[#0a0a0f] border border-white/15 rounded-3xl w-full max-w-lg p-6 md:p-8 space-y-6 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="text-xs font-mono uppercase text-amber-400 font-bold flex items-center gap-1.5">
+                <Store className="w-4 h-4" />
+                <span>{editingProductId ? 'Edit Menu / Product Item' : 'Add New Menu Item'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProductModal(false)}
+                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProductModal} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
+                  Item / Product Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={prodName}
+                  onChange={(e) => setProdName(e.target.value)}
+                  placeholder="e.g. Nitro Cold Brew Growler (64oz)"
+                  className="w-full px-3.5 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
+                    Price ($) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.25"
+                    required
+                    value={prodPrice}
+                    onChange={(e) => setProdPrice(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
+                    Category *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={prodCategory}
+                    onChange={(e) => setProdCategory(e.target.value)}
+                    placeholder="e.g. Coffee, Bakery, Main Menu"
+                    className="w-full px-3.5 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
+                  Description & Ingredients
+                </label>
+                <textarea
+                  rows={3}
+                  value={prodDesc}
+                  onChange={(e) => setProdDesc(e.target.value)}
+                  placeholder="Describe your artisan preparation, fresh organic ingredients, fermentation, or craft notes..."
+                  className="w-full px-3.5 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
+                    Highlight Badge (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={prodBadge}
+                    onChange={(e) => setProdBadge(e.target.value)}
+                    placeholder="e.g. Hearth Baked, Chef Special"
+                    className="w-full px-3.5 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
+                    Availability
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setProdInStock(!prodInStock)}
+                    className={`w-full py-2.5 rounded-xl text-xs font-mono font-bold uppercase transition-all ${
+                      prodInStock
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    }`}
+                  >
+                    {prodInStock ? '✓ In Stock (Available)' : '✕ Out of Stock'}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
+                  Product Photo (URL or Upload)
+                </label>
+                <ImageUpload
+                  value={prodImage}
+                  onChange={(url) => setProdImage(url)}
+                  label="Upload Item Image"
+                  subtitle="Square or card photo of the dish or product"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowProductModal(false)}
+                  className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl text-xs font-bold transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-lg flex items-center gap-1.5"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{editingProductId ? 'Update Item' : 'Add to Menu'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
