@@ -27,6 +27,7 @@ import {
 import QRCode from 'qrcode';
 import confetti from 'canvas-confetti';
 import ImageUpload from '@/components/ImageUpload';
+import NfcHardwareOrderModal from '@/components/NfcHardwareOrderModal';
 
 const THEME_PRESETS: {
   id: StorefrontThemePreset;
@@ -153,6 +154,7 @@ export default function StorefrontCustomizerStudio({
 
   // QR Code Generation
   const [tableQrUrl, setTableQrUrl] = useState<string>('');
+  const [showHardwareOrderModal, setShowHardwareOrderModal] = useState<boolean>(false);
 
   // Local Form Working State
   const [formData, setFormData] = useState<MerchantStorefront>(activeStorefront);
@@ -1436,13 +1438,70 @@ export default function StorefrontCustomizerStudio({
               <div>
                 <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
                   <QrCode className="w-5 h-5 text-amber-400" />
-                  Tabletop QR Stands & 1-Tap NFC Passes
+                  Tabletop QR Stands & Smart NFC Hardware
                 </h3>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Generate branded acrylic tabletop QR codes and program physical NFC cards for instant table ordering.
+                  Generate branded acrylic tabletop QR codes or order pre-programmed physical NFC table tents, wood stands, and waterproof discs with custom table numbers.
                 </p>
               </div>
 
+              {/* Order Physical Hardware Banner */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-indigo-500/10 border border-amber-500/30 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-2xl shrink-0">
+                      📦
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-black text-white uppercase tracking-tight">
+                          Order Physical NFC Hardware & Tabletop Stands
+                        </h4>
+                        <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono font-bold uppercase border border-amber-400/30">
+                          Pre-Encoded & Shipped
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
+                        Order durable tabletop hardware pre-programmed with your menu URL (<span className="text-amber-300 font-mono">/site/{formData.slug}</span>) and distinct table assignments (Tables 1..10+). Delivered by local courier Sean Martin or express carrier.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
+                    <span className="text-lg">🪟</span>
+                    <p className="text-[10px] font-bold text-white uppercase mt-1">Acrylic Table Stand</p>
+                    <span className="text-[10px] font-mono text-amber-400">$18.99</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
+                    <span className="text-lg">🪵</span>
+                    <p className="text-[10px] font-bold text-white uppercase mt-1">Solid Wood Tent</p>
+                    <span className="text-[10px] font-mono text-amber-400">$24.99</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
+                    <span className="text-lg">🔘</span>
+                    <p className="text-[10px] font-bold text-white uppercase mt-1">Waterproof Disc</p>
+                    <span className="text-[10px] font-mono text-amber-400">$14.99</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-center">
+                    <span className="text-lg">💳</span>
+                    <p className="text-[10px] font-bold text-white uppercase mt-1">Metal Smart Card</p>
+                    <span className="text-[10px] font-mono text-amber-400">$34.99</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowHardwareOrderModal(true)}
+                  className="w-full py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-indigo-500 hover:opacity-95 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-xl shadow-amber-400/20 flex items-center justify-center gap-2 hover:scale-[1.01]"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Configure & Order Physical Stands (From $14.99)</span>
+                </button>
+              </div>
+
+              {/* Instant QR Download & Self Burn */}
               <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-4">
                 {tableQrUrl && (
                   <div className="p-4 bg-white rounded-2xl shadow-xl">
@@ -1458,7 +1517,7 @@ export default function StorefrontCustomizerStudio({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center justify-center gap-3">
                   <a
                     href={tableQrUrl}
                     download={`${formData.slug}-tabletop-qr.png`}
@@ -1473,7 +1532,7 @@ export default function StorefrontCustomizerStudio({
                     className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2"
                   >
                     <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span>Burn to Physical NFC Card</span>
+                    <span>Burn to Own NFC Card in Studio</span>
                   </Link>
                 </div>
               </div>
@@ -1757,6 +1816,14 @@ export default function StorefrontCustomizerStudio({
             </form>
           </div>
         </div>
+      )}
+
+      {/* NFC Hardware Order Modal */}
+      {showHardwareOrderModal && (
+        <NfcHardwareOrderModal
+          defaultStorefront={formData}
+          onClose={() => setShowHardwareOrderModal(false)}
+        />
       )}
 
     </div>

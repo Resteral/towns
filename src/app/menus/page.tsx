@@ -6,6 +6,7 @@ import { useNfcStore } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import { StorefrontProduct, MerchantStorefront } from '@/lib/types';
 import FoodCustomizerModal from '@/components/FoodCustomizerModal';
+import NfcHardwareOrderModal from '@/components/NfcHardwareOrderModal';
 import QRCode from 'qrcode';
 import { 
   UtensilsCrossed, Sparkles, Clock, MapPin, Star, 
@@ -22,6 +23,7 @@ export default function DigitalMenusPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
+  const [showHardwareOrderModal, setShowHardwareOrderModal] = useState<boolean>(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
@@ -124,6 +126,42 @@ export default function DigitalMenusPage() {
               <ShoppingBag className="w-4 h-4" />
               <span>View Cart & Checkout</span>
             </Link>
+          </div>
+
+          {/* Restaurant / Merchant Callout: Build Menu & Order NFC Stands */}
+          <div className="p-4 md:p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-indigo-500/10 border border-amber-500/20 max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0 text-xl">
+                📦
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-black uppercase text-white tracking-wide">
+                  Run a Restaurant, Cafe, or Food Truck?
+                </h4>
+                <p className="text-[11px] text-zinc-400">
+                  Build your digital menu & order custom physical NFC acrylic tabletop stands with automated table numbers.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setShowHardwareOrderModal(true)}
+                className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-[11px] font-black uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>Order Stands</span>
+              </button>
+
+              <Link
+                href="/create-storefront"
+                className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <span>Build Menu</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -404,6 +442,14 @@ export default function DigitalMenusPage() {
             playDeliveryChime();
             setCustomizingProduct(null);
           }}
+        />
+      )}
+
+      {/* NFC HARDWARE & TABLE STAND ORDER MODAL */}
+      {showHardwareOrderModal && currentStore && (
+        <NfcHardwareOrderModal
+          defaultStorefront={currentStore}
+          onClose={() => setShowHardwareOrderModal(false)}
         />
       )}
 
