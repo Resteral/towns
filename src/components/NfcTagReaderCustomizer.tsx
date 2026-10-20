@@ -7,6 +7,7 @@ import { NfcCardConfig, ReviewProduct } from '@/lib/types';
 import QRCode from 'qrcode';
 import confetti from 'canvas-confetti';
 import ImageUpload from '@/components/ImageUpload';
+import NfcHardwareOrderModal from '@/components/NfcHardwareOrderModal';
 import { 
   Radio, 
   Sparkles, 
@@ -515,12 +516,15 @@ const PRESET_SIMULATED_TAGS: { name: string; desc: string; data: ScannedTagData 
 ];
 
 export default function NfcTagReaderCustomizer() {
-  const { cards, addCard, updateCard, deleteCard, playDeliveryChime, products, addToCart, currentUser } = useNfcStore();
+  const { cards, addCard, updateCard, deleteCard, playDeliveryChime, products, addToCart, currentUser, storefronts } = useNfcStore();
 
   // Active Main Tab: Quick 1-Tap Programmer vs Fleet vs Customizer vs Batch vs Capabilities vs Reader vs Export
   const [activeTab, setActiveTab] = useState<'quick' | 'fleet' | 'customizer' | 'batch' | 'capabilities' | 'reader' | 'export'>('quick');
   const [capabilitiesFilter, setCapabilitiesFilter] = useState<'all' | 'growth' | 'contact' | 'courier' | 'cashless' | 'trades' | 'automation' | 'community'>('all');
   const [showIosGuide, setShowIosGuide] = useState(false);
+  const [showHardwareOrderModal, setShowHardwareOrderModal] = useState(false);
+  const [selectedMenuSlug, setSelectedMenuSlug] = useState<string>(storefronts?.[0]?.slug || 'pnb-eats');
+  const [menuTableNumber, setMenuTableNumber] = useState<string>('');
 
   // --- CARD EDITING & FLEET STATE ---
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
@@ -807,13 +811,41 @@ export default function NfcTagReaderCustomizer() {
     URL.revokeObjectURL(url);
   };
 
+  // Helper to select a created Website & Menu storefront for NFC card encoding
+  const handleSelectStorefrontForCard = (slug: string, tableNum?: string) => {
+    setSelectedMenuSlug(slug);
+    const tNum = tableNum !== undefined ? tableNum : menuTableNumber;
+    if (tableNum !== undefined) setMenuTableNumber(tableNum);
+
+    const sf = storefronts?.find(s => s.slug === slug);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://townraise.org';
+    const targetLink = `${origin}/site/${slug}${tNum.trim() ? `?table=${encodeURIComponent(tNum.trim())}` : ''}`;
+
+    setCustomUrl(targetLink);
+    if (sf) {
+      setBusinessName(tNum.trim() ? `${sf.businessName} (Table #${tNum.trim()})` : sf.businessName);
+      setSelectedEmoji(sf.logoEmoji || '🍽️');
+      if (sf.primaryColor || sf.accentColor) {
+        setSelectedColor(sf.primaryColor || sf.accentColor);
+      }
+      setHeadline(
+        tNum.trim()
+          ? `Table #${tNum.trim()} • Tap phone to view ${sf.businessName} menu & order!`
+          : `Tap phone to view ${sf.businessName} menu & order online!`
+      );
+    }
+  };
+
   // Generate target payload string based on active actionType
   const getComputedPayloadUrl = () => {
     switch (actionType) {
       case 'google_review':
         return googleReviewUrl || 'https://search.google.com/local/writereview';
-      case 'menu':
-        return `https://townraise.org/site/pnb-eats`;
+      case 'menu': {
+        if (customUrl && customUrl.includes('/site/')) return customUrl;
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://townraise.org';
+        return `${origin}/site/${selectedMenuSlug || 'pnb-eats'}${menuTableNumber.trim() ? `?table=${encodeURIComponent(menuTableNumber.trim())}` : ''}`;
+      }
       case 'driver_dispatch':
         return `tel:${smsData.phone.replace(/[^0-9]/g, '')}`;
       case 'vcard':
@@ -1976,7 +2008,91 @@ export default function NfcTagReaderCustomizer() {
                   </div>
                 )}
 
-                {(actionType === 'url' || actionType === 'loyalty_pass' || actionType === 'menu') && (
+                {actionType === 'menu' && (
+                  <div className="space-y-3 p-4 rounded-2xl bg-amber-400/5 border border-amber-400/20">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Utensils className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Select Your Website & Digital Menu</span>
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href="/create-storefront"
+                          className="text-[10px] font-mono font-bold text-amber-400 hover:text-amber-300 underline"
+                        >
+                          + Build New Website & Menu
+                        </Link>
+                        <span className="text-zinc-600">•</span>
+                        <Link
+                          href="/dashboard/storefront"
+                          className="text-[10px] font-mono font-bold text-zinc-300 hover:text-white underline"
+                        >
+                          Edit Menu
+                        </Link>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {(storefronts || []).map((sf) => {
+                        const isPicked = selectedMenuSlug === sf.slug;
+                        return (
+                          <button
+                            key={sf.id}
+                            type="button"
+                            onClick={() => handleSelectStorefrontForCard(sf.slug)}
+                            className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
+                              isPicked
+                                ? 'bg-amber-400/20 border-amber-400 text-white shadow-md'
+                                : 'bg-black/40 border-white/10 text-zinc-300 hover:border-white/25'
+                            }`}
+                          >
+                            <span className="text-xl shrink-0">{sf.logoEmoji || '🍽️'}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold text-white truncate">{sf.businessName}</p>
+                              <p className="text-[9px] font-mono text-zinc-400 truncate">
+                                {sf.products?.length || 0} items • /site/{sf.slug}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                      <div className="sm:col-span-2 space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Encoded Website & Menu URL</span>
+                        <input
+                          type="text"
+                          value={customUrl}
+                          onChange={e => setCustomUrl(e.target.value)}
+                          placeholder="https://townraise.org/site/..."
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono text-zinc-400">Table # (Optional)</span>
+                        <input
+                          type="text"
+                          value={menuTableNumber}
+                          onChange={e => handleSelectStorefrontForCard(selectedMenuSlug, e.target.value)}
+                          placeholder="e.g. 4 or Patio-1"
+                          className="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowHardwareOrderModal(true)}
+                      className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-400/20 via-purple-500/20 to-indigo-500/20 hover:from-amber-400/30 hover:to-indigo-500/30 border border-amber-400/40 rounded-xl text-amber-300 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+                      <span>📦 Order Physical NFC Cards & Tabletop Menu Stands</span>
+                    </button>
+                  </div>
+                )}
+
+                {(actionType === 'url' || actionType === 'loyalty_pass') && (
                   <div className="space-y-3 p-4 rounded-2xl bg-white/5 border border-white/10">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-white flex items-center justify-between">
@@ -2111,7 +2227,7 @@ export default function NfcTagReaderCustomizer() {
                         const payload = getComputedPayloadUrl();
                         await ndef.write({
                           records: [{
-                            recordType: actionType === 'url' || actionType === 'google_review' || actionType === 'paypal_pay' ? 'url' : 'text',
+                            recordType: actionType === 'url' || actionType === 'google_review' || actionType === 'paypal_pay' || actionType === 'menu' ? 'url' : 'text',
                             data: payload
                           }]
                         });
@@ -2176,6 +2292,16 @@ export default function NfcTagReaderCustomizer() {
                       <span>Full Studio</span>
                     </button>
                   </div>
+
+                  {/* Direct Physical Hardware Order Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowHardwareOrderModal(true)}
+                    className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-amber-400/30 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                  >
+                    <ShoppingBag className="w-4 h-4 text-amber-400" />
+                    <span>📦 Order Pre-Programmed NFC Card or Table Stand ($9.99+)</span>
+                  </button>
                 </div>
               </div>
 
@@ -3284,11 +3410,11 @@ export default function NfcTagReaderCustomizer() {
                 )}
 
                 <button
-                  onClick={handleOrderPhysicalTag}
-                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5"
+                  onClick={() => setShowHardwareOrderModal(true)}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-amber-400/30 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5"
                 >
                   <ShoppingBag className="w-4 h-4 text-amber-400" />
-                  <span>Order Physical ($19.99)</span>
+                  <span>📦 Order Physical Card / Stand</span>
                 </button>
               </div>
             </div>
@@ -3555,6 +3681,55 @@ export default function NfcTagReaderCustomizer() {
                     <option value="Tamworth">Tamworth, NH Node</option>
                     <option value="Conway">Conway / North Conway, NH Node</option>
                   </select>
+                )}
+
+                {actionType === 'menu' && (
+                  <div className="space-y-3 p-3.5 rounded-2xl bg-amber-400/5 border border-amber-400/20">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-wider">
+                        Website & Digital Menu Target
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Link href="/create-storefront" className="text-[10px] font-mono text-amber-300 underline">
+                          + Build Website & Menu
+                        </Link>
+                        <Link href="/dashboard/storefront" className="text-[10px] font-mono text-zinc-400 underline">
+                          Edit Menu
+                        </Link>
+                      </div>
+                    </div>
+                    <select
+                      value={selectedMenuSlug}
+                      onChange={e => handleSelectStorefrontForCard(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-[#15151f] border border-white/15 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                    >
+                      {(storefronts || []).map(sf => (
+                        <option key={sf.id} value={sf.slug}>
+                          {sf.logoEmoji || '🍽️'} {sf.businessName} ({sf.products?.length || 0} menu items)
+                        </option>
+                      ))}
+                    </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="sm:col-span-2">
+                        <input
+                          type="url"
+                          value={customUrl}
+                          onChange={e => setCustomUrl(e.target.value)}
+                          placeholder="https://townraise.org/site/..."
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={menuTableNumber}
+                          onChange={e => handleSelectStorefrontForCard(selectedMenuSlug, e.target.value)}
+                          placeholder="Table # (optional)"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {actionType === 'url' && (
@@ -4355,6 +4530,16 @@ export default function NfcTagReaderCustomizer() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* NFC Hardware & Tabletop Stand Order Modal */}
+      {showHardwareOrderModal && (
+        <NfcHardwareOrderModal
+          defaultStorefront={
+            storefronts?.find(s => s.slug === selectedMenuSlug) || storefronts?.[0]
+          }
+          onClose={() => setShowHardwareOrderModal(false)}
+        />
       )}
 
     </div>

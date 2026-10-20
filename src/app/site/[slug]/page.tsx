@@ -14,6 +14,7 @@ import {
 import { useNfcStore } from '@/lib/store';
 import { StorefrontProduct } from '@/lib/types';
 import FoodCustomizerModal from '@/components/FoodCustomizerModal';
+import NfcHardwareOrderModal from '@/components/NfcHardwareOrderModal';
 import QRCode from 'qrcode';
 import confetti from 'canvas-confetti';
 
@@ -33,9 +34,11 @@ export default function StandaloneBusinessSitePage({
 
   // Cart State
   const [cartItems, setCartItems] = useState<{ product: StorefrontProduct; quantity: number }[]>([]);
-  const [fulfillmentType, setFulfillmentType] = useState<'delivery' | 'pickup'>('delivery');
+  const [fulfillmentType, setFulfillmentType] = useState<'delivery' | 'pickup' | 'dine_in'>('delivery');
+  const [tableNumber, setTableNumber] = useState<string>('');
   const [showCheckoutDrawer, setShowCheckoutDrawer] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showHardwareOrderModal, setShowHardwareOrderModal] = useState(false);
   const [customizingProduct, setCustomizingProduct] = useState<StorefrontProduct | null>(null);
   const [tableQrUrl, setTableQrUrl] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -51,9 +54,16 @@ export default function StandaloneBusinessSitePage({
   const [isOrdering, setIsOrdering] = useState(false);
   const [orderCompleteId, setOrderCompleteId] = useState<string | null>(null);
 
-  // Generate Tabletop QR Code on Mount
+  // Generate Tabletop QR Code & Check ?table= Query Param on Mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tParam = urlParams.get('table');
+      if (tParam) {
+        setTableNumber(tParam);
+        setFulfillmentType('dine_in');
+      }
+
       QRCode.toDataURL(window.location.href, {
         width: 380,
         margin: 2,
@@ -125,7 +135,12 @@ export default function StandaloneBusinessSitePage({
     const order = await placeDeliveryOrder({
       customerName,
       customerPhone,
-      deliveryAddress: fulfillmentType === 'delivery' ? customerAddress : `[PICKUP AT STORE] ${storefront.address}`,
+      deliveryAddress:
+        fulfillmentType === 'delivery'
+          ? customerAddress
+          : fulfillmentType === 'dine_in'
+          ? `[DINE-IN TABLE #${tableNumber || '1'}] ${storefront.businessName}`
+          : `[PICKUP AT STORE] ${storefront.address}`,
       deliveryInstructions: deliveryInstructions || undefined,
       items: cartItems.map(item => ({
         id: item.product.id,
@@ -280,9 +295,55 @@ export default function StandaloneBusinessSitePage({
                 <QrCode className="w-4 h-4 text-amber-400" />
                 <span>Table QR</span>
               </button>
+
+              <button
+                onClick={() => setShowHardwareOrderModal(true)}
+                className="px-4 py-2.5 bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-lg"
+                title="Order Physical Pre-Programmed NFC Cards & Table Stands for this Menu"
+              >
+                <Radio className="w-4 h-4 text-amber-400 animate-pulse" />
+                <span>Order NFC Stands</span>
+              </button>
             </div>
 
           </div>
+
+          {/* Active NFC Table Stand Connected Banner */}
+          {(tableNumber || fulfillmentType === 'dine_in') && (
+            <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                  <Radio className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black uppercase text-white tracking-wide">
+                      📡 NFC Tabletop Stand Active: Table #{tableNumber || '1'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[10px] font-mono font-bold uppercase">
+                      $0 Delivery Fee
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-300">
+                    Add items to your cart below and your order will be brought directly to Table #{tableNumber || '1'}!
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-zinc-400 uppercase">Table #:</span>
+                <input
+                  type="text"
+                  value={tableNumber}
+                  onChange={e => {
+                    setTableNumber(e.target.value);
+                    setFulfillmentType('dine_in');
+                  }}
+                  placeholder="1"
+                  className="w-16 px-2.5 py-1.5 bg-black/50 border border-emerald-500/40 rounded-lg text-xs font-mono font-bold text-white text-center focus:outline-none"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Badges / Highlights Row */}
           {(storefront.badges || []).length > 0 && (
@@ -902,11 +963,24 @@ export default function StandaloneBusinessSitePage({
                 /* Order Form & Items */
                 <form onSubmit={handlePlaceOrder} className="space-y-5">
                   {/* Fulfillment Type Toggle */}
-                  <div className="grid grid-cols-2 gap-2 p-1 bg-white/5 rounded-2xl">
+                  <div className="grid grid-cols-3 gap-1.5 p-1 bg-white/5 rounded-2xl">
+                    <button
+                      type="button"
+                      onClick={() => setFulfillmentType('dine_in')}
+                      className={`py-2.5 rounded-xl text-[11px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
+                        fulfillmentType === 'dine_in'
+                          ? 'text-black shadow-md'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                      style={fulfillmentType === 'dine_in' ? { backgroundColor: primaryColor } : {}}
+                    >
+                      <Radio className="w-3.5 h-3.5" />
+                      <span>Table #{tableNumber || '1'}</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => setFulfillmentType('delivery')}
-                      className={`py-2.5 rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+                      className={`py-2.5 rounded-xl text-[11px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
                         fulfillmentType === 'delivery'
                           ? 'text-black shadow-md'
                           : 'text-zinc-400 hover:text-white'
@@ -919,7 +993,7 @@ export default function StandaloneBusinessSitePage({
                     <button
                       type="button"
                       onClick={() => setFulfillmentType('pickup')}
-                      className={`py-2.5 rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+                      className={`py-2.5 rounded-xl text-[11px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
                         fulfillmentType === 'pickup'
                           ? 'text-black shadow-md'
                           : 'text-zinc-400 hover:text-white'
@@ -998,6 +1072,22 @@ export default function StandaloneBusinessSitePage({
                       />
                     </div>
 
+                    {fulfillmentType === 'dine_in' && (
+                      <div>
+                        <label className="text-[10px] font-mono uppercase text-emerald-400 font-bold block mb-1">
+                          Dine-In Table Number *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={tableNumber}
+                          onChange={(e) => setTableNumber(e.target.value)}
+                          placeholder="e.g. Table 4 or Patio 2"
+                          className="w-full px-3.5 py-2.5 bg-black/60 border border-emerald-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-400 font-mono"
+                        />
+                      </div>
+                    )}
+
                     {fulfillmentType === 'delivery' && (
                       <div>
                         <label className="text-[10px] font-mono uppercase text-zinc-400 font-bold block mb-1">
@@ -1058,6 +1148,13 @@ export default function StandaloneBusinessSitePage({
                       <span>Subtotal:</span>
                       <span>${subtotal.toFixed(2)}</span>
                     </div>
+                    {fulfillmentType === 'dine_in' && (
+                      <div className="flex justify-between text-emerald-400">
+                        <span>Dine-In Table Service (Table #{tableNumber || '1'}):</span>
+                        <span>FREE ($0.00)</span>
+                      </div>
+                    )}
+
                     {fulfillmentType === 'delivery' && (
                       <div className="flex justify-between text-zinc-400">
                         <span>Courier Delivery Fee:</span>
@@ -1125,7 +1222,7 @@ export default function StandaloneBusinessSitePage({
               </div>
             )}
 
-            <div className="pt-2 flex items-center justify-center gap-3">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
                 href={tableQrUrl}
                 download={`${storefront.slug}-table-qr.png`}
@@ -1135,9 +1232,29 @@ export default function StandaloneBusinessSitePage({
                 <Download className="w-4 h-4" />
                 <span>Download Printable PNG Stand</span>
               </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowQrModal(false);
+                  setShowHardwareOrderModal(true);
+                }}
+                className="px-5 py-3 bg-white/10 hover:bg-white/20 border border-amber-400/30 text-white font-bold uppercase text-xs tracking-wider rounded-xl transition-all flex items-center gap-1.5"
+              >
+                <Radio className="w-4 h-4 text-amber-400" />
+                <span>Order Physical NFC Stands</span>
+              </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* NFC HARDWARE & TABLE STAND ORDER MODAL */}
+      {showHardwareOrderModal && (
+        <NfcHardwareOrderModal
+          defaultStorefront={storefront}
+          onClose={() => setShowHardwareOrderModal(false)}
+        />
       )}
 
       {/* ========================================================================= */}
