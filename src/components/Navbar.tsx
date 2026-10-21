@@ -208,8 +208,8 @@ export default function Navbar() {
                       <ShoppingBag className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Marketplace & NFC Goods</div>
-                      <div className="text-[10px] text-zinc-400">NFC cards, tabletop stands, maple syrup & craft goods</div>
+                      <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Marketplace & Artisan Goods</div>
+                      <div className="text-[10px] text-zinc-400">Local food, maple syrup, farm goods & artisan crafts</div>
                     </div>
                   </Link>
 
@@ -419,7 +419,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* 4. NFC Studio Dropdown */}
+            {/* 4. Business & Menu Tools Dropdown */}
             <div 
               className="relative"
               onMouseEnter={() => handleMouseEnter('studio')}
@@ -428,43 +428,43 @@ export default function Navbar() {
               <button
                 onClick={() => setActiveDropdown(activeDropdown === 'studio' ? null : 'studio')}
                 className={`px-3 py-2 rounded-xl text-xs font-bold tracking-wide transition-all flex items-center gap-1.5 ${
-                  ['/creator', '/nfc-creator', '/custom-nfc'].some(p => pathname?.startsWith(p)) || activeDropdown === 'studio'
+                  ['/create-storefront', '/menus', '/csv-importer'].some(p => pathname?.startsWith(p)) || activeDropdown === 'studio'
                     ? 'text-amber-400 bg-amber-400/10' 
                     : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
-                <span>NFC Studio</span>
+                <span>Websites & Menus</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'studio' ? 'rotate-180 text-amber-400' : 'text-zinc-400'}`} />
               </button>
 
               {activeDropdown === 'studio' && (
                 <div className="absolute top-full left-0 mt-1 w-80 p-2 rounded-2xl bg-[#0a0a12]/98 backdrop-blur-3xl border border-white/10 shadow-2xl space-y-1 animate-in fade-in-50 slide-in-from-top-2 z-50">
                   <Link
-                    href="/creator"
+                    href="/create-storefront"
                     className="p-2.5 rounded-xl hover:bg-white/5 flex items-start gap-3 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shrink-0">
-                      <Cpu className="w-4 h-4" />
+                      <Store className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors flex items-center gap-2">
-                        <span>All-in-One NFC Creator</span>
-                        <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 text-[8px] font-mono font-bold">Studio</span>
+                        <span>Storefront & Menu Builder</span>
+                        <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 text-[8px] font-mono font-bold">Instant</span>
                       </div>
-                      <div className="text-[10px] text-zinc-400">Program cards for menus, reviews, vCards, Wi-Fi & perks</div>
+                      <div className="text-[10px] text-zinc-400">Build your business website, digital menu & QR pass</div>
                     </div>
                   </Link>
 
                   <Link
-                    href="/marketplace"
+                    href="/menus"
                     className="p-2.5 rounded-xl hover:bg-white/5 flex items-start gap-3 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-                      <Layers className="w-4 h-4" />
+                      <Utensils className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">Physical NFC Hardware Fleet</div>
-                      <div className="text-[10px] text-zinc-400">Tabletop acrylic stands, smart metal cards & tap keyfobs</div>
+                      <div className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">Digital Menus Hub</div>
+                      <div className="text-[10px] text-zinc-400">Browse full restaurant menus & mobile table ordering</div>
                     </div>
                   </Link>
 
@@ -674,12 +674,12 @@ export default function Navbar() {
               </Link>
 
               <Link
-                href="/creator"
+                href="/menus"
                 className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-white flex flex-col gap-1 hover:bg-white/10 transition-colors"
               >
-                <Cpu className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-bold">NFC Creator</span>
-                <span className="text-[9px] text-zinc-400">All-in-One Studio</span>
+                <Utensils className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-bold">Digital Menus</span>
+                <span className="text-[9px] text-zinc-400">Local Ordering</span>
               </Link>
 
               <Link
@@ -706,7 +706,7 @@ export default function Navbar() {
               >
                 <ShoppingBag className="w-4 h-4 text-indigo-400" />
                 <span className="text-xs font-bold">Marketplace</span>
-                <span className="text-[9px] text-zinc-400">NFC Stands & Local</span>
+                <span className="text-[9px] text-zinc-400">Local Artisan Goods</span>
               </Link>
 
               <Link

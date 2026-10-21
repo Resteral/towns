@@ -30,13 +30,11 @@ export default function DashboardLayout({
     { href: '/dashboard/growth-kit', label: 'Growth Kit & Promos', icon: Megaphone, badge: '🚀 New' },
     { href: '/dashboard/storefront', label: 'Websites & Menus', icon: Store },
     { href: '/dashboard/town-command', label: 'Town Vanguard Command', icon: Compass },
-    { href: '/dashboard/programmer', label: 'NFC Card Programmer', icon: Cpu },
     { href: '/dashboard/delivery', label: 'Delivery Dispatch', icon: Truck, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} new` : undefined },
     { href: '/dashboard/feedback', label: 'Feedback Shield & Inbox', icon: ShieldCheck, badge: newFeedbackCount > 0 ? `${newFeedbackCount} new` : undefined },
-    { href: '/dashboard/cards', label: 'NFC Card Fleet', icon: CreditCard },
-    { href: '/dashboard/analytics', label: 'Tap Radar & Analytics', icon: BarChart3 },
+    { href: '/dashboard/analytics', label: 'Storefront & Review Analytics', icon: BarChart3 },
     { href: '/dashboard/settings', label: 'Phone & Notification Relay', icon: Phone },
-    { href: '/marketplace', label: 'Hardware Store', icon: ShoppingBag },
+    { href: '/marketplace', label: 'Local Marketplace', icon: ShoppingBag },
   ];
 
   return (

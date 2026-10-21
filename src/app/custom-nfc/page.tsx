@@ -1,3 +1,5 @@
-import AllInOneNfcCreatorPage from '@/app/creator/page';
+import { redirect } from 'next/navigation';
 
-export default AllInOneNfcCreatorPage;
+export default function CustomNfcRedirectPage() {
+  redirect('/create-storefront');
+}

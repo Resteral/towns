@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Townraise | Local Storefronts, NFC Network & Food Delivery Driver App",
+  title: "Townraise | Local Storefronts, Digital Menus & Food Delivery Driver App",
   description: "Accelerate your 5-star Google Reviews, browse local restaurant menus, explore tourist scavenger hunts, and manage real-time courier food delivery dispatch across Carroll County.",
   manifest: "/manifest.webmanifest",
   icons: {

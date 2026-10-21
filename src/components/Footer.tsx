@@ -79,16 +79,16 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Hardware & NFC Fleet */}
+          {/* Col 4: Local Delivery & Marketplace */}
           <div className="space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-300">NFC Review Hardware</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-300">Dining & Marketplace</h4>
             <ul className="space-y-2.5 text-xs text-zinc-400 font-medium">
-              <li><Link href="/creator" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">⚡ All-in-One NFC Creator</Link></li>
-              <li><Link href="/dashboard/admin" className="hover:text-white transition-colors">📇 Admin Card Database</Link></li>
-              <li><Link href="/marketplace?cat=cards" className="hover:text-white transition-colors">Obsidian PVC Smart Cards</Link></li>
-              <li><Link href="/marketplace?cat=stands" className="hover:text-white transition-colors">Cyber Glass Table Stands</Link></li>
-              <li><Link href="/marketplace?cat=cards" className="hover:text-white transition-colors">Eco-Bamboo Laser Cards</Link></li>
-              <li><Link href="/marketplace?cat=stickers" className="hover:text-white transition-colors">3M Weatherproof Stickers</Link></li>
+              <li><Link href="/eats" className="text-amber-400 font-bold hover:text-amber-300 transition-colors">🍕 Local Eats & Delivery</Link></li>
+              <li><Link href="/menus" className="hover:text-white transition-colors">📋 Digital Restaurant Menus</Link></li>
+              <li><Link href="/marketplace" className="hover:text-white transition-colors">🛍️ Town Marketplace Catalog</Link></li>
+              <li><Link href="/courier" className="hover:text-white transition-colors">🛻 Sean Martin 4x4 Courier</Link></li>
+              <li><Link href="/drivers" className="hover:text-white transition-colors">🟢 Active Driver Roster</Link></li>
+              <li><Link href="/concierge" className="hover:text-white transition-colors">🏕️ Lake & Cabin Concierge</Link></li>
             </ul>
           </div>
 

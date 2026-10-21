@@ -14,7 +14,6 @@ import {
 import { useNfcStore } from '@/lib/store';
 import { StorefrontProduct } from '@/lib/types';
 import FoodCustomizerModal from '@/components/FoodCustomizerModal';
-import NfcHardwareOrderModal from '@/components/NfcHardwareOrderModal';
 import QRCode from 'qrcode';
 import confetti from 'canvas-confetti';
 
@@ -38,7 +37,6 @@ export default function StandaloneBusinessSitePage({
   const [tableNumber, setTableNumber] = useState<string>('');
   const [showCheckoutDrawer, setShowCheckoutDrawer] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [showHardwareOrderModal, setShowHardwareOrderModal] = useState(false);
   const [customizingProduct, setCustomizingProduct] = useState<StorefrontProduct | null>(null);
   const [tableQrUrl, setTableQrUrl] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -295,30 +293,21 @@ export default function StandaloneBusinessSitePage({
                 <QrCode className="w-4 h-4 text-amber-400" />
                 <span>Table QR</span>
               </button>
-
-              <button
-                onClick={() => setShowHardwareOrderModal(true)}
-                className="px-4 py-2.5 bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-300 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-lg"
-                title="Order Physical Pre-Programmed NFC Cards & Table Stands for this Menu"
-              >
-                <Radio className="w-4 h-4 text-amber-400 animate-pulse" />
-                <span>Order NFC Stands</span>
-              </button>
             </div>
 
           </div>
 
-          {/* Active NFC Table Stand Connected Banner */}
+          {/* Active Dine-In Table Connected Banner */}
           {(tableNumber || fulfillmentType === 'dine_in') && (
             <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
-                  <Radio className="w-5 h-5 animate-pulse" />
+                  <UtensilsCrossed className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black uppercase text-white tracking-wide">
-                      📡 NFC Tabletop Stand Active: Table #{tableNumber || '1'}
+                      🍽️ Dine-In Table Active: Table #{tableNumber || '1'}
                     </span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[10px] font-mono font-bold uppercase">
                       $0 Delivery Fee
@@ -1232,29 +1221,9 @@ export default function StandaloneBusinessSitePage({
                 <Download className="w-4 h-4" />
                 <span>Download Printable PNG Stand</span>
               </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setShowQrModal(false);
-                  setShowHardwareOrderModal(true);
-                }}
-                className="px-5 py-3 bg-white/10 hover:bg-white/20 border border-amber-400/30 text-white font-bold uppercase text-xs tracking-wider rounded-xl transition-all flex items-center gap-1.5"
-              >
-                <Radio className="w-4 h-4 text-amber-400" />
-                <span>Order Physical NFC Stands</span>
-              </button>
             </div>
           </div>
         </div>
-      )}
-
-      {/* NFC HARDWARE & TABLE STAND ORDER MODAL */}
-      {showHardwareOrderModal && (
-        <NfcHardwareOrderModal
-          defaultStorefront={storefront}
-          onClose={() => setShowHardwareOrderModal(false)}
-        />
       )}
 
       {/* ========================================================================= */}

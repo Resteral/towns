@@ -41,12 +41,9 @@ export default function HomePage() {
 
   const marketplaceCategories = [
     { id: 'all', label: 'All Products', icon: '✨' },
-    { id: 'cards', label: 'NFC Cards', icon: '💳' },
-    { id: 'stands', label: 'Tabletop Acrylics', icon: '💎' },
-    { id: 'stickers', label: 'Tap Stickers', icon: '🏷️' },
     { id: 'food', label: 'Bakehouse & Honey', icon: '🍯' },
     { id: 'artisan', label: 'Artisan Woodcraft', icon: '🪵' },
-    { id: 'bundles', label: 'Fleet Bundles', icon: '📦' },
+    { id: 'bundles', label: 'Local Bundles', icon: '📦' },
   ];
 
   const filteredMarketplaceProducts = products.filter((p) => {
@@ -121,11 +118,11 @@ export default function HomePage() {
                 <ArrowRight className="w-4 h-4 text-emerald-400" />
               </Link>
               <Link
-                href="/marketplace"
+                href="/menus"
                 className="px-6 py-4 bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 hover:border-amber-400/40 transition-all flex items-center gap-2"
               >
-                <Radio className="w-4 h-4 text-amber-400" />
-                <span>NFC Hardware Fleet</span>
+                <ShoppingBag className="w-4 h-4 text-amber-400" />
+                <span>Digital Menus & Marketplace</span>
               </Link>
             </div>
 
@@ -199,9 +196,9 @@ export default function HomePage() {
 
                   <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
                     <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                      <span>⚡</span> Tabletop Tap Stands
+                      <span>⚡</span> Instant Table QR Menus
                     </div>
-                    <p className="text-[10px] text-zinc-400">Diners tap to view menu or review on Google in 0.1 seconds.</p>
+                    <p className="text-[10px] text-zinc-400">Diners scan at their table to order or review on Google in seconds.</p>
                   </div>
 
                   <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
@@ -418,7 +415,7 @@ export default function HomePage() {
                 <span className="text-[10px] font-black uppercase tracking-[0.3em]">Quantum Node Radar</span>
               </div>
               <h2 className="text-3xl font-black italic uppercase tracking-tight text-white">
-                Live Tap & Review Lattice
+                Live Town Activity & Review Pulse
               </h2>
             </div>
             <Link
@@ -442,7 +439,7 @@ export default function HomePage() {
               <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
                 <div>
                   <span className="text-2xl font-black italic text-amber-400">428</span>
-                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Taps Logged</span>
+                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Orders & Visits</span>
                 </div>
                 <span className="text-[9px] font-mono text-emerald-400 font-bold">+46 Reviews this week</span>
               </div>
@@ -460,7 +457,7 @@ export default function HomePage() {
               <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
                 <div>
                   <span className="text-2xl font-black italic text-indigo-400">165</span>
-                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Taps Logged</span>
+                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Service Check-Ins</span>
                 </div>
                 <span className="text-[9px] font-mono text-indigo-300 font-bold">+29 Reviews this week</span>
               </div>
@@ -470,7 +467,7 @@ export default function HomePage() {
               <div className="flex justify-between items-start mb-4">
                 <span className="text-3xl">🍕</span>
                 <span className="px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-400 text-[8px] font-mono font-bold uppercase border border-amber-400/20">
-                  ● Peak Table Tap
+                  ● Peak Dining Flow
                 </span>
               </div>
               <h3 className="text-xl font-black italic text-white uppercase">Rustic Stone Hearth</h3>
@@ -478,7 +475,7 @@ export default function HomePage() {
               <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
                 <div>
                   <span className="text-2xl font-black italic text-amber-400">312</span>
-                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Taps Logged</span>
+                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Orders & Visits</span>
                 </div>
                 <span className="text-[9px] font-mono text-emerald-400 font-bold">+38 Reviews this week</span>
               </div>
@@ -617,7 +614,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 3. DIRECT MARKETPLACE SALES & HARDWARE FLEET */}
+        {/* 3. DIRECT MARKETPLACE SALES & LOCAL ARTISAN GOODS */}
         <section className="space-y-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/5 pb-6">
             <div className="space-y-2">
@@ -626,10 +623,10 @@ export default function HomePage() {
                 <span>Townraise Marketplace Direct Sales</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-white">
-                Shop Hardware & Local Artisan Goods
+                Shop Local Food & Artisan Goods
               </h2>
               <p className="text-xs text-zinc-400 max-w-xl">
-                Purchase pre-programmed NFC stands, staff review cards, 3M tap stickers, or local farm-harvested goods directly from the overview.
+                Purchase local bakehouse loaves, raw honey, maple syrup, or handcrafted Carroll County goods directly from independent makers.
               </p>
             </div>
 
@@ -1013,10 +1010,10 @@ export default function HomePage() {
             </div>
 
             <Link
-              href="/marketplace"
+              href="/create-storefront"
               className="block w-full py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-xl hover:scale-105 transition-all shadow-lg"
             >
-              Order NFC Hardware Fleet
+              Launch Your Storefront & Review Shield
             </Link>
           </div>
         </section>
@@ -1136,7 +1133,7 @@ export default function HomePage() {
               href="/marketplace"
               className="px-8 py-4 bg-white/5 border border-white/10 hover:border-amber-400/30 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all"
             >
-              Order NFC Hardware Fleet
+              Explore Town Marketplace
             </Link>
           </div>
         </section>

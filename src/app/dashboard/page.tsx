@@ -35,11 +35,9 @@ import {
   Key
 } from 'lucide-react';
 import { EFFINGHAM_AREA_BUSINESSES } from '@/lib/local-businesses';
-import AdminNfcCardProgrammerModal from '@/components/AdminNfcCardProgrammerModal';
 
 export default function DashboardOverviewPage() {
   const { 
-    cards, 
     deliveryOrders, 
     driverTelemetry, 
     driverShift, 
@@ -51,8 +49,6 @@ export default function DashboardOverviewPage() {
     deliveryDrivers,
     toggleDriverStatus
   } = useNfcStore();
-
-  const [isAdminProgrammerOpen, setIsAdminProgrammerOpen] = useState(false);
 
   const totalStores = EFFINGHAM_AREA_BUSINESSES.length;
   const pendingOrders = deliveryOrders.filter(o => o.status === 'pending' || o.status === 'accepted' || o.status === 'out_for_delivery');
@@ -89,13 +85,13 @@ export default function DashboardOverviewPage() {
 
           {/* Quick Action Station */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto">
-            <button
-              onClick={() => setIsAdminProgrammerOpen(true)}
+            <Link
+              href="/create-storefront"
               className="flex-1 sm:flex-initial px-5 py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
             >
-              <Key className="w-4 h-4" />
-              <span>⚡ Program Admin Pass</span>
-            </button>
+              <Store className="w-4 h-4" />
+              <span>🏪 Build Website & Menu</span>
+            </Link>
 
             <Link
               href="/ai-concierge"
@@ -621,12 +617,12 @@ export default function DashboardOverviewPage() {
               </Link>
 
               <Link
-                href="/dashboard/cards"
+                href="/dashboard/storefront"
                 className="p-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-between text-xs font-bold text-white transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <Radio className="w-4 h-4 text-amber-400" />
-                  <span>NFC Smart Review Cards ({cards.length})</span>
+                  <Store className="w-4 h-4 text-amber-400" />
+                  <span>Websites & Digital Menus ({storefronts.length})</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-zinc-500" />
               </Link>
@@ -664,12 +660,6 @@ export default function DashboardOverviewPage() {
         </div>
 
       </div>
-
-      {/* Admin NFC Card Provisioner Modal */}
-      <AdminNfcCardProgrammerModal
-        isOpen={isAdminProgrammerOpen}
-        onClose={() => setIsAdminProgrammerOpen(false)}
-      />
 
     </div>
   );

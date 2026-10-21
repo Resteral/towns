@@ -76,7 +76,7 @@ export default function AdminDashboardPage() {
   // Active Admin Sub-Tab
   const [activeTab, setActiveTab] = useState<
     'sell_nfc_menus' | 'nfc_writer' | 'hardware_orders' | 'menu_stock_controller' | 'automation_bots' | 'managed_services'
-  >('sell_nfc_menus');
+  >('automation_bots');
 
   // Filter & Search states
   const [selectedFormFactor, setSelectedFormFactor] = useState<string>('all');
@@ -838,7 +838,7 @@ export default function AdminDashboardPage() {
               Automation & Managed Services Console
             </h1>
             <p className="text-xs sm:text-sm text-zinc-400 font-medium max-w-2xl">
-              Manage sellable automated services ($49–$399/mo), program & sell pre-encoded NFC table stands, trigger automated review/dispatch bots, and control restaurant menu stock in real-time.
+              Manage sellable automated services ($49–$399/mo), trigger automated review/dispatch bots, and control restaurant menu stock in real-time.
             </p>
           </div>
 
@@ -851,13 +851,13 @@ export default function AdminDashboardPage() {
               <span>Enroll Paying Client ($/mo)</span>
             </button>
 
-            <button
-              onClick={() => setShowCreateProductModal(true)}
+            <Link
+              href="/create-storefront"
               className="px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-amber-400/20 active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              <span>Sell NFC Hardware</span>
-            </button>
+              <span>Build Storefront</span>
+            </Link>
 
             <Link
               href="/services"
@@ -972,42 +972,6 @@ export default function AdminDashboardPage() {
         >
           <Briefcase className="w-4 h-4" />
           <span>💼 Managed Client Retainers ({clientSubscriptions.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('sell_nfc_menus')}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${
-            activeTab === 'sell_nfc_menus'
-              ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <ShoppingBag className="w-4 h-4" />
-          <span>🛒 NFC Menu Hardware ({nfcMenuProducts.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('nfc_writer')}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${
-            activeTab === 'nfc_writer'
-              ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          <span>⚡ NFC Card Database & Programmer ({cards.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('hardware_orders')}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${
-            activeTab === 'hardware_orders'
-              ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Truck className="w-4 h-4" />
-          <span>📦 Hardware Dispatch ({nfcHardwareOrders.length})</span>
         </button>
 
         <button

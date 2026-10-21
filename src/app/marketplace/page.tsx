@@ -22,13 +22,10 @@ export default function MarketplacePage() {
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
   const categories = [
-    { id: 'all', label: 'All Fleet', icon: '✨' },
-    { id: 'cards', label: 'NFC Cards', icon: '💳' },
-    { id: 'stands', label: 'Tabletop Acrylics', icon: '💎' },
-    { id: 'stickers', label: 'Tap Stickers', icon: '🏷️' },
-    { id: 'artisan', label: 'Artisan Crafts', icon: '🎨' },
+    { id: 'all', label: 'All Catalog', icon: '✨' },
     { id: 'food', label: 'Bakehouse & Eats', icon: '🥐' },
-    { id: 'bundles', label: 'Bundles', icon: '📦' },
+    { id: 'artisan', label: 'Artisan Crafts', icon: '🎨' },
+    { id: 'bundles', label: 'Local Bundles', icon: '📦' },
   ];
 
   const filteredProducts = products.filter((p) => {
@@ -76,7 +73,7 @@ export default function MarketplacePage() {
             Discover <span className="text-amber-400">Everything.</span>
           </h1>
           <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
-            Boutiques, artisan treasures, smart NFC hardware, and instant local courier deliveries from the world's most premium independent ecosystem.
+            Boutiques, artisan treasures, fresh bakehouse goods, and instant local courier deliveries from the world's most premium independent ecosystem.
           </p>
         </div>
 
@@ -247,7 +244,7 @@ export default function MarketplacePage() {
                       Explore Catalog Ready For Items
                     </h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      No products are listed in this category yet. Import products in bulk via CSV, create a merchant storefront, or build custom NFC smart hardware.
+                      No products are listed in this category yet. Import products in bulk via CSV, create a merchant storefront, or list your local artisan items.
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -265,10 +262,10 @@ export default function MarketplacePage() {
                       Register Storefront
                     </Link>
                     <Link
-                      href="/creator"
+                      href="/menus"
                       className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-amber-300 font-bold text-xs uppercase tracking-wider rounded-xl transition-all"
                     >
-                      NFC Creator
+                      Browse Menus
                     </Link>
                   </div>
                 </div>

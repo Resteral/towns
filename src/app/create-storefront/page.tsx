@@ -13,7 +13,6 @@ import { useNfcStore } from '@/lib/store';
 import { StorefrontProduct } from '@/lib/types';
 import confetti from 'canvas-confetti';
 import ImageUpload from '@/components/ImageUpload';
-import NfcHardwareOrderModal from '@/components/NfcHardwareOrderModal';
 
 export default function CreateStorefrontPage() {
   const router = useRouter();
@@ -143,7 +142,6 @@ export default function CreateStorefrontPage() {
 
   // Success State
   const [createdSlug, setCreatedSlug] = useState<string | null>(null);
-  const [showHardwareOrderModal, setShowHardwareOrderModal] = useState(false);
 
   // Auto-generate slug when name changes
   const handleNameChange = (val: string) => {
@@ -296,37 +294,6 @@ export default function CreateStorefrontPage() {
             </div>
           </div>
 
-          {/* Order Physical NFC Tabletop Stand & Cards Callout */}
-          <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-indigo-500/10 border border-amber-500/30 text-left space-y-4 max-w-xl mx-auto shadow-2xl">
-            <div className="flex items-start gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 text-2xl shrink-0">
-                <QrCode className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-white font-black text-sm uppercase tracking-tight">
-                    Order Physical NFC Tabletop Stands & Cards
-                  </h4>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold uppercase border border-amber-400/30">
-                    Pre-Programmed
-                  </span>
-                </div>
-                <p className="text-zinc-400 text-xs leading-relaxed">
-                  Get high-durability acrylic stands, wood tents, or waterproof PVC discs pre-encoded with your menu URL (<span className="text-amber-300 font-mono">/site/{createdSlug}</span>) and table numbers (1-10+) delivered directly to your door by local courier.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowHardwareOrderModal(true)}
-              className="w-full py-4 bg-gradient-to-r from-amber-400 via-amber-500 to-indigo-500 hover:opacity-95 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-xl shadow-amber-400/20 flex items-center justify-center gap-2 hover:scale-[1.02]"
-            >
-              <span>📦 Order Physical NFC Hardware & Table Stands ($14.99+)</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href={`/site/${createdSlug}`}
@@ -343,27 +310,6 @@ export default function CreateStorefrontPage() {
               Manage in Dashboard
             </Link>
           </div>
-
-          {/* NFC Hardware Order Modal */}
-          {showHardwareOrderModal && (
-            <NfcHardwareOrderModal
-              defaultStorefront={{
-                id: createdSlug,
-                businessName: businessName,
-                slug: createdSlug,
-                town,
-                state,
-                tagline,
-                logoEmoji,
-                coverImageUrl,
-                phone,
-                email,
-                accentColor,
-                products
-              } as any}
-              onClose={() => setShowHardwareOrderModal(false)}
-            />
-          )}
         </div>
       ) : (
         /* Wizard Steps */

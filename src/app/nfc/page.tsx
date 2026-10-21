@@ -1,3 +1,5 @@
-import CustomNfcPage from '@/app/custom-nfc/page';
+import { redirect } from 'next/navigation';
 
-export default CustomNfcPage;
+export default function NfcRedirectPage() {
+  redirect('/create-storefront');
+}
