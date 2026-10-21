@@ -1069,6 +1069,59 @@ export function useNfcStore() {
     setStorefronts(updatedStorefronts);
     localStorage.setItem(STORAGE_KEYS.STOREFRONTS, JSON.stringify(updatedStorefronts));
 
+    // Automatically provision a Free Customizable NFC Card for every registered business / contractor
+    const autoCardId = `card-${newStorefront.slug}`;
+    const existingCard = cards.find(c => c.id === autoCardId || c.storefrontSlug === newStorefront.slug);
+    if (!existingCard) {
+      const freeNfcCard: NfcCardConfig = {
+        id: autoCardId,
+        cardName: `${newStorefront.businessName} — Free Custom NFC Card`,
+        businessName: newStorefront.businessName,
+        profileType: 'loyalty_rewards',
+        entityRole: 'business',
+        cardTheme: 'matte_obsidian',
+        cardTagline: newStorefront.tagline || `Tap for Menu, Rewards & Leaderboard XP in ${newStorefront.town}`,
+        showcaseTitle: 'Featured Menu & Services',
+        showcaseItems: newStorefront.products.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          price: `$${p.price.toFixed(2)}`,
+          category: p.category,
+          badge: p.badge,
+        })),
+        isFreeRegistrationCard: true,
+        hardwareFormFactor: 'pvc_card',
+        chipType: 'NTAG215',
+        storefrontSlug: newStorefront.slug,
+        contactPhone: newStorefront.phone,
+        contactEmail: newStorefront.email,
+        contactAddress: newStorefront.address,
+        googleReviewUrl: newStorefront.googleReviewUrl || `https://www.google.com/search?q=${encodeURIComponent(`${newStorefront.businessName} ${newStorefront.town} ${newStorefront.state}`)}`,
+        mode: 'smart_funnel',
+        thresholdStars: 4,
+        rewardProgramActive: true,
+        visitPointsPerTap: 25,
+        nextVisitRewardGoal: 100,
+        nextVisitRewardTitle: '$10.00 Off or Free Specialty Item on Your Next Visit',
+        nextVisitPromoCode: `NEXT-${newStorefront.businessName.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 5) || 'REWARD'}`,
+        leaderboardXpPerTap: 50,
+        bonusReviewPoints: 25,
+        customHeadline: `Tap to browse ${newStorefront.businessName}, earn Next-Visit Points & climb the Leaderboard!`,
+        logoUrl: newStorefront.logoEmoji || '🏪',
+        primaryColor: newStorefront.accentColor || '#f59e0b',
+        assignedLocation: `${newStorefront.town}, ${newStorefront.state}`,
+        active: true,
+        totalTaps: 1,
+        googleConversions: 0,
+        privateFeedbacksCount: 0,
+        createdAt: new Date().toISOString().split('T')[0],
+        town: `${newStorefront.town}, ${newStorefront.state}`,
+      };
+      const nextCards = [freeNfcCard, ...cards];
+      saveCards(nextCards);
+    }
+
     // If listing on marketplace, auto-sync products and seller profile
     if (newStorefront.listOnMarketplace) {
       // 1. Add Seller Profile

@@ -647,7 +647,7 @@ export default function TapRouterPage() {
         )}
 
         {/* ========================================================================= */}
-        {/* 3. INTERACTIVE STORE MENU & FEATURED CATALOG */}
+        {/* 3. INTERACTIVE STORE MENU / CONTRACTOR SERVICE SHOWCASE */}
         {/* ========================================================================= */}
         {(() => {
           const matchedBiz = EFFINGHAM_AREA_BUSINESSES.find(
@@ -659,15 +659,30 @@ export default function TapRouterPage() {
                   sf.slug.toLowerCase() === (card.storefrontSlug || card.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-'))
           );
 
-          const menuItems = matchedBiz?.menuItems || matchedStorefront?.products.map(p => ({
+          const customShowcase = card.showcaseItems && card.showcaseItems.length > 0
+            ? card.showcaseItems.map(item => ({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                category: item.category || 'Featured',
+                popular: !!item.badge,
+                badge: item.badge
+              }))
+            : null;
+
+          const menuItems = customShowcase || matchedBiz?.menuItems || matchedStorefront?.products.map(p => ({
             id: p.id,
             name: p.name,
             description: p.description,
             price: `$${p.price.toFixed(2)}`,
             category: p.category,
             popular: !!p.badge,
-            imageEmoji: '🍽️'
+            badge: p.badge
           })) || [];
+
+          const isContractor = card.entityRole === 'contractor';
+          const sectionTitle = card.showcaseTitle || matchedBiz?.menuTitle || (isContractor ? 'Contractor Services & Estimate Menu' : 'Featured Store Menu');
 
           if (menuItems.length === 0) return null;
 
@@ -675,13 +690,13 @@ export default function TapRouterPage() {
             <div className="pt-2 border-t border-white/10 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black uppercase text-amber-400 font-mono tracking-wider flex items-center gap-1.5">
-                  <span>🍽️</span>
-                  <span>{matchedBiz?.menuTitle || 'Featured Store Menu'}</span>
+                  <span>{isContractor ? '🔨' : '🍽️'}</span>
+                  <span>{sectionTitle}</span>
                 </span>
-                <span className="text-[10px] font-mono text-zinc-500 font-bold">{menuItems.length} Items</span>
+                <span className="text-[10px] font-mono text-zinc-500 font-bold">{menuItems.length} Listed</span>
               </div>
 
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                 {menuItems.map((item: any) => (
                   <div
                     key={item.id}
@@ -690,9 +705,9 @@ export default function TapRouterPage() {
                     <div className="space-y-0.5 flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-xs font-bold text-white truncate">{item.name}</span>
-                        {item.popular && (
+                        {(item.popular || item.badge) && (
                           <span className="text-[8px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20">
-                            Popular
+                            {item.badge || 'Popular'}
                           </span>
                         )}
                       </div>
@@ -705,13 +720,40 @@ export default function TapRouterPage() {
                 ))}
               </div>
 
+              {card.contactPhone && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <a
+                    href={`tel:${card.contactPhone.replace(/[^0-9]/g, '')}`}
+                    className="py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Call {card.contactPhone}</span>
+                  </a>
+                  <a
+                    href={`sms:${card.contactPhone.replace(/[^0-9]/g, '')}`}
+                    className="py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Text {card.contactPhone}</span>
+                  </a>
+                </div>
+              )}
+
               <div className="flex gap-2 pt-1">
                 {matchedStorefront ? (
                   <Link
                     href={`/site/${matchedStorefront.slug}`}
                     className="flex-1 py-2.5 bg-amber-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 hover:bg-amber-300"
                   >
-                    <span>Order Online & Full Menu</span>
+                    <span>{isContractor ? 'View Services & Request Quote' : 'Order Online & Full Menu'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                ) : isContractor ? (
+                  <Link
+                    href="/work"
+                    className="flex-1 py-2.5 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Request Contractor Quote on Work Board</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 ) : (
@@ -727,6 +769,19 @@ export default function TapRouterPage() {
             </div>
           );
         })()}
+
+        {/* Business / Contractor Owner CTA to Customize Their Free NFC Card */}
+        <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-between gap-2 text-[10px]">
+          <span className="text-zinc-400">
+            Own a business or contracting trade? Get your <strong className="text-amber-300">Free Custom NFC Card</strong>!
+          </span>
+          <Link
+            href={`/custom-nfc?cardId=${card.id}`}
+            className="px-2.5 py-1 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 text-amber-300 font-mono font-bold uppercase shrink-0"
+          >
+            Customize Card →
+          </Link>
+        </div>
 
         {/* Footer info */}
         <div className="pt-4 border-t border-white/5 flex justify-between items-center text-[8px] font-mono text-zinc-600">

@@ -198,7 +198,37 @@ export default function WorkAndTradesPage() {
               <Truck className="w-4 h-4" />
               <span>Priority Courier & Hauling</span>
             </button>
+
+            <Link
+              href="/custom-nfc?role=contractor"
+              className="px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/40"
+            >
+              <span>🔨 Claim Free Contractor NFC Card →</span>
+            </Link>
           </div>
+        </div>
+
+        {/* Free Custom NFC Card Banner for Registered Contractors & Businesses */}
+        <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#101018] to-emerald-500/15 border border-amber-400/30 flex flex-col md:flex-row items-center justify-between gap-5 shadow-xl">
+          <div className="space-y-1.5 text-center md:text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-black uppercase tracking-widest">
+              <span>🎁 Included Free for Every Registered Contractor & Local Business</span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-black italic uppercase text-white">
+              Get Your <span className="text-amber-400">Free Custom NFC Service & Rewards Card</span>
+            </h2>
+            <p className="text-xs text-zinc-300 max-w-2xl">
+              Customize your own NFC card right on the site to showcase your <strong className="text-white">trade service menu & estimates</strong>, give repeat clients <strong className="text-amber-300">Next-Visit / Referral Points</strong>, and award <strong className="text-indigo-300">Website Leaderboard XP</strong> with a single tap!
+            </p>
+          </div>
+
+          <Link
+            href="/custom-nfc?role=contractor"
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider shrink-0 flex items-center gap-2 shadow-lg shadow-amber-400/20"
+          >
+            <span>Customize My Free NFC Card</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
 
         {/* Universal Filter & Search Bar (For Job Board) */}

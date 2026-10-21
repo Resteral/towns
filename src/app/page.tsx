@@ -214,16 +214,30 @@ export default function HomePage() {
                     </div>
                     <p className="text-[10px] text-zinc-400">Pushes 5-stars to Google, catches unhappy guests privately.</p>
                   </div>
+                  <div className="p-3.5 rounded-2xl bg-amber-400/10 border border-amber-400/30 space-y-1 sm:col-span-2">
+                    <div className="text-xs font-black text-amber-300 flex items-center gap-1.5">
+                      <span>🎁</span> FREE Custom NFC Menu & Rewards Card Included
+                    </div>
+                    <p className="text-[10px] text-zinc-200">
+                      Every registered business gets a Free Custom NFC Card you can customize right on the site to showcase your menu, reward customers with Next-Visit Points, and award Website Leaderboard XP!
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 space-y-2.5">
                 <Link
                   href="/create-storefront"
                   className="w-full py-4 px-6 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                 >
-                  <span>Register Storefront in 60 Seconds</span>
+                  <span>Register Storefront & Claim Free NFC Card</span>
                   <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/custom-nfc"
+                  className="w-full py-3 px-6 rounded-2xl bg-white/5 hover:bg-white/10 border border-amber-400/30 text-amber-300 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Customize Free Business NFC Card on Site →</span>
                 </Link>
               </div>
             </div>
@@ -277,16 +291,30 @@ export default function HomePage() {
                     </div>
                     <p className="text-[10px] text-zinc-400">Verified regional contractor badge building instant customer trust.</p>
                   </div>
+                  <div className="p-3.5 rounded-2xl bg-emerald-400/10 border border-emerald-400/30 space-y-1 sm:col-span-2">
+                    <div className="text-xs font-black text-emerald-300 flex items-center gap-1.5">
+                      <span>🎁</span> FREE Custom Contractor NFC Card Included
+                    </div>
+                    <p className="text-[10px] text-zinc-200">
+                      Every registered contractor also gets a Free Custom NFC Card to customize on the site — showcase your service menu & estimates, reward repeat clients, and earn Website Leaderboard XP!
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 space-y-2.5">
                 <Link
                   href="/work"
                   className="w-full py-4 px-6 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                 >
                   <span>Register as Contractor & Claim Leads</span>
                   <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/custom-nfc?role=contractor"
+                  className="w-full py-3 px-6 rounded-2xl bg-white/5 hover:bg-white/10 border border-emerald-400/30 text-emerald-300 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Customize Free Contractor NFC Card on Site →</span>
                 </Link>
               </div>
             </div>

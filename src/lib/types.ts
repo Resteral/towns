@@ -189,6 +189,19 @@ export interface NfcCardConfig {
   customDestinationUrl?: string;
 
   // Presentation & Operations
+  entityRole?: 'business' | 'contractor';
+  cardTheme?: 'matte_obsidian' | 'gold_foil' | 'emerald_neon' | 'indigo_cyber' | 'crimson_velvet';
+  cardTagline?: string;
+  showcaseTitle?: string;
+  showcaseItems?: {
+    id: string;
+    name: string;
+    description: string;
+    price: string;
+    category?: string;
+    badge?: string;
+  }[];
+  isFreeRegistrationCard?: boolean;
   customHeadline?: string;
   logoUrl?: string;
   primaryColor?: string;

@@ -230,11 +230,21 @@ export default function CreateStorefrontPage() {
           Instant Business Website & Marketplace Creator
         </div>
         <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter text-white uppercase">
-          Build Your <span className="text-amber-400">Delivery Storefront</span>
+          Build Your <span className="text-amber-400">Storefront & Free NFC Card</span>
         </h1>
-        <p className="text-zinc-400 text-xs md:text-sm max-w-xl mx-auto">
-          Create a standalone branded delivery website for your business in 60 seconds or plug directly into the Oasis Town Marketplace with instant phone notification relay.
+        <p className="text-zinc-400 text-xs md:text-sm max-w-2xl mx-auto">
+          Every registered business and contractor receives a <strong className="text-emerald-400">100% Free Custom NFC Card</strong> that you can customize on the site to showcase your menu or trade services, reward customers with Next-Visit Points, and award Website Leaderboard XP!
         </p>
+
+        <div className="pt-1">
+          <Link
+            href="/custom-nfc"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-black uppercase tracking-wider transition-all"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Open Free NFC Card Customizer Studio →</span>
+          </Link>
+        </div>
 
         {/* Stepper Tabs */}
         {!createdSlug && (
@@ -294,7 +304,15 @@ export default function CreateStorefrontPage() {
             </div>
           </div>
 
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href={`/custom-nfc?cardId=card-${createdSlug}`}
+              className="px-6 py-3.5 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-400/20 flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Customize My Free NFC Card & Rewards</span>
+            </Link>
+
             <Link
               href={`/site/${createdSlug}`}
               className="px-6 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-lg shadow-amber-400/20 flex items-center gap-2"
@@ -697,6 +715,21 @@ export default function CreateStorefrontPage() {
                     <strong className="text-white text-xs block">2. List Products on Oasis Town Marketplace (`/marketplace`)</strong>
                     <p className="text-[11px] text-zinc-400 leading-tight">
                       Allows town residents browsing the community catalog to discover your items and order delivery.
+                    </p>
+                  </div>
+                </label>
+
+                <label className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3.5 cursor-pointer transition-all">
+                  <input
+                    type="checkbox"
+                    checked={true}
+                    disabled
+                    className="w-4 h-4 mt-0.5 rounded accent-emerald-400"
+                  />
+                  <div>
+                    <strong className="text-emerald-300 text-xs block">3. FREE Custom NFC Card Included (`/custom-nfc`)</strong>
+                    <p className="text-[11px] text-zinc-300 leading-tight">
+                      Every registered business & contractor gets a Free Custom NFC Card that showcases your menu/services and gives customers Next-Visit Points + Website Leaderboard XP!
                     </p>
                   </div>
                 </label>

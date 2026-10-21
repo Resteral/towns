@@ -451,7 +451,23 @@ export default function Navbar() {
                         <span>Storefront & Menu Builder</span>
                         <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 text-[8px] font-mono font-bold">Instant</span>
                       </div>
-                      <div className="text-[10px] text-zinc-400">Build your business website, digital menu & QR pass</div>
+                      <div className="text-[10px] text-zinc-400">Build your business website, digital menu & Free NFC card</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/custom-nfc"
+                    className="p-2.5 rounded-xl hover:bg-white/5 flex items-start gap-3 transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                      <Gift className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors flex items-center gap-2">
+                        <span>Free Custom NFC Card Studio</span>
+                        <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[8px] font-mono font-bold">100% Free</span>
+                      </div>
+                      <div className="text-[10px] text-zinc-400">Customize your business or contractor card, menu & rewards</div>
                     </div>
                   </Link>
 
