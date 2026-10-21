@@ -22,6 +22,7 @@ export default function DashboardLayout({
 
   const navItems = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/dashboard/programmer', label: 'NFC Reward Card Programmer', icon: Cpu, badge: '🎁 NFC XP' },
     { href: '/dashboard/admin', label: 'Admin & Automation Suite', icon: Crown, badge: isAdmin ? '👑 Sean Martin' : '🔒 Sean Only' },
     { href: '/dashboard/sms-hub', label: 'SMS Automation & VIP Hub', icon: MessageSquare, badge: '⚡ SMS' },
     { href: '/dashboard/embeds', label: 'Website Embeds & Widgets', icon: Code2, badge: '✨ HTML' },

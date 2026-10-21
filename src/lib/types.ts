@@ -157,10 +157,17 @@ export interface NfcCardConfig {
   tableNumber?: string;
   tipLinkUrl?: string;
 
-  // Loyalty & Rewards
+  // Loyalty & Rewards + Website Leaderboard Program
   loyaltyWalletId?: string;
   pointsMultiplier?: number;
   mysteryDiscountCode?: string;
+  rewardProgramActive?: boolean;
+  visitPointsPerTap?: number;
+  nextVisitRewardGoal?: number;
+  nextVisitRewardTitle?: string;
+  nextVisitPromoCode?: string;
+  leaderboardXpPerTap?: number;
+  bonusReviewPoints?: number;
 
   // Event & Festival VIP Pass
   eventName?: string;
@@ -202,7 +209,7 @@ export interface TapLog {
   businessName: string;
   timestamp: string;
   device: 'iOS' | 'Android' | 'Desktop' | 'Other';
-  action: 'google_redirect' | 'private_feedback' | 'multi_hub_view' | 'direct_redirect';
+  action: 'google_redirect' | 'private_feedback' | 'multi_hub_view' | 'direct_redirect' | 'reward_checkin';
   ratingSelected?: number;
   location?: string;
 }

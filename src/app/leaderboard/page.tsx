@@ -194,12 +194,15 @@ export default function LeaderboardPage() {
       const townDrivers = deliveryDrivers.filter(d => d.town.toLowerCase() === town.name.toLowerCase() && d.isOnline);
       const townStores = storeHuntCircuits.flatMap(c => c.spots).filter(s => s.town.toLowerCase().includes(town.name.toLowerCase()));
       const townHunts = touristHunts.filter(h => h.town.toLowerCase().includes(town.name.toLowerCase()));
+      const townTapPoints = storeHunterStamps
+        .filter(s => s.town.toLowerCase().includes(town.name.toLowerCase()))
+        .reduce((acc, s) => acc + (s.pointsEarned || 50), 0);
       
       // Calculate total town pride points
       const basePoints = town.occupancyLattice * 25;
       const driverPoints = townDrivers.length * 50;
       const storePoints = townStores.length * 75;
-      const totalPrideScore = basePoints + driverPoints + storePoints;
+      const totalPrideScore = basePoints + driverPoints + storePoints + townTapPoints;
 
       return {
         id: town.id,
@@ -214,7 +217,7 @@ export default function LeaderboardPage() {
         leadOperator: town.vanguardLead
       };
     }).sort((a, b) => b.prideScore - a.prideScore);
-  }, [towns, deliveryDrivers, storeHuntCircuits, touristHunts]);
+  }, [towns, deliveryDrivers, storeHuntCircuits, touristHunts, storeHunterStamps]);
 
   const handleOpenLootChest = () => {
     if (loyaltyWallet.userPoints < 25) {
@@ -304,8 +307,24 @@ export default function LeaderboardPage() {
             Town Pride & <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent">Card Mastery</span>
           </h1>
           <p className="text-white/60 text-sm md:text-base leading-relaxed">
-            Track which town leads Carroll County in active commerce, courier runs, and tourism. Climb the Card Leveling Ladder by visiting local stores, building same-day store streaks, and opening Mystery Loot Chests!
+            Track which town leads Carroll County in active commerce, courier runs, and tourism. Climb the Card Leveling Ladder by tapping Business NFC Reward Cards, building same-day store streaks, and opening Mystery Loot Chests!
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+            <Link
+              href="/dashboard/programmer"
+              className="px-4 py-2 rounded-xl bg-amber-400 text-black font-black text-xs uppercase tracking-wider hover:bg-amber-300 transition-all flex items-center gap-1.5 shadow-lg shadow-amber-400/20"
+            >
+              <Zap className="w-3.5 h-3.5 fill-black" />
+              <span>Program Business NFC Reward Cards</span>
+            </Link>
+            <Link
+              href="/tap/card-oasis-main"
+              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-200 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Test Live Business Reward Tap</span>
+            </Link>
+          </div>
         </div>
 
         {/* User Card Level Header Widget */}

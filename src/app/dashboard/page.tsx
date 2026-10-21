@@ -86,10 +86,18 @@ export default function DashboardOverviewPage() {
           {/* Quick Action Station */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto">
             <Link
-              href="/create-storefront"
+              href="/dashboard/programmer"
               className="flex-1 sm:flex-initial px-5 py-3.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-black font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
             >
-              <Store className="w-4 h-4" />
+              <Smartphone className="w-4 h-4" />
+              <span>🎁 Program NFC Reward Cards</span>
+            </Link>
+
+            <Link
+              href="/create-storefront"
+              className="flex-1 sm:flex-initial px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all flex items-center justify-center gap-2"
+            >
+              <Store className="w-4 h-4 text-amber-400" />
               <span>🏪 Build Website & Menu</span>
             </Link>
 

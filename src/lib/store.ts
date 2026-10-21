@@ -31,7 +31,7 @@ import { INITIAL_STORE_CIRCUITS, INITIAL_STORE_HUNTER_STAMPS } from './store-hun
 import { sendAppNotification } from './push-notifications';
 
 const STORAGE_KEYS = {
-  CARDS: 'pulpulse_cards_v3',
+  CARDS: 'pulpulse_cards_v4',
   LOGS: 'pulpulse_logs_v1',
   FEEDBACKS: 'pulpulse_feedbacks_v1',
   CART: 'pulpulse_cart_v1',
@@ -2497,6 +2497,70 @@ export function useNfcStore() {
     return newSpot;
   };
 
+  const claimBusinessCardTapReward = (cardId: string) => {
+    const card = cards.find(c => c.id === cardId) || cards[0];
+    if (!card) return null;
+
+    const visitPointsAdded = card.visitPointsPerTap || 25;
+    const rewardGoal = card.nextVisitRewardGoal || 100;
+    const rewardTitle = card.nextVisitRewardTitle || '$10.00 Off or Free Specialty Item on Your Next Visit';
+    const promoCode = card.nextVisitPromoCode || `NEXT-${card.businessName.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 5)}-${Math.floor(10 + Math.random() * 90)}`;
+    const leaderboardXpAdded = card.leaderboardXpPerTap || 50;
+
+    // 1. Track Per-Business Next-Visit Progress in localStorage
+    const visitKey = `townraise_biz_visit_pts_${card.id}`;
+    const prevVisitPoints = typeof window !== 'undefined'
+      ? parseInt(localStorage.getItem(visitKey) || '0', 10)
+      : 0;
+    const newVisitPoints = prevVisitPoints + visitPointsAdded;
+    const unlockedNextVisitReward = newVisitPoints >= rewardGoal;
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(visitKey, String(newVisitPoints));
+    }
+
+    // 2. Award Website Leaderboard XP via StoreHunterStamp + LoyaltyWallet
+    const cleanTown = (card.town || activeTown.name || 'Effingham').replace(/,\s*[A-Z]{2}$/i, '').trim();
+    const newStamp: StoreHunterStamp = {
+      spotId: `nfc-reward-${card.id}-${Date.now()}`,
+      storeName: card.businessName,
+      circuitId: 'nfc-reward-program',
+      town: cleanTown,
+      timestamp: new Date().toISOString(),
+      badgeIcon: card.logoUrl || '🎁',
+      pointsEarned: leaderboardXpAdded,
+      unlockedPerk: {
+        discountLabel: unlockedNextVisitReward ? 'UNLOCKED FOR NEXT VISIT!' : `${newVisitPoints}/${rewardGoal} Visit Pts`,
+        discountDescription: rewardTitle,
+        voucherCode: promoCode,
+        minimumSpend: 'Valid on your next visit',
+        expiresInDays: 30
+      },
+      verifiedVia: 'nfc'
+    };
+
+    setStoreHunterStamps(prev => {
+      const updated = [newStamp, ...prev];
+      localStorage.setItem(STORAGE_KEYS.STORE_HUNTER_STAMPS, JSON.stringify(updated));
+      return updated;
+    });
+
+    awardLoyaltyPoints(leaderboardXpAdded, `NFC Reward Card Check-In at ${card.businessName} (+${visitPointsAdded} Visit Pts & +${leaderboardXpAdded} Leaderboard XP)`);
+    recordTap(card.id, 'reward_checkin');
+    playDeliveryChime();
+
+    return {
+      visitPointsAdded,
+      newVisitPoints,
+      rewardGoal,
+      unlockedNextVisitReward,
+      rewardTitle,
+      promoCode,
+      leaderboardXpAdded,
+      cleanTown
+    };
+  };
+
   return {
     towns,
     activeTown,
@@ -2622,5 +2686,6 @@ export function useNfcStore() {
     addTouristHunt,
     tapInStoreBeacon,
     enrollMerchantInStoreHunt,
+    claimBusinessCardTapReward,
   };
 }
