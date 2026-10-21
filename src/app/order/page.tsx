@@ -15,14 +15,9 @@ import {
 } from 'lucide-react';
 
 const MENU_ITEMS = [
-  { id: 'm-pnb-sub', name: 'Big Mountain Steak & Cheese Sub (PNB Eats)', price: 13.99, category: 'Food', icon: '🥪' },
-  { id: 'm-pnb-pizza', name: 'Effingham Rustic Supreme Pizza 16" (PNB Eats)', price: 19.50, category: 'Food', icon: '🍕' },
-  { id: 'm-pb-bbq', name: 'Smoked Pulled Pork Platter (Pizza Barn)', price: 16.50, category: 'Food', icon: '🥩' },
-  { id: 'm-1', name: 'Cold Brew Growler 64oz (Oasis Roastery)', price: 18.00, category: 'Beverage', icon: '☕' },
-  { id: 'm-2', name: 'Artisan Wood-Fired Sourdough Loaf (Oasis)', price: 8.50, category: 'Bakery', icon: '🍞' },
-  { id: 'm-fvs-scone', name: 'Freedom Blueberry Crumb Scones 2-Pack', price: 6.50, category: 'Bakery', icon: '🫐' },
-  { id: 'm-4', name: 'Stealth Obsidian NFC Review Card (Hand Delivered)', price: 29.99, category: 'Hardware', icon: '💳' },
-  { id: 'm-5', name: 'Cyber Glass Tabletop Tap Stand', price: 49.99, category: 'Hardware', icon: '💎' },
+  { id: 'm-courier-pickup', name: 'Standard Local Store / Order Pickup & Delivery Run', price: 9.99, category: 'Delivery', icon: '🚚' },
+  { id: 'm-curbside', name: 'Grocery / Supermarket Curbside Pickup & Doorstep Delivery', price: 12.99, category: 'Delivery', icon: '🛒' },
+  { id: 'm-firewood', name: 'Dockside Kiln-Dried Hardwood Firewood Bundle (6 Logs)', price: 8.50, category: 'Essentials', icon: '🪵' },
 ];
 
 export default function DeliveryOrderPage() {
@@ -30,8 +25,7 @@ export default function DeliveryOrderPage() {
   const { placeDeliveryOrder, notificationSettings } = useNfcStore();
 
   const [selectedItems, setSelectedItems] = useState<{ [id: string]: number }>({
-    'm-1': 1,
-    'm-2': 1,
+    'm-courier-pickup': 1,
   });
   const [customItemText, setCustomItemText] = useState('');
   const [customItemPrice, setCustomItemPrice] = useState('15.00');

@@ -15,18 +15,7 @@ import {
 } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
 
-const POPULAR_LOCAL_STORES = [
-  { name: 'Hannaford Supermarket & Hannaford To Go', town: 'Center Ossipee, NH', address: '935 Route 16, Center Ossipee, NH', phone: '(603) 641-9400', icon: '🛒' },
-  { name: 'Smoke World Ossipee', town: 'Ossipee, NH', address: '870 Route 16, Ossipee, NH', icon: '💨' },
-  { name: 'Mountain Grainery Ace Hardware', town: 'Ossipee, NH', address: 'Route 16, Center Ossipee, NH', icon: '🔨' },
-  { name: 'Yankee Smokehouse BBQ', town: 'West Ossipee, NH', address: 'Jct Rte 16 & 25, West Ossipee, NH', icon: '🍖' },
-  { name: 'Hobbs Tavern & Brewing Co.', town: 'West Ossipee, NH', address: '2415 White Mountain Hwy, West Ossipee, NH', icon: '🍺' },
-  { name: "Jake's Seafood & Grill", town: 'Center Ossipee, NH', address: '2055 Route 16, Center Ossipee, NH', icon: '🦞' },
-  { name: 'PNB Eats', town: 'Effingham, NH', address: 'NH-25, Effingham, NH', icon: '🥪' },
-  { name: 'Pizza Barn & Pub', town: 'Effingham, NH', address: 'Route 153, Effingham, NH', icon: '🍕' },
-  { name: 'Freedom Village Store', town: 'Freedom, NH', address: 'Elm Street, Freedom, NH', icon: '🏡' },
-  { name: "Poor People's Pub", town: 'Sanbornville, NH', address: '28 Meadow St, Sanbornville, NH', icon: '🍻' },
-];
+const POPULAR_LOCAL_STORES: { name: string; town: string; address: string; phone?: string; icon: string }[] = [];
 
 export default function CourierErrandsPage() {
   const router = useRouter();

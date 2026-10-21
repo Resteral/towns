@@ -45,23 +45,23 @@ export default function NfcRewardCardProgrammerPage() {
   } = useNfcStore();
 
   // Form State for Programming a New or Selected Business Reward Card
-  const [selectedCardId, setSelectedCardId] = useState<string>(cards[0]?.id || 'card-oasis-main');
-  const [businessName, setBusinessName] = useState('Oasis Artisan Roastery & Bakehouse');
-  const [cardName, setCardName] = useState('Oasis Next-Visit Reward & Leaderboard Card');
+  const [selectedCardId, setSelectedCardId] = useState<string>(cards[0]?.id || 'card-sean-vcard');
+  const [businessName, setBusinessName] = useState('');
+  const [cardName, setCardName] = useState('Next-Visit Reward & Leaderboard Card');
   const [town, setTown] = useState('Effingham, NH');
-  const [logoUrl, setLogoUrl] = useState('☕');
+  const [logoUrl, setLogoUrl] = useState('🎁');
   const [primaryColor, setPrimaryColor] = useState('#f59e0b');
   const [assignedLocation, setAssignedLocation] = useState('Front Counter Register');
-  const [storefrontSlug, setStorefrontSlug] = useState('oasis-roastery-bakehouse');
-  const [googleReviewUrl, setGoogleReviewUrl] = useState('https://www.google.com/search?q=Oasis+Artisan+Roastery+Effingham+NH');
+  const [storefrontSlug, setStorefrontSlug] = useState('');
+  const [googleReviewUrl, setGoogleReviewUrl] = useState('');
 
   // Next-Visit Reward Program Settings
   const [visitPointsPerTap, setVisitPointsPerTap] = useState<number>(25);
   const [nextVisitRewardGoal, setNextVisitRewardGoal] = useState<number>(100);
   const [nextVisitRewardTitle, setNextVisitRewardTitle] = useState<string>(
-    'Free Specialty Coffee or Warm Brioche Roll on Your Next Visit'
+    '$10.00 Off or Free Item on Your Next Visit'
   );
-  const [nextVisitPromoCode, setNextVisitPromoCode] = useState<string>('OASIS-NEXT-FREE');
+  const [nextVisitPromoCode, setNextVisitPromoCode] = useState<string>('NEXTVISIT10');
 
   // Website Leaderboard XP Settings
   const [leaderboardXpPerTap, setLeaderboardXpPerTap] = useState<number>(50);

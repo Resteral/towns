@@ -31,36 +31,36 @@ import { INITIAL_STORE_CIRCUITS, INITIAL_STORE_HUNTER_STAMPS } from './store-hun
 import { sendAppNotification } from './push-notifications';
 
 const STORAGE_KEYS = {
-  CARDS: 'pulpulse_cards_v4',
+  CARDS: 'pulpulse_cards_v5',
   LOGS: 'pulpulse_logs_v1',
   FEEDBACKS: 'pulpulse_feedbacks_v1',
   CART: 'pulpulse_cart_v1',
   DELIVERY_ORDERS: 'pulpulse_delivery_orders_v1',
   NOTIFICATION_SETTINGS: 'pulpulse_notifications_v1',
-  SELLERS: 'pulpulse_sellers_v3',
+  SELLERS: 'pulpulse_sellers_v4',
   SHOUTOUTS: 'pulpulse_shoutouts_v1',
   PRODUCTS: 'pulpulse_products_v1',
   TOWNS: 'pulpulse_towns_v1',
   ACTIVE_TOWN_ID: 'pulpulse_active_town_id_v1',
   MEMBERSHIP: 'pulpulse_membership_v1',
-  STOREFRONTS: 'pulpulse_storefronts_v3',
+  STOREFRONTS: 'pulpulse_storefronts_v4',
   DRIVER_TELEMETRY: 'pulpulse_driver_telemetry_v1',
   DRIVER_SHIFT: 'pulpulse_driver_shift_v1',
   BEFORE_AFTER_SHOWCASES: 'pulpulse_showcases_v3',
   WORK_REQUESTS: 'pulpulse_work_requests_v1',
-  NFC_MENU_PRODUCTS: 'pulpulse_nfc_menu_products_v1',
+  NFC_MENU_PRODUCTS: 'pulpulse_nfc_menu_products_v2',
   NFC_HARDWARE_ORDERS: 'pulpulse_nfc_hardware_orders_v1',
   MANAGED_SERVICES: 'pulpulse_managed_services_v1',
   CLIENT_SUBSCRIPTIONS: 'pulpulse_client_subscriptions_v1',
   AUTOMATION_BOTS: 'pulpulse_automation_bots_v1',
-  DIRECTORY_LISTINGS: 'pulpulse_directory_listings_v3',
+  DIRECTORY_LISTINGS: 'pulpulse_directory_listings_v4',
   AFFILIATES: 'pulpulse_affiliates_v1',
-  LOYALTY_REWARDS: 'pulpulse_loyalty_rewards_v1',
+  LOYALTY_REWARDS: 'pulpulse_loyalty_rewards_v2',
   LOYALTY_WALLET: 'pulpulse_loyalty_wallet_v1',
   EVENTS: 'pulpulse_events_v1',
   TABLE_TICKETS: 'pulpulse_table_tickets_v1',
   LOCAL_CONDITIONS: 'pulpulse_local_conditions_v1',
-  SMS_WORKFLOWS: 'pulpulse_sms_workflows_v1',
+  SMS_WORKFLOWS: 'pulpulse_sms_workflows_v2',
   SMS_LOGS: 'pulpulse_sms_logs_v1',
   SMS_SUBSCRIBERS: 'pulpulse_sms_subscribers_v1',
   AUTH_USER: 'pulpulse_auth_user_v3',
@@ -68,7 +68,7 @@ const STORAGE_KEYS = {
   DELIVERY_DRIVERS: 'pulpulse_delivery_drivers_v3',
   TOURIST_HUNTS: 'pulpulse_tourist_hunts_v1',
   PASSPORT_STAMPS: 'pulpulse_passport_stamps_v1',
-  STORE_CIRCUITS: 'pulpulse_store_circuits_v1',
+  STORE_CIRCUITS: 'pulpulse_store_circuits_v2',
   STORE_HUNTER_STAMPS: 'pulpulse_store_hunter_stamps_v1',
 };
 
@@ -158,260 +158,7 @@ const DEFAULT_DRIVER_TELEMETRY: DriverTelemetry = {
   deviceTrackingActive: false,
 };
 
-const INITIAL_STOREFRONTS: MerchantStorefront[] = [
-  {
-    id: 'sf-oasis-roastery',
-    slug: 'oasis-roastery-bakehouse',
-    businessName: 'Oasis Artisan Roastery & Bakehouse',
-    tagline: 'Single-Origin Nitro Cold Brews, Hearth Sourdough & Morning Brioche',
-    description: 'Effingham’s flagship specialty cafe featuring hearth-baked sourdough bread, single-origin espressos, and artisan brunch boxes.',
-    logoEmoji: '☕',
-    customLogoUrl: '',
-    coverImageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&auto=format&fit=crop&q=80',
-    phone: '(508) 507-0305',
-    email: 'frijj555@gmail.com',
-    address: 'Historic Route 153, Effingham, NH 03882',
-    town: 'Effingham',
-    state: 'NH',
-    accentColor: '#f59e0b',
-    deliveryFee: 2.99,
-    minOrder: 10.00,
-    estimatedPrepTime: '15-20 mins',
-    googlePlaceId: 'ChIJN1t_tDeuEmsRUsoyG83frY4',
-    googleRating: 5.0,
-    reviewsCount: 428,
-    googleReviewUrl: 'https://www.google.com/search?q=Oasis+Artisan+Roastery+Effingham+NH',
-    enablePickup: true,
-    enableDelivery: true,
-    listOnMarketplace: true,
-    isPublished: true,
-    createdAt: new Date(Date.now() - 90 * 86400000).toISOString(),
-
-    // Extreme Customization Fields
-    themePreset: 'amber_gold',
-    heroStyle: 'banner_cover',
-    customFont: 'font-sans',
-    primaryColor: '#f59e0b',
-    secondaryColor: '#ea580c',
-    backgroundColor: '#070709',
-    cardBackgroundColor: '#0e0e13',
-    textColor: '#ffffff',
-
-    foundedYear: '2023',
-    detailedBio: 'Founded in the foothills of Carroll County, Oasis Artisan Roastery & Bakehouse combines old-world hearth baking with precision specialty coffee roasting. Every loaf of sourdough undergoes a 36-hour natural fermentation, and every batch of single-origin coffee is roasted in small batches to preserve its distinct origin notes.',
-    ownerName: 'Sean Martin',
-    ownerRole: 'Founder & Master Baker',
-    ownerAvatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-    badges: [
-      '👑 Founding Vanguard Hub',
-      '🍞 100% Hearth Sourdough',
-      '☕ Direct Trade Single-Origin',
-      '🛻 4x4 Express Courier Delivery',
-      '⭐ 5-Star Top Rated Business'
-    ],
-
-    enableAnnouncement: true,
-    announcementText: '🔥 Fresh Morning Sourdough & Hot Brioche Cinnamon Rolls just came out of the wood-fired hearth! Tap to order express delivery.',
-    announcementBgColor: '#f59e0b',
-    announcementTextColor: '#000000',
-    announcementLink: '#catalog',
-
-    operatingHours: {
-      Monday: { open: '07:00 AM', close: '04:00 PM', isClosed: false },
-      Tuesday: { open: '07:00 AM', close: '04:00 PM', isClosed: false },
-      Wednesday: { open: '07:00 AM', close: '04:00 PM', isClosed: false },
-      Thursday: { open: '07:00 AM', close: '05:00 PM', isClosed: false },
-      Friday: { open: '07:00 AM', close: '06:00 PM', isClosed: false },
-      Saturday: { open: '07:00 AM', close: '06:00 PM', isClosed: false },
-      Sunday: { open: '08:00 AM', close: '03:00 PM', isClosed: false }
-    },
-    statusMessage: 'Open Today • Fresh Baking All Day',
-    emergencyDispatchActive: true,
-    afterHoursEmergencyPhone: '(508) 507-0305',
-
-    galleryImages: [
-      {
-        id: 'gal-1',
-        url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80',
-        title: 'Artisan Espresso Bar & Roastery',
-        caption: 'Handcrafted espresso pulls and nitro cold brew taps in Effingham.'
-      },
-      {
-        id: 'gal-2',
-        url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80',
-        title: 'Hearth Wood-Fired Sourdough',
-        caption: 'Blistered artisan crusts baked fresh every single morning.'
-      },
-      {
-        id: 'gal-3',
-        url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&auto=format&fit=crop&q=80',
-        title: 'Farmhouse Avocado & Poached Egg Toast',
-        caption: 'Topped with local pasture eggs, heirloom tomatoes, and microgreens.'
-      },
-      {
-        id: 'gal-4',
-        url: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=800&auto=format&fit=crop&q=80',
-        title: 'Nitro Cold Brew Growlers',
-        caption: 'Steeped for 24 hours with dark chocolate and hazelnut notes.'
-      }
-    ],
-
-    testimonials: [
-      {
-        id: 'test-1',
-        customerName: 'Sarah Jenkins',
-        rating: 5,
-        reviewText: 'The best sourdough bread in New Hampshire hands down! The nitro cold brew growler delivered right to my cabin made my whole weekend.',
-        date: '2 days ago',
-        source: 'google'
-      },
-      {
-        id: 'test-2',
-        customerName: 'Marcus Vance',
-        rating: 5,
-        reviewText: 'Sean Martin delivered my morning brunch box and hot coffee in under 20 minutes in the snow. Extraordinary service and quality!',
-        date: '1 week ago',
-        source: 'verified_tap'
-      },
-      {
-        id: 'test-3',
-        customerName: 'Elena Rostova',
-        rating: 5,
-        reviewText: 'I tap my NFC card at the table and my order comes out hot and fresh. The maple cinnamon rolls are out of this world.',
-        date: '2 weeks ago',
-        source: 'google'
-      }
-    ],
-
-    faqs: [
-      {
-        id: 'faq-1',
-        question: 'How fast is local courier delivery in Carroll County?',
-        answer: 'Our dedicated 4x4 courier courier Sean Martin delivers anywhere in Effingham, Ossipee, Freedom, and surrounding towns usually within 15 to 30 minutes of oven prep.'
-      },
-      {
-        id: 'faq-2',
-        question: 'Do you offer gluten-sensitive or vegan options?',
-        answer: 'Yes! We have certified vegan organic parfaits, oat/almond milk specialty drinks, and avocado toasts.'
-      },
-      {
-        id: 'faq-3',
-        question: 'Can I pre-order catering or weekend brunch boxes in bulk?',
-        answer: 'Absolutely! You can order directly through this website or call/text (508) 507-0305 24 hours in advance for custom brunch setups.'
-      }
-    ],
-
-    customCtas: [
-      {
-        id: 'cta-courier',
-        label: '🛻 Book 4x4 Courier Hotline',
-        url: 'tel:5085070305',
-        style: 'courier'
-      },
-      {
-        id: 'cta-catering',
-        label: '📋 Request Custom Catering',
-        url: '/contact',
-        style: 'amber'
-      }
-    ],
-
-    instagramUrl: 'https://instagram.com/townraise',
-    facebookUrl: 'https://facebook.com/townraise',
-    websiteUrl: 'https://townraise.org',
-    serviceRadiusMiles: 25,
-    coveredTowns: ['Effingham', 'Ossipee', 'Freedom', 'Tamworth', 'Wakefield', 'Wolfeboro'],
-    isCourierDeliveryAvailable: true,
-    courierNotes: '4x4 AWD Vanguard Unit equipped for all weather and mountain road delivery.',
-
-    products: [
-      {
-        id: 'oas-prod-1',
-        name: 'Nitro Cold Brew Growler (64oz Fresh Pour)',
-        description: 'Signature cold brew steeped for 24 hours with notes of dark chocolate and toasted hazelnuts.',
-        price: 18.00,
-        category: 'Coffee & Drinks',
-        imageUrl: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=600&auto=format&fit=crop&q=80',
-        inStock: true,
-        badge: 'Customer Pick',
-        optionGroups: [
-          {
-            id: 'coldbrew-flavor',
-            title: 'Syrup / Flavor Shot',
-            type: 'single',
-            choices: [
-              { id: 'fl-none', name: 'Black / Pure Brew', priceDelta: 0 },
-              { id: 'fl-vanilla', name: 'Madagascar Vanilla Bean', priceDelta: 1.00 },
-              { id: 'fl-maple', name: 'Local NH Smoked Maple Syrup', priceDelta: 1.25 },
-              { id: 'fl-caramel', name: 'Salted Butter Caramel', priceDelta: 1.00 }
-            ]
-          }
-        ]
-      },
-      {
-        id: 'oas-prod-macchiato',
-        name: 'White Mountain Iced Caramel Macchiato',
-        description: 'Double shot of signature espresso over cold milk, vanilla syrup, and heavy caramel drizzle.',
-        price: 5.75,
-        category: 'Coffee & Drinks',
-        imageUrl: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=600&auto=format&fit=crop&q=80',
-        inStock: true,
-        calories: '220 cal',
-        optionGroups: [
-          {
-            id: 'macc-milk',
-            title: 'Milk Selection',
-            type: 'single',
-            choices: [
-              { id: 'm-whole', name: 'Farm Whole Milk', priceDelta: 0 },
-              { id: 'm-oat', name: 'Creamy Oat Milk', priceDelta: 0.75 },
-              { id: 'm-almond', name: 'Almond Milk', priceDelta: 0.75 }
-            ]
-          }
-        ]
-      },
-      {
-        id: 'oas-prod-2',
-        name: 'Artisan Wood-Fired Country Sourdough Loaf',
-        description: 'Naturally fermented 36-hour sourdough boule with crisp blistered crust and soft airy crumb.',
-        price: 8.50,
-        category: 'Bakery',
-        imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
-        inStock: true,
-        badge: 'Hearth Baked'
-      },
-      {
-        id: 'oas-prod-avotoast',
-        name: 'Avocado & Soft-Poached Egg Sourdough Toast',
-        description: 'Toasted artisan sourdough slice topped with crushed Haas avocado, farm-poached egg, heirloom cherry tomatoes, microgreens, and everything seasoning.',
-        price: 12.50,
-        category: 'Brunch & Eats',
-        imageUrl: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&auto=format&fit=crop&q=80',
-        inStock: true,
-        calories: '440 cal'
-      },
-      {
-        id: 'oas-prod-3',
-        name: 'Maple Glazed Brioche Cinnamon Roll (4-Pack)',
-        description: 'Warm fluffy brioche rolls swirled with Saigon cinnamon and drenched in pure maple cream cheese frosting.',
-        price: 16.00,
-        category: 'Bakery',
-        imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
-        inStock: true
-      },
-      {
-        id: 'oas-prod-brunch-box',
-        name: 'Effingham Morning Artisan Brunch Box',
-        description: 'Includes 2 flaky French butter croissants, 2 maple cinnamon rolls, organic berry Greek yogurt parfait with granola, and fresh seasonal orchard fruit.',
-        price: 28.00,
-        category: 'Brunch & Eats',
-        imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80',
-        inStock: true,
-        badge: 'Brunch Special'
-      }
-    ]
-  }
-];
+const INITIAL_STOREFRONTS: MerchantStorefront[] = [];
 
 const DEFAULT_MEMBERSHIP: UserMembership = {
   tier: 'vanguard_master',
@@ -564,7 +311,7 @@ export function useNfcStore() {
       if (storedProducts) setProducts(JSON.parse(storedProducts));
 
       const legacyMockSfIds = new Set([
-        'sf-pnb-eats', 'sf-pizza-barn', 'sf-freedom-village-store', 'sf-smoke-world',
+        'sf-oasis-roastery', 'sf-pnb-eats', 'sf-pizza-barn', 'sf-freedom-village-store', 'sf-smoke-world',
         'sf-yankee-smokehouse', 'sf-hobbs-tavern', 'sf-jakes-seafood', 'sf-poor-peoples-pub',
         'sf-flatbread', 'sf-hannaford-togo', 'sf-sweeties-icecream'
       ]);
@@ -692,7 +439,7 @@ export function useNfcStore() {
       }
 
       const legacyMockDirIds = new Set([
-        'dir-pnb-eats', 'dir-pizza-barn', 'dir-freedom-village-store', 'dir-yankee-smokehouse',
+        'dir-oasis-roastery', 'dir-pnb-eats', 'dir-pizza-barn', 'dir-freedom-village-store', 'dir-yankee-smokehouse',
         'dir-hobbs-tavern', 'dir-jakes-seafood', 'dir-poor-peoples-pub', 'dir-flatbread',
         'dir-sweeties', 'dir-hannaford'
       ]);

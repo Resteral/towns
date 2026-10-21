@@ -318,7 +318,7 @@ export default function LeaderboardPage() {
               <span>Program Business NFC Reward Cards</span>
             </Link>
             <Link
-              href="/tap/card-oasis-main"
+              href="/tap/card-sean-vcard"
               className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-200 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
