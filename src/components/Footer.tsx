@@ -104,13 +104,20 @@ export default function Footer() {
                 </div>
               </div>
               <div className="space-y-1.5 pt-1 font-mono text-[11px]">
-                <a 
-                  href="tel:5085070305" 
-                  className="flex items-center gap-1.5 text-zinc-300 hover:text-amber-400 transition-colors"
-                >
-                  <Smartphone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>508-507-0305</span>
-                </a>
+                <div className="flex flex-col gap-1">
+                  <a 
+                    href="tel:5085070305" 
+                    className="flex items-center gap-1.5 text-zinc-300 hover:text-amber-400 transition-colors"
+                  >
+                    <Smartphone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Call or Text: 508-507-0305</span>
+                  </a>
+                  <div className="flex items-center gap-2 pl-5 text-[10px]">
+                    <a href="tel:5085070305" className="text-amber-400 hover:underline font-bold">Call</a>
+                    <span className="text-zinc-600">•</span>
+                    <a href="sms:5085070305" className="text-emerald-400 hover:underline font-bold">Text</a>
+                  </div>
+                </div>
                 <a 
                   href="mailto:frijj555@gmail.com" 
                   className="flex items-center gap-1.5 text-zinc-300 hover:text-amber-400 transition-colors break-all"

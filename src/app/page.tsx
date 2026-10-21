@@ -939,7 +939,7 @@ export default function HomePage() {
 
               <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] font-mono text-zinc-400 flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>Driver Contact: Sean Martin • (508) 507-0305</span>
+                <span>Driver Contact: Sean Martin • Call or Text (508) 507-0305</span>
               </div>
             </div>
           </div>

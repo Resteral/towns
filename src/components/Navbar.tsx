@@ -383,7 +383,7 @@ export default function Navbar() {
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">Sean Martin 4x4 Courier</div>
-                      <div className="text-[10px] text-zinc-400">24/7 mountain delivery & roadside recovery (508-507-0305)</div>
+                      <div className="text-[10px] text-zinc-400">24/7 mountain delivery & roadside recovery • Call or Text (508) 507-0305</div>
                     </div>
                   </Link>
 
@@ -715,7 +715,7 @@ export default function Navbar() {
               >
                 <Truck className="w-4 h-4 text-emerald-400" />
                 <span className="text-xs font-bold">4x4 Courier</span>
-                <span className="text-[9px] text-zinc-400">508-507-0305</span>
+                <span className="text-[9px] text-zinc-400">Call or Text 508-507-0305</span>
               </Link>
             </div>
 

@@ -157,10 +157,10 @@ export default function CourierErrandsPage() {
               Verified Local Driver: Sean Martin
             </span>
             <span>•</span>
-            <span className="flex items-center gap-1 text-amber-400 font-bold">
+            <a href="tel:5085070305" className="flex items-center gap-1 text-amber-400 font-bold hover:underline">
               <Phone className="w-3.5 h-3.5" />
-              (508) 507-0305
-            </span>
+              <span>Call or Text (508) 507-0305</span>
+            </a>
           </div>
         </div>
 

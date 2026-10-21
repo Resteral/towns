@@ -662,10 +662,10 @@ export default function WorkAndTradesPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3 bg-white/5 rounded-2xl border border-white/5 space-y-1">
-                  <span className="text-white/40 block text-[10px] uppercase font-bold">Direct Dispatch Line</span>
+                  <span className="text-white/40 block text-[10px] uppercase font-bold">Call or Text Dispatch Line</span>
                   <a href="tel:5085070305" className="text-amber-400 font-black text-sm hover:underline flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5" />
-                    <span>(508) 507-0305</span>
+                    <span>Call or Text (508) 507-0305</span>
                   </a>
                 </div>
 
@@ -706,7 +706,7 @@ export default function WorkAndTradesPage() {
                   className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-black text-sm uppercase tracking-wider transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 hover:scale-[1.01]"
                 >
                   <Phone className="w-4 h-4" />
-                  <span>Call Sean Martin for Immediate Dispatch: (508) 507-0305</span>
+                  <span>Call or Text Sean Martin for Immediate Dispatch: (508) 507-0305</span>
                 </a>
               </div>
             </div>

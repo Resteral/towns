@@ -651,7 +651,7 @@ export default function DedicatedAiConciergePage() {
               className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5"
             >
               <Phone className="w-3.5 h-3.5 text-amber-400" />
-              <span>Call Sean</span>
+              <span>Call or Text Sean</span>
             </a>
 
             <Link
@@ -751,7 +751,7 @@ export default function DedicatedAiConciergePage() {
                           className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                         >
                           <Phone className="w-3.5 h-3.5 text-amber-400" />
-                          <span>(508) 507-0305</span>
+                          <span>Call or Text (508) 507-0305</span>
                         </a>
                       </div>
 

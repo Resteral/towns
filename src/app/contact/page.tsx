@@ -87,21 +87,33 @@ export default function ContactPage() {
 
               {/* Quick direct contact links */}
               <div className="space-y-3 pt-2">
-                <a
-                  href="tel:5085070305"
-                  className="flex items-center justify-between p-4 rounded-2xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-white group transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center text-black">
-                      <Phone className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-mono text-amber-300 uppercase font-bold">Direct Phone / SMS</div>
-                      <div className="text-sm font-bold tracking-tight">508-507-0305</div>
+                <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-white space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center text-black">
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-mono text-amber-300 uppercase font-bold">Call or Text (Direct Phone / SMS)</div>
+                        <div className="text-sm font-bold tracking-tight">508-507-0305</div>
+                      </div>
                     </div>
                   </div>
-                  <span className="text-xs text-amber-400 group-hover:translate-x-1 transition-transform font-bold">Call →</span>
-                </a>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href="tel:5085070305"
+                      className="py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider text-center transition-all"
+                    >
+                      📞 Call Now
+                    </a>
+                    <a
+                      href="sms:5085070305"
+                      className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-black text-xs uppercase tracking-wider text-center transition-all"
+                    >
+                      💬 Text Now
+                    </a>
+                  </div>
+                </div>
 
                 <a
                   href="mailto:frijj555@gmail.com"
@@ -483,7 +495,7 @@ export default function ContactPage() {
                 href="tel:5085070305"
                 className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-widest transition-all border border-white/10"
               >
-                Call Sean (508) 507-0305
+                Call or Text Sean (508) 507-0305
               </a>
             </div>
           </div>

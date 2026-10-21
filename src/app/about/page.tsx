@@ -144,7 +144,7 @@ export default function AboutUsPage() {
               <div className="w-full pt-3 border-t border-white/10 space-y-2 text-xs font-mono text-left">
                 <a href="tel:5085070305" className="flex items-center gap-2 text-zinc-300 hover:text-amber-400 transition-colors">
                   <Phone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>508-507-0305</span>
+                  <span>Call or Text: 508-507-0305</span>
                 </a>
                 <a href="mailto:frijj555@gmail.com" className="flex items-center gap-2 text-zinc-300 hover:text-amber-400 transition-colors break-all">
                   <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />

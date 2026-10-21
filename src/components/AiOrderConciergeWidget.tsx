@@ -894,7 +894,7 @@ export default function AiOrderConciergeWidget() {
                           className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold flex items-center gap-1"
                         >
                           <Phone className="w-3 h-3 text-amber-400" />
-                          <span>Call Sean</span>
+                          <span>Call or Text Sean</span>
                         </a>
                       </div>
 
