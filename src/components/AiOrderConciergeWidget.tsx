@@ -3,40 +3,30 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Bot, 
-  Sparkles, 
-  Send, 
-  X, 
-  Utensils, 
-  ShoppingBag, 
-  Check, 
-  ChevronRight, 
-  Flame, 
-  Waves, 
-  Wrench, 
+import {
+  Bot,
+  Sparkles,
+  Send,
+  X,
+  ShoppingBag,
+  Check,
   MessageSquare,
-  DollarSign,
-  Maximize2,
-  Minimize2,
   RefreshCw,
-  Star,
   Plus,
   Truck,
   Phone,
   PhoneCall,
-  MapPin,
-  Compass,
   CheckCircle2,
   ExternalLink,
-  ShieldCheck,
-  CreditCard,
-  Store
+  Store,
+  Hammer,
+  Gift,
+  Trophy,
+  Wifi
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useNfcStore } from '@/lib/store';
-import { StorefrontProduct, MerchantStorefront, DeliveryOrder } from '@/lib/types';
-import { EFFINGHAM_AREA_BUSINESSES, LocalBusiness } from '@/lib/local-businesses';
+import { StorefrontProduct, MerchantStorefront, DeliveryOrder, NfcCardConfig } from '@/lib/types';
 
 interface BotMessage {
   id: string;
@@ -46,55 +36,75 @@ interface BotMessage {
     dish: StorefrontProduct;
     store: MerchantStorefront;
   }[];
-  suggestedBusinesses?: LocalBusiness[];
   quickOptions?: string[];
-  showCheckoutBtn?: boolean;
   showDeliveryForm?: boolean;
   showCallAheadForm?: boolean;
+  showNfcCardBuilder?: boolean;
+  createdNfcCard?: NfcCardConfig;
   confirmedDeliveryOrder?: DeliveryOrder;
   timestamp: string;
 }
 
 export default function AiOrderConciergeWidget() {
   const pathname = usePathname();
-  const { storefronts, addToCart, cart, clearCart, placeDeliveryOrder, sendManualSms, playDeliveryChime } = useNfcStore();
+  const {
+    storefronts,
+    addToCart,
+    cart,
+    clearCart,
+    placeDeliveryOrder,
+    sendManualSms,
+    playDeliveryChime,
+    addCard,
+    activeTown
+  } = useNfcStore();
+
   const [isOpen, setIsOpen] = useState(false);
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [addedItemNotice, setAddedItemNotice] = useState<string | null>(null);
 
-  // In-Chat Standard Delivery Form State
-  const [custName, setCustName] = useState('Alex Tremblay');
-  const [custPhone, setCustPhone] = useState('(603) 555-0199');
-  const [custAddress, setCustAddress] = useState('Pine Cove Dock 3, Ossipee Lake (Freedom, NH)');
+  // Customer Delivery & Pickup Form State
+  const [custName, setCustName] = useState('');
+  const [custPhone, setCustPhone] = useState('');
+  const [custAddress, setCustAddress] = useState('');
   const [custPayment, setCustPayment] = useState<'cash_on_delivery' | 'cash_app' | 'venmo' | 'card'>('cash_on_delivery');
-  const [custNotes, setCustNotes] = useState('Leave on lakeside table. Text when arrived.');
+  const [custNotes, setCustNotes] = useState('');
   const [isDispatching, setIsDispatching] = useState(false);
 
-  // Call-Ahead & Prepay Courier Form State
-  const [callStoreId, setCallStoreId] = useState<string>(EFFINGHAM_AREA_BUSINESSES[0]?.id || 'biz-eff-pnb-eats');
+  // Custom Any-Store Pickup State
+  const [customStoreName, setCustomStoreName] = useState('Local Takeout / Hardware Store');
+  const [customStoreTown, setCustomStoreTown] = useState(activeTown?.name || 'Effingham');
   const [callPickupType, setCallPickupType] = useState<'paid_phone' | 'prepay_sean' | 'cash_delivery'>('paid_phone');
-  const [callPickupNameOrCode, setCallPickupNameOrCode] = useState('Alex - Order #42');
-  const [callEstimatedCost, setCallEstimatedCost] = useState('28.50');
-  const [callItemDescription, setCallItemDescription] = useState('2 Large subs + fries from the grill');
+  const [callPickupNameOrCode, setCallPickupNameOrCode] = useState('');
+  const [callEstimatedCost, setCallEstimatedCost] = useState('25.00');
+  const [callItemDescription, setCallItemDescription] = useState('');
 
-  const selectedCallBiz = EFFINGHAM_AREA_BUSINESSES.find(b => b.id === callStoreId) || EFFINGHAM_AREA_BUSINESSES[0];
+  // In-Chat Free Custom NFC Card Builder State (for Businesses & Contractors)
+  const [nfcRole, setNfcRole] = useState<'business' | 'contractor'>('business');
+  const [nfcBizName, setNfcBizName] = useState('');
+  const [nfcTown, setNfcTown] = useState(activeTown?.fullName || 'Effingham, NH');
+  const [nfcPhone, setNfcPhone] = useState('');
+  const [nfcEmoji, setNfcEmoji] = useState('🏪');
+  const [nfcFeaturedItemName, setNfcFeaturedItemName] = useState('');
+  const [nfcFeaturedItemPrice, setNfcFeaturedItemPrice] = useState('$12.99');
+  const [nfcRewardPerk, setNfcRewardPerk] = useState('$10.00 Off or Free Specialty Item on Next Visit');
+  const [nfcVisitPts, setNfcVisitPts] = useState(25);
+  const [nfcLeaderboardXp, setNfcLeaderboardXp] = useState(50);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initial welcome message
   const [messages, setMessages] = useState<BotMessage[]>([
     {
       id: 'welcome-1',
       sender: 'ai',
-      text: "👋 Hi! I'm your Carroll County AI Concierge. What business or food are you looking for today? \n\n📞 You can get the **direct phone number** for any local spot, place an order over the phone, and have **Sean Martin** pick it up and deliver it to your door or boat dock! You can also prepay Sean to buy items on your behalf.",
+      text: "👋 Hi! I'm your **Carroll County AI Courier & Business Assistant**.\n\n• **For Businesses & Contractors:** I can help you claim & customize your **100% Free Custom NFC Card** to showcase your menu or trade services, reward customers with Next-Visit Points, and boost Website Leaderboard XP!\n• **For Customers:** I can dispatch **Sean Martin** (`Call or Text (508) 507-0305`) to pick up takeout, groceries, hardware, or dockside firewood from any local spot!",
       quickOptions: [
-        '📞 Call Store & Have Sean Pick Up',
-        '🍔 Browse Food & Order Delivery',
-        '🥩 PNB Eats Phone & Menu',
-        '🍕 Pizza Barn Phone & Menu',
-        '🛠️ Ace Hardware & Store Pickup',
-        '🌲 Lake Concierge & Dockside Firewood'
+        '🎁 Claim Free Business / Contractor NFC Card',
+        '🔨 Setup Contractor NFC Card & Services',
+        '🚚 Request Store Pickup & Delivery',
+        '🪵 Order Dockside Firewood ($8.50)',
+        '📞 Call or Text Sean (508-507-0305)'
       ],
       timestamp: 'Just now'
     }
@@ -110,134 +120,22 @@ export default function AiOrderConciergeWidget() {
     return null;
   }
 
-  // Find matching businesses with deep category, menu item, and semantic keyword matching
-  const findMatchingBusinesses = (query: string): LocalBusiness[] => {
-    const q = query.toLowerCase().trim();
-    if (!q) return EFFINGHAM_AREA_BUSINESSES.slice(0, 3);
-
-    // Semantic keyword collections
-    const hardwareKws = [
-      'hammer', 'nail', 'nails', 'screw', 'screws', 'drill', 'tool', 'tools', 'hardware', 'paint', 'pellet', 'pellets',
-      'feed', 'saw', 'plumb', 'shovel', 'wrench', 'battery', 'generator', 'ace', 'dewalt', 'poulin',
-      'building', 'homestead', 'lumber', 'wood pellet', 'bolt', 'plywood', 'contractor', 'garden', 'grainery'
-    ];
-    const smokeKws = [
-      'vape', 'smoke', 'glass', 'bong', 'pipe', 'cigar', 'tobacco', 'cbd', 'torch', 'lighter',
-      'geek bar', 'disposable', 'lookah', 'raw cone', 'rolling paper', 'hecht', 'puff', 'vaporizer', 'smoke world'
-    ];
-    const groceryKws = [
-      'grocery', 'groceries', 'milk', 'egg', 'eggs', 'bread', 'butter', 'fruit', 'vegetable',
-      'produce', 'supermarket', 'market', 'deli', 'butcher', 'steak', 'meat', 'provisions', 'hannaford', 'grinder'
-    ];
-    const antiqueKws = [
-      'antique', 'antiques', 'flea market', 'vintage', 'pottery', 'fudge', 'cast iron', 'lantern',
-      'skillet', 'souvenir', 'gift', 'gifts', 'curiosities', 'peddler', 'tramway', 'zeb'
-    ];
-    const lakeCampingKws = [
-      'camp', 'camping', 'campground', 'tent', 'rv', 'beach', 'boat', 'kayak', 'dock', 'lake',
-      'swimming', 'canoe', 'firewood', 'smores', 's\'mores'
-    ];
-    const coffeeKws = [
-      'coffee', 'espresso', 'cold brew', 'nitro', 'latte', 'cappuccino', 'sourdough', 'bread',
-      'bakery', 'scone', 'pastry', 'brioche', 'cinnamon roll', 'roastery', 'bagel'
-    ];
-    const seafoodKws = [
-      'lobster', 'clam', 'clams', 'chowder', 'seafood', 'haddock', 'fish', 'fried clams'
-    ];
-    const bbqKws = [
-      'bbq', 'barbecue', 'pulled pork', 'ribs', 'brisket', 'smoked'
-    ];
-    const pizzaKws = [
-      'pizza', 'slice', 'flatbread', 'crust', 'pie', 'pepperoni'
-    ];
-    const pubKws = [
-      'pub', 'tavern', 'beer', 'wings', 'poutine', 'burger', 'ale', 'ipa', 'draft'
-    ];
-
-    const isHardware = hardwareKws.some(kw => q.includes(kw));
-    const isSmoke = smokeKws.some(kw => q.includes(kw));
-    const isGrocery = groceryKws.some(kw => q.includes(kw));
-    const isAntique = antiqueKws.some(kw => q.includes(kw));
-    const isLakeCamp = lakeCampingKws.some(kw => q.includes(kw));
-    const isCoffee = coffeeKws.some(kw => q.includes(kw));
-    const isSeafood = seafoodKws.some(kw => q.includes(kw));
-    const isBbq = bbqKws.some(kw => q.includes(kw));
-    const isPizza = pizzaKws.some(kw => q.includes(kw));
-    const isPub = pubKws.some(kw => q.includes(kw));
-
-    const scored = EFFINGHAM_AREA_BUSINESSES.map(biz => {
-      let score = 0;
-      const bName = biz.name.toLowerCase();
-      const bDesc = biz.description.toLowerCase();
-      const bCat = biz.category.toLowerCase();
-      const bTown = biz.town.toLowerCase();
-      const bMenuTitle = (biz.menuTitle || '').toLowerCase();
-
-      // Direct text match
-      if (bName.includes(q)) score += 12;
-      if (bDesc.includes(q)) score += 6;
-      if (bMenuTitle.includes(q)) score += 6;
-      if (bCat.includes(q)) score += 4;
-      if (bTown.includes(q)) score += 2;
-
-      // Menu items match
-      if (biz.menuItems) {
-        biz.menuItems.forEach(item => {
-          if (item.name.toLowerCase().includes(q)) score += 10;
-          if (item.description.toLowerCase().includes(q)) score += 5;
-          if (item.category?.toLowerCase().includes(q)) score += 4;
-        });
-      }
-
-      // Domain/semantic mapping boosts
-      if (isHardware && (biz.id === 'biz-oss-mountain-grainery' || bName.includes('ace') || bName.includes('grainery'))) score += 20;
-      if (isSmoke && (biz.id === 'biz-oss-smoke-world' || bName.includes('smoke world'))) score += 20;
-      if (isGrocery && (biz.id === 'biz-wak-lovell-lake-market' || biz.id === 'biz-fre-village-store')) score += 15;
-      if (isAntique && (biz.id === 'biz-eff-country-peddler' || biz.id === 'biz-oss-tramway-artisans' || biz.id === 'biz-con-zebs-store')) score += 15;
-      if (isLakeCamp && (biz.id === 'biz-eff-camping-area' || biz.id === 'biz-eff-sean-courier')) score += 15;
-      if (isCoffee && (biz.id === 'biz-eff-oasis-roastery' || biz.id === 'biz-con-frontside-coffee' || biz.id === 'biz-fre-village-store')) score += 15;
-      if (isSeafood && (biz.id === 'biz-oss-jakes-seafood' || biz.id === 'biz-wak-knotty-pine')) score += 15;
-      if (isBbq && (biz.id === 'biz-oss-yankee-smokehouse' || biz.id === 'biz-oss-pizza-barn')) score += 15;
-      if (isPizza && (biz.id === 'biz-oss-pizza-barn' || biz.id === 'biz-eff-pnb-eats' || biz.id === 'biz-con-flatbread')) score += 15;
-      if (isPub && (biz.id === 'biz-wak-poor-peoples-pub' || biz.id === 'biz-oss-hobbs-tavern')) score += 15;
-
-      return { biz, score };
-    });
-
-    const filtered = scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).map(s => s.biz);
-    return filtered.length > 0 ? filtered.slice(0, 3) : EFFINGHAM_AREA_BUSINESSES.slice(0, 3);
-  };
-
-  // Find matching dishes across all storefronts
   const findMatchingDishes = (query: string) => {
     const q = query.toLowerCase();
     const matches: { dish: StorefrontProduct; store: MerchantStorefront }[] = [];
 
     storefronts.forEach(store => {
       store.products.forEach(product => {
-        const titleMatch = product.name.toLowerCase().includes(q);
-        const descMatch = product.description.toLowerCase().includes(q);
-        const catMatch = product.category.toLowerCase().includes(q);
-
-        const isPizzaQuery = (q.includes('pizza') || q.includes('slice') || q.includes('pie')) && product.category.toLowerCase().includes('pizza');
-        const isSubQuery = (q.includes('sub') || q.includes('steak') || q.includes('sandwich') || q.includes('burger')) && (product.category.toLowerCase().includes('sub') || product.category.toLowerCase().includes('burger') || product.name.toLowerCase().includes('sub') || product.name.toLowerCase().includes('sandwich'));
-        const isCoffeeQuery = (q.includes('coffee') || q.includes('bakery') || q.includes('breakfast') || q.includes('drink')) && (product.category.toLowerCase().includes('beverage') || product.category.toLowerCase().includes('bakery') || product.category.toLowerCase().includes('lunch'));
-        const isGlutenFreeQuery = (q.includes('gluten') || q.includes('healthy') || q.includes('gf')) && (product.description.toLowerCase().includes('gluten') || product.badge?.toLowerCase().includes('gluten') || product.name.toLowerCase().includes('trout') || product.name.toLowerCase().includes('salad'));
-        const isFoodGeneral = (q.includes('food') || q.includes('dinner') || q.includes('lunch') || q.includes('hungry') || q.includes('eat') || q.includes('menu'));
-
-        if (titleMatch || descMatch || catMatch || isPizzaQuery || isSubQuery || isCoffeeQuery || isGlutenFreeQuery || (isFoodGeneral && (product.badge || matches.length < 3))) {
+        if (
+          product.name.toLowerCase().includes(q) ||
+          product.description.toLowerCase().includes(q) ||
+          product.category.toLowerCase().includes(q) ||
+          matches.length < 3
+        ) {
           matches.push({ dish: product, store });
         }
       });
     });
-
-    if (matches.length === 0) {
-      storefronts.forEach(store => {
-        if (store.products.length > 0 && matches.length < 3) {
-          matches.push({ dish: store.products[0], store });
-        }
-      });
-    }
 
     return matches.slice(0, 4);
   };
@@ -260,247 +158,126 @@ export default function AiOrderConciergeWidget() {
     setTimeout(() => {
       const lower = text.toLowerCase();
 
-      // Keywords
-      const hardwareKeywords = [
-        'hammer', 'nail', 'nails', 'screw', 'screws', 'drill', 'tool', 'tools', 'hardware', 'paint', 'pellet', 'pellets',
-        'feed', 'saw', 'plumb', 'shovel', 'wrench', 'battery', 'generator', 'ace', 'dewalt', 'poulin',
-        'wood pellet', 'building', 'lumber', 'grainery'
-      ];
-      const smokeKeywords = [
-        'vape', 'smoke', 'glass', 'bong', 'pipe', 'cigar', 'tobacco', 'cbd', 'torch', 'lighter',
-        'geek bar', 'disposable', 'lookah', 'raw cone', 'smoke world'
-      ];
-      const groceryKeywords = [
-        'grocery', 'groceries', 'milk', 'egg', 'eggs', 'bread', 'butter', 'fruit', 'vegetable',
-        'produce', 'supermarket', 'market', 'deli', 'butcher', 'steak', 'meat', 'provisions', 'hannaford'
-      ];
-      const antiqueKeywords = [
-        'antique', 'antiques', 'flea market', 'vintage', 'pottery', 'fudge', 'cast iron', 'lantern', 'peddler', 'tramway', 'zeb'
-      ];
-
-      // 1. Hardware, Tools, Building Supplies & Homestead Feeds
-      if (hardwareKeywords.some(kw => lower.includes(kw))) {
-        setCallStoreId('biz-oss-mountain-grainery');
-        setCallItemDescription('Hardware, tools, building supplies or feed from Ace Hardware');
-        const matchingBiz = findMatchingBusinesses(text);
-
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `ai-${Date.now()}`,
-            sender: 'ai',
-            text: "🔨 Looking for tools, building supplies, hardware, or homestead feeds? **Mountain Grainery Ace Hardware** is located right on Route 16 in Center Ossipee ((603) 539-2666)!\n\n📞 You can call them directly to check inventory or pay over the phone, and **Sean Martin** can pick up and deliver your order directly to your job site, home, or camp:",
-            suggestedBusinesses: matchingBiz.length > 0 ? matchingBiz : [EFFINGHAM_AREA_BUSINESSES.find(b => b.id === 'biz-oss-mountain-grainery')!],
-            showCallAheadForm: true,
-            quickOptions: [
-              '📞 Call Ace Hardware: (603) 539-2666',
-              '🚗 Have Sean Pick Up from Ace',
-              '🪵 Hardwood Heating Pellets ($7.49)',
-              '🌾 Poulin Poultry Feed ($22.99)',
-              '🛠️ DeWalt 20V Drill Combo ($199.00)'
-            ],
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
-      // 2. Smoke, Vape, Glassware & Tobacco
-      else if (smokeKeywords.some(kw => lower.includes(kw))) {
-        setCallStoreId('biz-oss-smoke-world');
-        setCallItemDescription('Vape, glass, or smoke accessories from Smoke World');
-        const matchingBiz = findMatchingBusinesses(text);
-
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `ai-${Date.now()}`,
-            sender: 'ai',
-            text: "💨 Looking for vape, glassware, smoke essentials, or tobacco accessories? **Smoke World Ossipee** is located on Route 16 in Ossipee ((603) 539-7665)!\n\n📞 Call the store directly to order, or have **Sean Martin** retrieve your order and deliver it to your door:",
-            suggestedBusinesses: matchingBiz.length > 0 ? matchingBiz : [EFFINGHAM_AREA_BUSINESSES.find(b => b.id === 'biz-oss-smoke-world')!],
-            showCallAheadForm: true,
-            quickOptions: [
-              '📞 Call Smoke World: (603) 539-7665',
-              '🚗 Have Sean Pick Up from Smoke World',
-              '💨 Geek Bar Pulse 15k ($19.99)',
-              '🧪 Handblown Glass Beaker ($69.99)'
-            ],
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
-      // 3. Groceries, Deli & Butcher Meats
-      else if (groceryKeywords.some(kw => lower.includes(kw))) {
-        setCallStoreId('biz-wak-lovell-lake-market');
-        setCallItemDescription('Groceries, butcher cuts, or deli items');
-        const matchingBiz = findMatchingBusinesses(text);
-
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `ai-${Date.now()}`,
-            sender: 'ai',
-            text: "🛒 Need groceries, fresh provisions, or butcher-cut steaks? **Lovell Lake Market & Deli** in Wakefield ((603) 522-3344) and **Freedom Village Store** ((603) 539-7988) are ready!\n\nSean Martin can pick up curbside groceries or butcher meats and deliver them right to your kitchen or campsite:",
-            suggestedBusinesses: matchingBiz,
-            showCallAheadForm: true,
-            quickOptions: [
-              '📞 Call Lovell Lake Market: (603) 522-3344',
-              '📞 Call Freedom Village Store: (603) 539-7988',
-              '🥩 Hand-Cut Prime Ribeye Steaks ($32.00)',
-              '🥪 Lovell Lake Monster Grinder ($13.99)'
-            ],
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
-      // 4. Antiques, Flea Market & Country Treasures
-      else if (antiqueKeywords.some(kw => lower.includes(kw))) {
-        setCallStoreId('biz-eff-country-peddler');
-        const matchingBiz = findMatchingBusinesses(text);
-
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `ai-${Date.now()}`,
-            sender: 'ai',
-            text: "🏺 Looking for vintage antiques, pottery, or artisan sweets? Explore **Country Peddler's Flea Market** in Effingham ((603) 539-7000), **Tramway Artisans** in West Ossipee ((603) 539-5700), and **Zeb's General Store** in North Conway ((603) 356-9294):",
-            suggestedBusinesses: matchingBiz,
-            showCallAheadForm: true,
-            quickOptions: [
-              '📞 Call Country Peddler: (603) 539-7000',
-              '📞 Call Tramway Artisans: (603) 539-5700',
-              '🍬 Zeb\'s Old-Fashioned Hard Candies ($12.99)',
-              '🍳 Restored Griswold Cast Iron ($48.00)'
-            ],
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
-      // 5. Call-Ahead / Store Pickup / Prepay Requests
-      else if (
-        lower.includes('call') || 
-        lower.includes('phone') || 
-        lower.includes('number') || 
-        lower.includes('prepay') || 
-        lower.includes('pickup') || 
-        lower.includes('retrieve')
+      // 1. Free Custom NFC Card / Business / Contractor / Menu & Rewards Assistant
+      if (
+        lower.includes('nfc') ||
+        lower.includes('card') ||
+        lower.includes('reward') ||
+        lower.includes('leaderboard') ||
+        lower.includes('customize') ||
+        lower.includes('showcase') ||
+        lower.includes('contractor') ||
+        lower.includes('business') ||
+        lower.includes('storefront')
       ) {
-        const matchingBiz = findMatchingBusinesses(text);
+        const isContractorQuery = lower.includes('contractor') || lower.includes('trade') || lower.includes('service');
+        setNfcRole(isContractorQuery ? 'contractor' : 'business');
+        setNfcEmoji(isContractorQuery ? '🔨' : '🏪');
+        setNfcRewardPerk(
+          isContractorQuery
+            ? '$50.00 Off Next Service Call or Priority Dispatch'
+            : '$10.00 Off or Free Specialty Item on Next Visit'
+        );
+        setNfcFeaturedItemPrice(isContractorQuery ? 'Free Estimate' : '$12.99');
+
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: `📞 Here is the direct business phone directory and courier pickup launcher!\n\nCall the business directly to place your order, pay over the phone (or prepay Sean), and Sean will pick it up and deliver it:`,
-            suggestedBusinesses: matchingBiz.length > 0 ? matchingBiz : EFFINGHAM_AREA_BUSINESSES.slice(0, 3),
-            showCallAheadForm: true,
+            text: isContractorQuery
+              ? "🔨 **Free Contractor NFC Card Assistant:** Every registered contractor in Carroll County gets a **100% Free Custom NFC Card**!\n\nCustomize your card below to showcase your trade services & rates, give repeat clients Next-Visit / Referral points, and award Website Leaderboard XP on every tap:"
+              : "🎁 **Free Business & Restaurant NFC Card Assistant:** Every registered business gets a **100% Free Custom NFC Card**!\n\nCustomize your card right here to showcase your menu, give customers points toward their next visit, and award Website Leaderboard XP:",
+            showNfcCardBuilder: true,
             quickOptions: [
-              '🍔 PNB Eats: (603) 539-7440',
-              '🍕 Pizza Barn: (603) 539-2244',
-              '🛠️ Ace Hardware: (603) 539-2666',
-              '💨 Smoke World: (603) 539-7665',
-              '☕ Oasis Roastery: (508) 507-0305'
+              '🎨 Open Full NFC Customizer Studio (/custom-nfc)',
+              '🏪 Build Full Storefront (/create-storefront)',
+              '📞 Call or Text Sean (508-507-0305)'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 6. Direct Delivery / Sean Martin Dispatch Request
-      else if (lower.includes('deliver') || lower.includes('sean') || lower.includes('dispatch') || lower.includes('courier')) {
+      // 2. Call or Text Sean Directly
+      else if (lower.includes('508') || lower.includes('call') || lower.includes('text') || lower.includes('phone') || lower.includes('sean')) {
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "🚗 **Sean Martin** is on duty in Carroll County with his all-wheel-drive courier vehicle. You can order directly below, or call any local store to place an order for Sean to retrieve:",
+            text: "📞 **Direct Dispatch Line — Sean Martin:**\n\nYou can **Call or Text (508) 507-0305** anytime for:\n• Express takeout, grocery, or hardware pickup & delivery\n• Free physical NFC card drop-off & programming for your business or contracting trade\n• Dockside kiln-dried firewood delivery\n\nOr fill out the pickup dispatch form below:",
+            showCallAheadForm: true,
+            quickOptions: [
+              '🎁 Claim Free Business / Contractor NFC Card',
+              '🚚 Request Store Pickup & Delivery',
+              '🪵 Order Dockside Firewood ($8.50)'
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      // 3. Firewood / Lake Delivery
+      else if (lower.includes('firewood') || lower.includes('lake') || lower.includes('dock') || lower.includes('camp')) {
+        setCustomStoreName('Sean Martin Dockside Firewood');
+        setCallItemDescription('Kiln-Dried Hardwood Firewood Bundles ($8.50/bundle)');
+        setCallEstimatedCost('17.00');
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🪵 **Dockside & Campsite Firewood Delivery:** Sean Martin delivers certified pest-free kiln-dried hardwood bundles ($8.50/bundle) right to your lake dock, campsite, or driveway!\n\nEnter your delivery location below to dispatch Sean now:",
             showDeliveryForm: true,
-            showCallAheadForm: true,
             quickOptions: [
-              '📞 Call Store & Dispatch Pickup',
-              '🥩 Add Steak & Cheese Sub First',
-              '🍕 Add Smoked Pizza First',
-              '🛠️ Pick Up Ace Hardware Order'
+              '📞 Call or Text Sean (508-507-0305)',
+              '🚚 Request Store Pickup & Delivery',
+              '🎁 Claim Free Business / Contractor NFC Card'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 7. Food & Dining Inquiries
+      // 4. Store Pickup / Takeout / Hardware / Groceries
       else if (
-        lower.includes('food') || 
-        lower.includes('eat') || 
-        lower.includes('dinner') || 
-        lower.includes('lunch') || 
-        lower.includes('hungry') || 
-        lower.includes('pizza') || 
-        lower.includes('sub') || 
-        lower.includes('steak') || 
-        lower.includes('burger') || 
-        lower.includes('coffee') || 
-        lower.includes('trout') || 
-        lower.includes('wings') || 
-        lower.includes('bbq') || 
-        lower.includes('gluten') ||
-        lower.includes('seafood') ||
-        lower.includes('lobster') ||
-        lower.includes('beer') ||
-        lower.includes('pub')
+        lower.includes('pickup') ||
+        lower.includes('deliver') ||
+        lower.includes('food') ||
+        lower.includes('eat') ||
+        lower.includes('hardware') ||
+        lower.includes('grocery') ||
+        lower.includes('order')
       ) {
         const matches = findMatchingDishes(text);
-        const matchingBiz = findMatchingBusinesses(text);
-
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "Here are top recommended dishes and direct phone numbers for local kitchens in Carroll County. You can order online or call ahead for Sean to pick up:",
-            suggestedDishes: matches,
-            suggestedBusinesses: matchingBiz.slice(0, 2),
+            text: "🚚 **Any-Store Pickup & Courier Delivery:**\n\nOrder takeout, groceries, or hardware from **any local store in Carroll County** (pay the store by phone, prepay Sean via Cash App `$frijj555` / Venmo `@Sean-Martin-NH`, or pay cash on delivery), and dispatch Sean Martin below:",
+            suggestedDishes: matches.length > 0 ? matches : undefined,
+            showCallAheadForm: true,
             quickOptions: [
-              '🚀 Have Sean Deliver This',
-              '📞 Call Store to Place Order',
-              '🥩 Show me Steak & Cheese Subs',
-              '🍕 Show me Pizzas'
-            ],
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      } 
-      // 8. Firewood / Lake / Concierge
-      else if (lower.includes('firewood') || lower.includes('lake') || lower.includes('dock') || lower.includes('airbnb') || lower.includes('smores') || lower.includes('boat') || lower.includes('camp')) {
-        setMessages(prev => [
-          ...prev,
-          {
-            id: `ai-${Date.now()}`,
-            sender: 'ai',
-            text: "🌲 Visiting Lake Ossipee or Lake Winnipesaukee? Sean Martin delivers kiln-dried hardwood firewood bundles & deluxe s'mores kits directly to boat launches, lakeside firepits, and private docks in ~25-35 minutes!",
-            showDeliveryForm: true,
-            quickOptions: [
-              '🔥 Dispatch Firewood + S\'mores to Dock ($41.49)',
-              '📞 Call Freedom Village Store: (603) 539-7400',
-              '🌊 Check Lake Water Temperature'
+              '📞 Call or Text Sean (508-507-0305)',
+              '🎁 Claim Free Business / Contractor NFC Card',
+              '🪵 Order Dockside Firewood ($8.50)'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       }
-      // 9. Default
+      // 5. Default Helpful Assistant Response
       else {
-        const matches = findMatchingDishes('food');
-        const bizList = findMatchingBusinesses(text);
         setMessages(prev => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: `I can look up direct business phone numbers, help you order food, or dispatch driver Sean Martin to pick up pre-paid hardware, groceries, or meals. What are you looking for?`,
-            suggestedDishes: matches.slice(0, 2),
-            suggestedBusinesses: bizList.slice(0, 2),
+            text: "I can help you **customize your Free Business or Contractor NFC Card** (to showcase your menu/services & give customers Next-Visit Rewards + Leaderboard XP), or **dispatch courier Sean Martin** (`Call or Text (508) 507-0305`) for any store pickup or delivery! How can I help?",
             quickOptions: [
-              '🛠️ Ace Hardware & Tools',
-              '🍔 Order Hot Food & Takeout',
-              '🛒 Groceries & Market Pickup',
-              '💨 Smoke World Ossipee',
-              '🌲 Lake Concierge & Dockside Firewood'
+              '🎁 Claim Free Business / Contractor NFC Card',
+              '🔨 Setup Contractor NFC Card & Services',
+              '🚚 Request Store Pickup & Delivery',
+              '📞 Call or Text Sean (508-507-0305)'
             ],
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
@@ -509,10 +286,78 @@ export default function AiOrderConciergeWidget() {
 
       setIsTyping(false);
       playDeliveryChime();
-    }, 600);
+    }, 450);
   };
 
-  // Add a recommended dish to the cart
+  // In-Chat Free NFC Card Generator Handler
+  const handleCreateFreeNfcCardInChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanBizName = nfcBizName.trim() || (nfcRole === 'contractor' ? 'Carroll County Custom Contracting' : 'Local Carroll County Kitchen');
+    const featuredItem = nfcFeaturedItemName.trim() || (nfcRole === 'contractor' ? 'On-Site Estimate & Service Call' : 'House Signature Special');
+
+    const newCard = addCard({
+      cardName: `${cleanBizName} — Free Custom NFC Card`,
+      businessName: cleanBizName,
+      profileType: 'loyalty_rewards',
+      entityRole: nfcRole,
+      cardTheme: nfcRole === 'contractor' ? 'gold_foil' : 'matte_obsidian',
+      cardTagline: `Tap for ${cleanBizName} ${nfcRole === 'contractor' ? 'Services & Quotes' : 'Menu'}, Next-Visit Rewards & Leaderboard XP!`,
+      showcaseTitle: nfcRole === 'contractor' ? 'Featured Trade Services & Rates' : 'Featured Menu & Specials',
+      showcaseItems: [
+        {
+          id: `item-${Date.now()}`,
+          name: featuredItem,
+          description: nfcRole === 'contractor' ? 'Licensed local trade professional — call or text for scheduling.' : 'Freshly prepared local favorite.',
+          price: nfcFeaturedItemPrice || (nfcRole === 'contractor' ? 'Free Quote' : '$12.99'),
+          category: nfcRole === 'contractor' ? 'Service' : 'Menu',
+          badge: 'Featured'
+        }
+      ],
+      isFreeRegistrationCard: true,
+      hardwareFormFactor: 'pvc_card',
+      chipType: 'NTAG215',
+      contactPhone: nfcPhone.trim() || '(508) 507-0305',
+      googleReviewUrl: `https://www.google.com/search?q=${encodeURIComponent(`${cleanBizName} ${nfcTown}`)}`,
+      mode: 'smart_funnel',
+      thresholdStars: 4,
+      rewardProgramActive: true,
+      visitPointsPerTap: Number(nfcVisitPts) || 25,
+      nextVisitRewardGoal: 100,
+      nextVisitRewardTitle: nfcRewardPerk.trim() || '$10.00 Off Next Visit',
+      nextVisitPromoCode: `NEXT-${cleanBizName.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 5) || 'VIP'}`,
+      leaderboardXpPerTap: Number(nfcLeaderboardXp) || 50,
+      bonusReviewPoints: 25,
+      customHeadline: `How was your experience with ${cleanBizName}?`,
+      logoUrl: nfcEmoji || (nfcRole === 'contractor' ? '🔨' : '🏪'),
+      primaryColor: '#f59e0b',
+      assignedLocation: nfcTown,
+      active: true,
+      town: nfcTown
+    });
+
+    confetti({
+      particleCount: 95,
+      spread: 80,
+      origin: { y: 0.6 }
+    });
+    playDeliveryChime();
+
+    setMessages(prev => [
+      ...prev,
+      {
+        id: `ai-nfc-created-${Date.now()}`,
+        sender: 'ai',
+        text: `🎉 **Your Free Custom NFC Card for ${cleanBizName} is Live!**\n\nEvery tap showcases **${featuredItem}**, awards customers **+${newCard.visitPointsPerTap} Next-Visit Points** toward **"${newCard.nextVisitRewardTitle}"**, and gives them **+${newCard.leaderboardXpPerTap} Website Leaderboard XP**!`,
+        createdNfcCard: newCard,
+        quickOptions: [
+          '🚚 Request Store Pickup & Delivery',
+          '📞 Call or Text Sean (508-507-0305)'
+        ],
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  };
+
   const handleAddDishToCart = (dish: StorefrontProduct, store: MerchantStorefront) => {
     addToCart({
       id: `food-${dish.id}-${Date.now()}`,
@@ -532,34 +377,12 @@ export default function AiOrderConciergeWidget() {
       town: `${store.town}, ${store.state}`,
     });
 
-    confetti({
-      particleCount: 45,
-      spread: 60,
-      origin: { y: 0.8 }
-    });
-
     setAddedItemNotice(`Added "${dish.name}" to cart!`);
     playDeliveryChime();
     setTimeout(() => setAddedItemNotice(null), 3000);
-
-    setMessages(prev => [
-      ...prev,
-      {
-        id: `ai-added-${Date.now()}`,
-        sender: 'ai',
-        text: `✅ Added **${dish.name}** ($${dish.price.toFixed(2)}) to your order! Would you like **Sean Martin** to deliver this now, or add more items?`,
-        showDeliveryForm: true,
-        quickOptions: [
-          '🍕 Add a Pizza to Order',
-          '🥤 Add Beverages or Sides',
-          '🛒 View Shopping Cart'
-        ],
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
-    ]);
   };
 
-  // Standard Online Order Dispatch
+  // Standard Delivery Dispatch
   const handleConfirmDispatchSean = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsDispatching(true);
@@ -571,15 +394,9 @@ export default function AiOrderConciergeWidget() {
       quantity: c.quantity
     })) : [
       {
-        id: 'item-sub-pnb',
-        name: 'The Big Mountain Steak & Cheese Sub (12")',
-        price: 17.49,
-        quantity: 1
-      },
-      {
-        id: 'item-fries',
-        name: 'Hand-Cut Seasoned Fries (Basket)',
-        price: 4.99,
+        id: 'item-firewood',
+        name: 'Dockside Kiln-Dried Hardwood Firewood Bundle (2 Bundles)',
+        price: 17.00,
         quantity: 1
       }
     ];
@@ -591,16 +408,16 @@ export default function AiOrderConciergeWidget() {
 
     try {
       const newOrder = await placeDeliveryOrder({
-        customerName: custName,
-        customerPhone: custPhone,
-        deliveryAddress: custAddress,
+        customerName: custName || 'Local Customer',
+        customerPhone: custPhone || '(603) 555-0199',
+        deliveryAddress: custAddress || 'Effingham, NH',
         deliveryInstructions: custNotes,
         serviceType: 'standard_delivery',
         paymentMethod: custPayment,
         paymentStatus: custPayment === 'cash_on_delivery' ? 'pay_on_delivery' : 'pending_verification',
-        restaurantName: 'PNB Eats Roadside Grill & Local Kitchens',
-        restaurantAddress: 'Route 25, Carroll County, NH',
-        town: 'Carroll County / Freedom / Ossipee',
+        restaurantName: customStoreName || 'Sean Martin Direct Courier',
+        restaurantAddress: `${customStoreTown}, NH`,
+        town: customStoreTown,
         items: orderItems,
         subtotal,
         deliveryFee,
@@ -619,19 +436,14 @@ export default function AiOrderConciergeWidget() {
       sendManualSms(
         '(508) 507-0305',
         'Sean Martin',
-        'Oasis AI Dispatch',
-        `🚨 NEW AI BOT DELIVERY: Order #${newOrder.id} for ${custName} (${custPhone}) at ${custAddress}. Total: $${total.toFixed(2)}. Courier Sean assigned!`,
+        'Townraise AI Dispatch',
+        `🚨 NEW AI BOT DELIVERY: Order #${newOrder.id} for ${custName} (${custPhone}) at ${custAddress}. Total: $${total.toFixed(2)}.`,
         'Contractor Emergency Lead Instant Dispatch'
       );
 
       clearCart();
       setIsDispatching(false);
-
-      confetti({
-        particleCount: 80,
-        spread: 80,
-        origin: { y: 0.6 }
-      });
+      confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
       playDeliveryChime();
 
       setMessages(prev => [
@@ -642,9 +454,8 @@ export default function AiOrderConciergeWidget() {
           text: `🎉 **Order Confirmed!** Courier **Sean Martin** has been dispatched for immediate pickup and delivery!`,
           confirmedDeliveryOrder: newOrder,
           quickOptions: [
-            '📡 Track Sean on Live Radar',
-            '📞 Call Sean (508-507-0305)',
-            '🍔 Order Something Else'
+            '📞 Call or Text Sean (508-507-0305)',
+            '🎁 Claim Free Business / Contractor NFC Card'
           ],
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
@@ -655,7 +466,7 @@ export default function AiOrderConciergeWidget() {
     }
   };
 
-  // Call-Ahead & Prepay Store Pickup Dispatch
+  // Call-Ahead & Any-Store Pickup Dispatch
   const handleConfirmCallAheadPickup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsDispatching(true);
@@ -667,30 +478,31 @@ export default function AiOrderConciergeWidget() {
 
     const paymentMethod = callPickupType === 'prepay_sean' ? 'cash_app' : callPickupType === 'cash_delivery' ? 'cash_on_delivery' : 'card';
     const paymentStatus = callPickupType === 'paid_phone' ? 'prepaid' : 'pay_on_delivery';
+    const storeTitle = customStoreName.trim() || 'Local Carroll County Store';
 
     try {
       const newOrder = await placeDeliveryOrder({
-        customerName: custName,
-        customerPhone: custPhone,
-        deliveryAddress: custAddress,
-        deliveryInstructions: `[CALL-AHEAD PICKUP] Store: ${selectedCallBiz.name}. Order/Name: "${callPickupNameOrCode}". Notes: ${custNotes}`,
+        customerName: custName || 'Local Customer',
+        customerPhone: custPhone || '(603) 555-0199',
+        deliveryAddress: custAddress || 'Effingham, NH',
+        deliveryInstructions: `[CALL-AHEAD PICKUP] Store: ${storeTitle} (${customStoreTown}). Order/Name: "${callPickupNameOrCode}". Items: ${callItemDescription}`,
         serviceType: callPickupType === 'paid_phone' ? 'store_pickup' : 'prepaid_buy',
         paymentMethod,
         paymentStatus,
-        restaurantName: selectedCallBiz.name,
-        restaurantAddress: selectedCallBiz.address,
-        pickupStoreName: selectedCallBiz.name,
-        pickupStoreAddress: selectedCallBiz.address,
-        pickupOrderCode: callPickupNameOrCode,
+        restaurantName: storeTitle,
+        restaurantAddress: `${customStoreTown}, NH`,
+        pickupStoreName: storeTitle,
+        pickupStoreAddress: `${customStoreTown}, NH`,
+        pickupOrderCode: callPickupNameOrCode || 'Customer Pickup',
         estimatedItemCost: estCost,
-        town: selectedCallBiz.town,
+        town: customStoreTown,
         items: [
           {
             id: `pickup-${Date.now()}`,
-            name: `${selectedCallBiz.name} Call-In Pickup (${callItemDescription || 'Customer Order'})`,
+            name: `${storeTitle} Pickup (${callItemDescription || 'Customer Order'})`,
             price: estCost,
             quantity: 1,
-            notes: `Pickup Name/Code: "${callPickupNameOrCode}". Payment mode: ${callPickupType}`
+            notes: `Pickup Name/Code: "${callPickupNameOrCode}"`
           }
         ],
         subtotal: estCost,
@@ -707,22 +519,16 @@ export default function AiOrderConciergeWidget() {
         }
       });
 
-      // Send SMS alert to Sean Martin
       sendManualSms(
         '(508) 507-0305',
         'Sean Martin',
-        'Oasis Call-In Dispatch',
-        `🚨 NEW CALL-AHEAD PICKUP: Order #${newOrder.id} at ${selectedCallBiz.name} (${selectedCallBiz.phone || 'N/A'}) under "${callPickupNameOrCode}". Deliver to ${custAddress}. Mode: ${callPickupType}.`,
+        'Townraise Pickup Dispatch',
+        `🚨 NEW STORE PICKUP: Order #${newOrder.id} at ${storeTitle} (${customStoreTown}) under "${callPickupNameOrCode}". Deliver to ${custAddress}.`,
         'Contractor Emergency Lead Instant Dispatch'
       );
 
       setIsDispatching(false);
-
-      confetti({
-        particleCount: 80,
-        spread: 80,
-        origin: { y: 0.6 }
-      });
+      confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
       playDeliveryChime();
 
       setMessages(prev => [
@@ -730,12 +536,11 @@ export default function AiOrderConciergeWidget() {
         {
           id: `ai-pickup-dispatched-${Date.now()}`,
           sender: 'ai',
-          text: `🎉 **Pickup Dispatched to Sean Martin!** \n\nSean has received the alert to pick up your order at **${selectedCallBiz.name}** under name **"${callPickupNameOrCode}"** and deliver it directly to **${custAddress}**!`,
+          text: `🎉 **Pickup Dispatched to Sean Martin!**\n\nSean has received your request to pick up from **${storeTitle}** and deliver directly to **${custAddress || 'your location'}**!`,
           confirmedDeliveryOrder: newOrder,
           quickOptions: [
-            '📡 Track Sean on Live Radar',
-            '📞 Call Sean (508-507-0305)',
-            '🍔 Order Something Else'
+            '📞 Call or Text Sean (508-507-0305)',
+            '🎁 Claim Free Business / Contractor NFC Card'
           ],
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
@@ -758,7 +563,7 @@ export default function AiOrderConciergeWidget() {
             <div className="w-6 h-6 rounded-full bg-black/40 flex items-center justify-center">
               <Bot className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
             </div>
-            <span>AI Food & Call-In Courier Bot</span>
+            <span>AI Courier & Free NFC Assistant</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           </button>
         </div>
@@ -766,8 +571,8 @@ export default function AiOrderConciergeWidget() {
 
       {/* Expanded Interactive Chat Modal */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[95vw] sm:w-[460px] max-h-[680px] flex flex-col bg-[#0b0b14] border border-white/15 rounded-3xl shadow-2xl shadow-black/90 overflow-hidden animate-fadeIn backdrop-blur-xl">
-          
+        <div className="fixed bottom-6 right-6 z-50 w-[95vw] sm:w-[460px] max-h-[700px] flex flex-col bg-[#0b0b14] border border-white/15 rounded-3xl shadow-2xl shadow-black/90 overflow-hidden animate-fadeIn backdrop-blur-xl">
+
           {/* Header */}
           <div className="p-4 bg-gradient-to-r from-indigo-950/80 via-[#0e0e18] to-amber-950/60 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -776,16 +581,23 @@ export default function AiOrderConciergeWidget() {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs font-black uppercase text-white tracking-wide">Oasis AI Call & Courier Bot</h3>
+                  <h3 className="text-xs font-black uppercase text-white tracking-wide">AI Courier & Business Bot</h3>
                   <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
                     Sean On Duty
                   </span>
                 </div>
-                <p className="text-[10px] text-white/50">Call Any Store • Prepay or Pay Phone • Sean Delivers</p>
+                <p className="text-[10px] text-white/60">Call or Text (508) 507-0305 • Free Business NFC Cards</p>
               </div>
             </div>
 
             <div className="flex items-center gap-1">
+              <a
+                href="tel:5085070305"
+                className="p-2 text-emerald-400 hover:text-white rounded-xl hover:bg-white/5 transition-colors"
+                title="Call Sean (508) 507-0305"
+              >
+                <Phone className="w-4 h-4" />
+              </a>
               <Link
                 href="/cart"
                 className="p-2 text-white/60 hover:text-amber-400 rounded-xl hover:bg-white/5 transition-colors relative"
@@ -821,7 +633,7 @@ export default function AiOrderConciergeWidget() {
           )}
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[460px] text-xs">
+          <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[470px] text-xs">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -829,7 +641,7 @@ export default function AiOrderConciergeWidget() {
               >
                 {/* Bubble Text */}
                 <div
-                  className={`max-w-[94%] rounded-2xl p-3 leading-relaxed ${
+                  className={`max-w-[95%] rounded-2xl p-3.5 leading-relaxed ${
                     msg.sender === 'user'
                       ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-black font-semibold rounded-tr-sm shadow-md'
                       : 'bg-[#151522] text-white border border-white/10 rounded-tl-sm shadow-sm'
@@ -837,38 +649,193 @@ export default function AiOrderConciergeWidget() {
                 >
                   <p className="whitespace-pre-line">{msg.text}</p>
 
-                  {/* Suggested Business Phone Cards */}
-                  {msg.suggestedBusinesses && msg.suggestedBusinesses.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <span className="text-[10px] uppercase tracking-wider text-amber-300 font-bold block">
-                        📞 Direct Store Numbers (Tap to Call):
-                      </span>
-                      {msg.suggestedBusinesses.map((biz) => (
-                        <div
-                          key={biz.id}
-                          className="p-2.5 rounded-xl bg-[#0c0c16] border border-white/10 flex items-center justify-between gap-3 hover:border-amber-400/40 transition-all"
-                        >
-                          <div className="min-w-0">
-                            <div className="font-bold text-white text-xs truncate flex items-center gap-1.5">
-                              <span>{biz.logoEmoji}</span>
-                              <span>{biz.name}</span>
-                            </div>
-                            <p className="text-[10px] text-white/50 truncate">{biz.address}</p>
-                          </div>
+                  {/* Direct Call or Text Sean Action Bar */}
+                  {msg.sender === 'ai' && (
+                    <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap items-center gap-2">
+                      <a
+                        href="tel:5085070305"
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 font-black text-[10px] uppercase flex items-center gap-1"
+                      >
+                        <Phone className="w-3 h-3" />
+                        <span>Call (508) 507-0305</span>
+                      </a>
+                      <a
+                        href="sms:5085070305"
+                        className="px-2.5 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 font-black text-[10px] uppercase flex items-center gap-1"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        <span>Text (508) 507-0305</span>
+                      </a>
+                    </div>
+                  )}
 
-                          {biz.phone ? (
-                            <a
-                              href={`tel:${biz.phone.replace(/[^0-9]/g, '')}`}
-                              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-[11px] rounded-lg shadow-sm flex items-center gap-1.5 shrink-0 transition-all"
-                            >
-                              <PhoneCall className="w-3 h-3" />
-                              <span>{biz.phone}</span>
-                            </a>
-                          ) : (
-                            <span className="text-[10px] text-white/40">In-Store</span>
-                          )}
+                  {/* IN-CHAT FREE CUSTOM NFC CARD BUILDER FOR BUSINESSES & CONTRACTORS */}
+                  {msg.showNfcCardBuilder && !msg.createdNfcCard && (
+                    <form
+                      onSubmit={handleCreateFreeNfcCardInChat}
+                      className="mt-3 p-3.5 rounded-2xl bg-[#090910] border border-amber-400/40 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-black uppercase text-amber-400 flex items-center gap-1">
+                          <Gift className="w-3.5 h-3.5" /> Free Custom NFC Card Builder
+                        </span>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
+                          100% Free
+                        </span>
+                      </div>
+
+                      {/* Role Selector */}
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNfcRole('business');
+                            setNfcEmoji('🏪');
+                            setNfcRewardPerk('$10.00 Off or Free Specialty Item on Next Visit');
+                          }}
+                          className={`py-1.5 px-2 rounded-lg text-[10px] font-black uppercase border flex items-center justify-center gap-1 ${
+                            nfcRole === 'business'
+                              ? 'bg-amber-400 text-black border-amber-300'
+                              : 'bg-white/5 text-zinc-400 border-white/10'
+                          }`}
+                        >
+                          <Store className="w-3 h-3" />
+                          <span>Business / Menu</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNfcRole('contractor');
+                            setNfcEmoji('🔨');
+                            setNfcRewardPerk('$50.00 Off Next Service Call or Priority Dispatch');
+                          }}
+                          className={`py-1.5 px-2 rounded-lg text-[10px] font-black uppercase border flex items-center justify-center gap-1 ${
+                            nfcRole === 'contractor'
+                              ? 'bg-amber-400 text-black border-amber-300'
+                              : 'bg-white/5 text-zinc-400 border-white/10'
+                          }`}
+                        >
+                          <Hammer className="w-3 h-3" />
+                          <span>Contractor / Trade</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          required
+                          value={nfcBizName}
+                          onChange={(e) => setNfcBizName(e.target.value)}
+                          placeholder={nfcRole === 'contractor' ? 'Contractor / Trade Name *' : 'Restaurant / Business Name *'}
+                          className="w-full bg-[#141420] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                        />
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={nfcTown}
+                            onChange={(e) => setNfcTown(e.target.value)}
+                            placeholder="Town (e.g. Effingham, NH)"
+                            className="bg-[#141420] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                          />
+                          <input
+                            type="tel"
+                            value={nfcPhone}
+                            onChange={(e) => setNfcPhone(e.target.value)}
+                            placeholder="Call/Text Phone #"
+                            className="bg-[#141420] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
+                          />
                         </div>
-                      ))}
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <input
+                            type="text"
+                            value={nfcFeaturedItemName}
+                            onChange={(e) => setNfcFeaturedItemName(e.target.value)}
+                            placeholder={nfcRole === 'contractor' ? 'Featured Service (e.g. Deck Build)' : 'Featured Menu Dish'}
+                            className="col-span-2 bg-[#141420] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                          />
+                          <input
+                            type="text"
+                            value={nfcFeaturedItemPrice}
+                            onChange={(e) => setNfcFeaturedItemPrice(e.target.value)}
+                            placeholder="Price / Quote"
+                            className="bg-[#141420] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
+                          />
+                        </div>
+
+                        <input
+                          type="text"
+                          value={nfcRewardPerk}
+                          onChange={(e) => setNfcRewardPerk(e.target.value)}
+                          placeholder="Customer Next-Visit Reward Perk"
+                          className="w-full bg-[#141420] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                        />
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="p-2 rounded-lg bg-black/50 border border-white/10">
+                            <span className="text-[9px] text-amber-300 font-mono block">Next-Visit Pts / Tap</span>
+                            <input
+                              type="number"
+                              value={nfcVisitPts}
+                              onChange={(e) => setNfcVisitPts(parseInt(e.target.value, 10) || 25)}
+                              className="w-full bg-transparent text-xs font-mono font-black text-white focus:outline-none"
+                            />
+                          </div>
+                          <div className="p-2 rounded-lg bg-black/50 border border-white/10">
+                            <span className="text-[9px] text-indigo-300 font-mono block">Leaderboard XP / Tap</span>
+                            <input
+                              type="number"
+                              value={nfcLeaderboardXp}
+                              onChange={(e) => setNfcLeaderboardXp(parseInt(e.target.value, 10) || 50)}
+                              className="w-full bg-transparent text-xs font-mono font-black text-white focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 fill-black" />
+                        <span>Generate My Free Custom NFC Card</span>
+                      </button>
+                    </form>
+                  )}
+
+                  {/* CREATED FREE NFC CARD CONFIRMATION CARD */}
+                  {msg.createdNfcCard && (
+                    <div className="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-zinc-900 via-[#090910] to-black border-2 border-amber-400/50 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{msg.createdNfcCard.logoUrl || '🏪'}</span>
+                          <div>
+                            <div className="text-xs font-black uppercase text-white">{msg.createdNfcCard.businessName}</div>
+                            <div className="text-[10px] font-mono text-amber-300">
+                              +{msg.createdNfcCard.visitPointsPerTap} Visit Pts • +{msg.createdNfcCard.leaderboardXpPerTap} Leaderboard XP
+                            </div>
+                          </div>
+                        </div>
+                        <Wifi className="w-4 h-4 text-amber-400 rotate-90" />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link
+                          href={`/tap/${msg.createdNfcCard.id}`}
+                          onClick={() => setIsOpen(false)}
+                          className="py-2 px-3 rounded-xl bg-amber-400 text-black font-black text-[10px] uppercase text-center"
+                        >
+                          Test Customer Tap →
+                        </Link>
+                        <Link
+                          href={`/custom-nfc?cardId=${msg.createdNfcCard.id}`}
+                          onClick={() => setIsOpen(false)}
+                          className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] uppercase text-center"
+                        >
+                          Full Studio Editor
+                        </Link>
+                      </div>
                     </div>
                   )}
 
@@ -884,12 +851,12 @@ export default function AiOrderConciergeWidget() {
                             <div className="text-xs font-black text-white">Courier: Sean Martin</div>
                             <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              En Route to Pickup • Est ~20 mins
+                              Dispatched • Est ~20-30 mins
                             </div>
                           </div>
                         </div>
 
-                        <a 
+                        <a
                           href="tel:5085070305"
                           className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold flex items-center gap-1"
                         >
@@ -919,26 +886,19 @@ export default function AiOrderConciergeWidget() {
                           onClick={() => setIsOpen(false)}
                           className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-black font-black text-[11px] uppercase tracking-wider rounded-xl text-center shadow-lg"
                         >
-                          📡 View Live Radar
-                        </Link>
-                        <Link
-                          href="/driver"
-                          onClick={() => setIsOpen(false)}
-                          className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[11px] font-bold"
-                        >
-                          Driver Hub
+                          📡 Track Live Order
                         </Link>
                       </div>
                     </div>
                   )}
 
-                  {/* CALL-AHEAD & PREPAY STORE PICKUP FORM */}
+                  {/* CALL-AHEAD & ANY-STORE PICKUP FORM */}
                   {msg.showCallAheadForm && !msg.confirmedDeliveryOrder && (
                     <form onSubmit={handleConfirmCallAheadPickup} className="mt-3 p-3.5 rounded-2xl bg-[#090910] border border-emerald-500/40 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-emerald-400 font-black text-xs">
                           <PhoneCall className="w-4 h-4" />
-                          <span>Call & Courier Pickup Dispatch</span>
+                          <span>Any-Store Pickup & Delivery</span>
                         </div>
                         <span className="text-[9px] bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/20">
                           Sean Martin Courier
@@ -946,47 +906,48 @@ export default function AiOrderConciergeWidget() {
                       </div>
 
                       <div className="space-y-2.5">
-                        {/* Store Selector */}
-                        <div>
-                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Select Store to Pick Up From</label>
-                          <select
-                            value={callStoreId}
-                            onChange={(e) => setCallStoreId(e.target.value)}
-                            className="w-full bg-[#141420] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                          >
-                            {EFFINGHAM_AREA_BUSINESSES.map((biz) => (
-                              <option key={biz.id} value={biz.id}>
-                                {biz.logoEmoji} {biz.name} ({biz.town}) — {biz.phone || 'No phone listed'}
-                              </option>
-                            ))}
-                          </select>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Restaurant / Store Name *</label>
+                            <input
+                              type="text"
+                              required
+                              value={customStoreName}
+                              onChange={(e) => setCustomStoreName(e.target.value)}
+                              placeholder="e.g. Local Pizza / Hardware"
+                              className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Town</label>
+                            <input
+                              type="text"
+                              value={customStoreTown}
+                              onChange={(e) => setCustomStoreTown(e.target.value)}
+                              placeholder="Effingham / Ossipee"
+                              className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                            />
+                          </div>
                         </div>
 
-                        {/* Call Store Action Banner */}
-                        {selectedCallBiz.phone && (
-                          <div className="p-2.5 bg-indigo-950/40 border border-indigo-500/30 rounded-xl flex items-center justify-between text-xs">
-                            <div>
-                              <span className="text-[10px] text-indigo-300 font-bold block">1. Call {selectedCallBiz.name}:</span>
-                              <span className="text-white font-mono font-bold text-xs">{selectedCallBiz.phone}</span>
-                            </div>
-                            <a
-                              href={`tel:${selectedCallBiz.phone.replace(/[^0-9]/g, '')}`}
-                              className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-[10px] rounded-lg flex items-center gap-1 shadow-sm"
-                            >
-                              <PhoneCall className="w-3 h-3" />
-                              <span>Call Store Now</span>
-                            </a>
-                          </div>
-                        )}
-
-                        {/* Payment Strategy Choice */}
                         <div>
-                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-1">2. How are you paying for the items?</label>
+                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">What should Sean pick up?</label>
+                          <input
+                            type="text"
+                            value={callItemDescription}
+                            onChange={(e) => setCallItemDescription(e.target.value)}
+                            placeholder="e.g. 2 Large Pizzas, Hardware supplies, Groceries..."
+                            className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-1">How are you paying for the items?</label>
                           <div className="space-y-1.5">
                             {[
-                              { id: 'paid_phone', label: '💳 I Paid Store Over the Phone', desc: 'Pickup fee only ($4.99) — give Sean your name or order #' },
-                              { id: 'prepay_sean', label: '💚 Prepay Sean to Pay at Store', desc: 'Prepay items via Cash App ($frijj555) / Venmo (@Sean-Martin-NH)' },
-                              { id: 'cash_delivery', label: '💵 Cash on Delivery', desc: 'Hand cash to Sean for items + delivery at your door/dock' },
+                              { id: 'paid_phone', label: '💳 I Paid the Store Over the Phone', desc: 'Pickup fee only ($4.99) — give Sean your pickup name/order #' },
+                              { id: 'prepay_sean', label: '💚 Prepay Sean ($frijj555 / @Sean-Martin-NH)', desc: 'Sean buys the items at the register & delivers receipt' },
+                              { id: 'cash_delivery', label: '💵 Cash on Delivery', desc: 'Pay cash for items + delivery at your door/dock' },
                             ].map((opt) => (
                               <button
                                 type="button"
@@ -1005,88 +966,70 @@ export default function AiOrderConciergeWidget() {
                           </div>
                         </div>
 
-                        {/* Order Name / Code */}
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Pickup Name or Order #</label>
+                            <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Pickup Name / Order #</label>
                             <input
                               type="text"
                               required
                               value={callPickupNameOrCode}
                               onChange={(e) => setCallPickupNameOrCode(e.target.value)}
-                              placeholder="e.g. Sarah - Order #18"
+                              placeholder="e.g. Order under Alex"
                               className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
                             />
                           </div>
 
                           {callPickupType !== 'paid_phone' && (
                             <div>
-                              <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Estimated Item Cost ($)</label>
+                              <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Est. Item Cost ($)</label>
                               <input
                                 type="number"
                                 step="0.50"
                                 required
                                 value={callEstimatedCost}
                                 onChange={(e) => setCallEstimatedCost(e.target.value)}
-                                placeholder="25.00"
                                 className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white font-mono"
                               />
                             </div>
                           )}
                         </div>
 
-                        {/* Customer Location */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Your Name & Phone</label>
-                            <input
-                              type="text"
-                              required
-                              value={custName}
-                              onChange={(e) => setCustName(e.target.value)}
-                              placeholder="Your Name"
-                              className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white mb-1"
-                            />
-                            <input
-                              type="tel"
-                              required
-                              value={custPhone}
-                              onChange={(e) => setCustPhone(e.target.value)}
-                              placeholder="Your Phone #"
-                              className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Delivery Address / Dock / Cabin</label>
-                            <textarea
-                              rows={3}
-                              required
-                              value={custAddress}
-                              onChange={(e) => setCustAddress(e.target.value)}
-                              placeholder="e.g. Pine Cove Dock 3, Ossipee Lake"
-                              className="w-full bg-[#141420] border border-white/10 rounded-lg p-2 text-xs text-white"
-                            />
-                          </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            required
+                            value={custName}
+                            onChange={(e) => setCustName(e.target.value)}
+                            placeholder="Your Name *"
+                            className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                          />
+                          <input
+                            type="tel"
+                            required
+                            value={custPhone}
+                            onChange={(e) => setCustPhone(e.target.value)}
+                            placeholder="Your Phone # *"
+                            className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                          />
                         </div>
+
+                        <input
+                          type="text"
+                          required
+                          value={custAddress}
+                          onChange={(e) => setCustAddress(e.target.value)}
+                          placeholder="Delivery Address / Lake Dock / Job Site *"
+                          className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                        />
                       </div>
 
-                      {/* Submit Dispatch */}
                       <button
                         type="submit"
                         disabled={isDispatching}
                         className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
                       >
-                        {isDispatching ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Dispatching Sean...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>Dispatch Sean to Pick Up & Deliver</span>
-                          </>
-                        )}
+                        <Truck className="w-3.5 h-3.5" />
+                        <span>{isDispatching ? 'Dispatching Sean...' : 'Dispatch Sean to Pick Up & Deliver'}</span>
                       </button>
                     </form>
                   )}
@@ -1100,106 +1043,76 @@ export default function AiOrderConciergeWidget() {
                       </div>
 
                       <div className="space-y-2">
-                        <div>
-                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Your Name & Phone</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input
-                              type="text"
-                              required
-                              value={custName}
-                              onChange={(e) => setCustName(e.target.value)}
-                              placeholder="Your Name"
-                              className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
-                            />
-                            <input
-                              type="tel"
-                              required
-                              value={custPhone}
-                              onChange={(e) => setCustPhone(e.target.value)}
-                              placeholder="Phone #"
-                              className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Delivery Address / Dock / Firepit</label>
+                        <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
                             required
-                            value={custAddress}
-                            onChange={(e) => setCustAddress(e.target.value)}
-                            placeholder="e.g. Pine Cove Dock 3, Ossipee Lake"
-                            className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                            value={custName}
+                            onChange={(e) => setCustName(e.target.value)}
+                            placeholder="Your Name *"
+                            className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                          />
+                          <input
+                            type="tel"
+                            required
+                            value={custPhone}
+                            onChange={(e) => setCustPhone(e.target.value)}
+                            placeholder="Your Phone # *"
+                            className="bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
                           />
                         </div>
 
-                        <div>
-                          <label className="text-[9px] uppercase font-bold text-white/50 block mb-0.5">Payment Method</label>
-                          <select
-                            value={custPayment}
-                            onChange={(e) => setCustPayment(e.target.value as any)}
-                            className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
-                          >
-                            <option value="cash_on_delivery">💵 Cash on Delivery / Hand to Sean</option>
-                            <option value="cash_app">💚 Cash App ($frijj555)</option>
-                            <option value="venmo">💙 Venmo (@Sean-Martin-NH)</option>
-                            <option value="card">💳 Credit Card / Apple Pay</option>
-                          </select>
-                        </div>
+                        <input
+                          type="text"
+                          required
+                          value={custAddress}
+                          onChange={(e) => setCustAddress(e.target.value)}
+                          placeholder="Delivery Address / Dock / Campsite *"
+                          className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                        />
+
+                        <select
+                          value={custPayment}
+                          onChange={(e) => setCustPayment(e.target.value as any)}
+                          className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
+                        >
+                          <option value="cash_on_delivery">💵 Cash on Delivery / Hand to Sean</option>
+                          <option value="cash_app">💚 Cash App ($frijj555)</option>
+                          <option value="venmo">💙 Venmo (@Sean-Martin-NH)</option>
+                          <option value="card">💳 Credit Card / Apple Pay</option>
+                        </select>
                       </div>
 
                       <button
                         type="submit"
                         disabled={isDispatching}
-                        className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+                        className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2"
                       >
-                        {isDispatching ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Dispatching Sean...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>Confirm & Dispatch Sean Now</span>
-                          </>
-                        )}
+                        <Truck className="w-3.5 h-3.5" />
+                        <span>{isDispatching ? 'Dispatching...' : 'Confirm & Dispatch Sean Now'}</span>
                       </button>
                     </form>
                   )}
 
-                  {/* Interactive Food Recommendation Cards */}
+                  {/* Interactive Registered Storefront Dish Cards */}
                   {msg.suggestedDishes && msg.suggestedDishes.length > 0 && (
-                    <div className="mt-3 space-y-2.5">
+                    <div className="mt-3 space-y-2">
                       {msg.suggestedDishes.map(({ dish, store }) => (
                         <div
                           key={dish.id}
-                          className="p-2.5 rounded-xl bg-[#0c0c16] border border-white/10 flex items-center gap-3 hover:border-amber-400/40 transition-all"
+                          className="p-2.5 rounded-xl bg-[#0c0c16] border border-white/10 flex items-center justify-between gap-3"
                         >
-                          <img
-                            src={dish.imageUrl}
-                            alt={dish.name}
-                            className="w-14 h-14 rounded-lg object-cover shrink-0 border border-white/10"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-1">
-                              <h4 className="font-bold text-white text-[11px] truncate">{dish.name}</h4>
-                              <span className="font-black text-amber-400 text-xs shrink-0">${dish.price.toFixed(2)}</span>
-                            </div>
-                            <p className="text-[10px] text-white/50 truncate mt-0.5">{store.businessName} • {store.town}</p>
-                            
-                            <div className="mt-1.5 flex items-center justify-between">
-                              <span className="text-[9px] text-white/40 font-mono">{dish.calories || 'Chef Special'}</span>
-                              <button
-                                onClick={() => handleAddDishToCart(dish, store)}
-                                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase tracking-wider rounded-md shadow-sm transition-all flex items-center gap-1"
-                              >
-                                <Plus className="w-3 h-3" />
-                                <span>Add to Order</span>
-                              </button>
-                            </div>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-white text-[11px] truncate">{dish.name}</h4>
+                            <p className="text-[10px] text-white/50 truncate">{store.businessName} • ${dish.price.toFixed(2)}</p>
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => handleAddDishToCart(dish, store)}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase rounded-md shrink-0"
+                          >
+                            + Add
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -1208,11 +1121,11 @@ export default function AiOrderConciergeWidget() {
 
                 {/* Quick Interactive Reply Chips */}
                 {msg.quickOptions && (
-                  <div className="flex flex-wrap gap-1.5 mt-2 max-w-[94%]">
+                  <div className="flex flex-wrap gap-1.5 mt-2 max-w-[95%]">
                     {msg.quickOptions.map((opt, i) => (
                       <button
                         key={i}
-                        onClick={() => handleSendMessage(opt.replace(/^[^\w\s]+/, '').trim())}
+                        onClick={() => handleSendMessage(opt)}
                         className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-[10px] text-amber-300/90 hover:text-white transition-all text-left"
                       >
                         {opt}
@@ -1225,7 +1138,6 @@ export default function AiOrderConciergeWidget() {
               </div>
             ))}
 
-            {/* AI Typing Indicator */}
             {isTyping && (
               <div className="flex items-center gap-1.5 bg-[#151522] border border-white/10 rounded-2xl px-3 py-2 w-28 text-white/40">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce" />
@@ -1250,7 +1162,7 @@ export default function AiOrderConciergeWidget() {
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="Ask for business phone number, food, or courier pickup..."
+              placeholder="Ask about Free NFC Cards, store pickup, or courier..."
               className="flex-1 bg-[#161626] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-500/50"
             />
             <button
