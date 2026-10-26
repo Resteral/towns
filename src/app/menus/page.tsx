@@ -134,15 +134,21 @@ export default function DigitalMenusPage() {
               </div>
               <div className="space-y-0.5">
                 <h4 className="text-xs font-black uppercase text-white tracking-wide">
-                  Run a Restaurant, Cafe, or Food Truck?
+                  Run a Restaurant, Cafe, or Contracting Business?
                 </h4>
                 <p className="text-[11px] text-zinc-400">
-                  Launch your branded website & digital menu with dine-in table ordering and local courier delivery.
+                  Launch your branded website & digital menu AND get a <strong className="text-emerald-300">Free Custom NFC Card</strong> to showcase your menu & give customers Next-Visit Rewards!
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/custom-nfc"
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black text-[11px] font-black uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <span>Customize Free NFC Card</span>
+              </Link>
               <Link
                 href="/create-storefront"
                 className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-[11px] font-black uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap"

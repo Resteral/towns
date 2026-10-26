@@ -176,15 +176,66 @@ export default function EatsPage() {
           </div>
 
           {filteredStores.length === 0 ? (
-            <div className="text-center py-16 bg-white/[0.02] border border-white/5 rounded-3xl p-8 space-y-3">
-              <UtensilsCrossed className="w-10 h-10 text-zinc-600 mx-auto" />
-              <p className="text-sm font-bold text-zinc-400">No eateries match your selected filter or town.</p>
-              <button
-                onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}
-                className="text-xs text-amber-400 font-bold underline"
-              >
-                Reset All Filters
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Card 1: Order Pickup From Any Local Restaurant */}
+              <div className="p-8 rounded-3xl bg-gradient-to-br from-emerald-500/15 via-[#0d0d14] to-black border border-emerald-500/30 space-y-4 flex flex-col justify-between shadow-xl">
+                <div className="space-y-2">
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold uppercase">
+                    🚚 Order From Any Local Restaurant
+                  </span>
+                  <h3 className="text-2xl font-black italic uppercase text-white">
+                    Call-Ahead Takeout Pickup & Delivery
+                  </h3>
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    Want food from any local diner, pizzeria, or sub shop in Carroll County? Call in your order at the restaurant, then dispatch <strong className="text-white">Sean Martin</strong> to pick it up and deliver it hot to your door!
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <Link
+                    href="/courier"
+                    className="px-5 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2"
+                  >
+                    <Truck className="w-4 h-4" />
+                    <span>Book Courier Pickup</span>
+                  </Link>
+                  <a
+                    href="tel:5085070305"
+                    className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs"
+                  >
+                    Call or Text (508) 507-0305
+                  </a>
+                </div>
+              </div>
+
+              {/* Card 2: Restaurant Owners Free Storefront & Custom NFC Card */}
+              <div className="p-8 rounded-3xl bg-gradient-to-br from-amber-500/15 via-[#0d0d14] to-black border border-amber-500/30 space-y-4 flex flex-col justify-between shadow-xl">
+                <div className="space-y-2">
+                  <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold uppercase">
+                    🎁 0% Commission + Free Custom NFC Card
+                  </span>
+                  <h3 className="text-2xl font-black italic uppercase text-white">
+                    Own a Local Restaurant or Food Truck?
+                  </h3>
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    Launch your digital menu & delivery storefront in 60 seconds and claim your <strong className="text-amber-300">Free Custom NFC Card</strong> to showcase your menu, reward repeat diners with Next-Visit Points, and climb the Website Leaderboard!
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <Link
+                    href="/create-storefront"
+                    className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2"
+                  >
+                    <span>Launch Free Storefront</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/custom-nfc"
+                    className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-amber-300 font-bold text-xs"
+                  >
+                    Customize Free NFC Card →
+                  </Link>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

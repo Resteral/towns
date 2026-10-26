@@ -19,7 +19,7 @@ import { formatCurrency } from '@/lib/utils';
 
 export default function HomePage() {
   const router = useRouter();
-  const { products, cart, addToCart } = useNfcStore();
+  const { products, cart, addToCart, cards, storefronts } = useNfcStore();
   const [selectedCustomProduct, setSelectedCustomProduct] = useState<ReviewProduct | null>(null);
   const [selectedMarketplaceCategory, setSelectedMarketplaceCategory] = useState<string>('all');
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
@@ -434,211 +434,209 @@ export default function HomePage() {
 
         </section>
 
-        {/* 2. LIVE RADAR / OASIS PULSE */}
+        {/* 2. LIVE CUSTOM NFC REWARD CARDS & LEADERBOARD PULSE */}
         <section className="bg-gradient-to-b from-white/[0.03] to-white/[0.01] border border-white/10 rounded-[3rem] p-8 md:p-12 relative overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-indigo-400">
+              <div className="flex items-center gap-2 text-amber-400">
                 <Activity className="w-4 h-4 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Quantum Node Radar</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Free Custom NFC Card & Reward Network</span>
               </div>
               <h2 className="text-3xl font-black italic uppercase tracking-tight text-white">
-                Live Town Activity & Review Pulse
+                Showcase Your Menu, Give Next-Visit Rewards & Climb the Leaderboard
               </h2>
+              <p className="text-xs text-zinc-400 max-w-2xl">
+                Every registered business and contractor receives a <strong className="text-emerald-400">Free Custom NFC Card</strong>. Customers tap your card to view your menu or services, earn points toward their next visit, and gain Website Leaderboard XP!
+              </p>
             </div>
-            <Link
-              href="/dashboard"
-              className="text-xs font-bold text-amber-400 hover:text-white uppercase tracking-widest flex items-center gap-1.5 transition-colors"
-            >
-              Open Merchant Radar →
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/custom-nfc"
+                className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all"
+              >
+                <span>Customize Free NFC Card →</span>
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-indigo-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+              >
+                <span>View Leaderboard →</span>
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-black/40 border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-amber-400/40 transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-3xl">☕</span>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-400 text-[8px] font-mono font-bold uppercase border border-emerald-400/20">
-                  ● 98% 5-Star Flow
-                </span>
-              </div>
-              <h3 className="text-xl font-black italic text-white uppercase">Oasis Coffee Hub</h3>
-              <p className="text-xs text-zinc-400">Effingham Main Gateway</p>
-              <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
+            {cards.slice(0, 3).map((c) => (
+              <div
+                key={c.id}
+                className="bg-black/40 border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-amber-400/40 transition-all flex flex-col justify-between"
+              >
                 <div>
-                  <span className="text-2xl font-black italic text-amber-400">428</span>
-                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Orders & Visits</span>
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="text-3xl">{c.logoUrl || '🏪'}</span>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-400 text-[8px] font-mono font-bold uppercase border border-emerald-400/20">
+                      ● +{c.visitPointsPerTap || 25} Visit Pts / +{c.leaderboardXpPerTap || 50} XP
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black italic text-white uppercase">{c.businessName}</h3>
+                  <p className="text-xs text-zinc-400">{c.town || 'Carroll County, NH'}</p>
+                  <p className="text-[11px] text-amber-300/90 mt-2 line-clamp-2">
+                    🎁 Next-Visit Perk: {c.nextVisitRewardTitle || '$10.00 Off or Free Specialty Item on Next Visit'}
+                  </p>
                 </div>
-                <span className="text-[9px] font-mono text-emerald-400 font-bold">+46 Reviews this week</span>
-              </div>
-            </div>
 
-            <div className="bg-black/40 border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-indigo-400/40 transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-3xl">🏎️</span>
-                <span className="px-2.5 py-1 rounded-full bg-indigo-400/10 text-indigo-400 text-[8px] font-mono font-bold uppercase border border-indigo-400/20">
-                  ● Fast Transit
-                </span>
-              </div>
-              <h3 className="text-xl font-black italic text-white uppercase">Apex Automotive</h3>
-              <p className="text-xs text-zinc-400">Conway Performance Bay</p>
-              <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
-                <div>
-                  <span className="text-2xl font-black italic text-indigo-400">165</span>
-                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Service Check-Ins</span>
+                <div className="pt-5 mt-4 border-t border-white/5 flex items-center justify-between gap-2">
+                  <Link
+                    href={`/tap/${c.id}`}
+                    className="px-3.5 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 text-amber-300 text-[10px] font-mono font-bold uppercase"
+                  >
+                    Simulate Customer Tap →
+                  </Link>
+                  <Link
+                    href={`/custom-nfc?cardId=${c.id}`}
+                    className="text-[10px] font-mono text-zinc-400 hover:text-white underline"
+                  >
+                    Customize
+                  </Link>
                 </div>
-                <span className="text-[9px] font-mono text-indigo-300 font-bold">+29 Reviews this week</span>
               </div>
-            </div>
-
-            <div className="bg-black/40 border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-amber-400/40 transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-3xl">🍕</span>
-                <span className="px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-400 text-[8px] font-mono font-bold uppercase border border-amber-400/20">
-                  ● Peak Dining Flow
-                </span>
-              </div>
-              <h3 className="text-xl font-black italic text-white uppercase">Rustic Stone Hearth</h3>
-              <p className="text-xs text-zinc-400">Ossipee Mountain Hub</p>
-              <div className="pt-6 mt-4 border-t border-white/5 flex justify-between items-baseline">
-                <div>
-                  <span className="text-2xl font-black italic text-amber-400">312</span>
-                  <span className="text-[9px] font-mono text-zinc-500 ml-1.5 uppercase">Orders & Visits</span>
-                </div>
-                <span className="text-[9px] font-mono text-emerald-400 font-bold">+38 Reviews this week</span>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
-        {/* 2.5 OASIS EATS & DOORDASH RESTAURANT SHOWCASE */}
+        {/* 2.5 LOCAL COURIER PICKUP & REGISTERED STOREFRONTS */}
         <section className="bg-gradient-to-r from-amber-500/10 via-[#0b0b12] to-indigo-600/10 border border-amber-500/20 rounded-[3rem] p-8 md:p-12 relative overflow-hidden shadow-2xl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 border-b border-white/5 pb-6">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
                 <Truck className="w-3.5 h-3.5 animate-pulse" />
-                <span>DoorDash & UberEats Decentralized Network</span>
+                <span>Direct Local Delivery & Store Pickup Grid</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tight text-white">
-                Oasis <span className="text-amber-400">Eats</span> Local Delivery
+                Local <span className="text-amber-400">Courier Pickups</span> & Storefronts
               </h2>
-              <p className="text-xs text-zinc-400 max-w-lg">
-                Order directly from Effingham & Carroll County’s top restaurants, bakeries, and smokehouses with live GPS radar tracking.
+              <p className="text-xs text-zinc-400 max-w-xl">
+                Order from registered Carroll County storefronts or have Sean Martin pick up and deliver from any local restaurant, hardware store, or grocery counter.
               </p>
             </div>
-            <Link
-              href="/eats"
-              className="px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
-            >
-              <span>Explore All Menus (DoorDash Hub)</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/courier"
+                className="px-5 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-2"
+              >
+                <Truck className="w-4 h-4" />
+                <span>Request Custom Pickup</span>
+              </Link>
+              <Link
+                href="/create-storefront"
+                className="px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition-all shadow-xl shadow-amber-500/20 flex items-center gap-2"
+              >
+                <span>+ Add Your Business (Free NFC Card)</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Link
-              href="/eats"
-              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
-            >
-              <div className="h-32 rounded-xl overflow-hidden relative">
-                <img
-                  src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&auto=format&fit=crop&q=80"
-                  alt="PNB Eats Sub"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
-                  20-30 min
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1: Call-Ahead Pickup from Any Local Restaurant / Store */}
+            <div className="p-6 rounded-3xl bg-white/[0.03] border border-emerald-500/30 flex flex-col justify-between space-y-4">
+              <div className="space-y-2">
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-[9px] font-mono font-bold uppercase">
+                  🚚 Any Local Store or Takeout Counter
                 </span>
-              </div>
-              <div>
-                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
-                  PNB Eats Roadside Grill
+                <h4 className="text-lg font-black uppercase text-white">
+                  Call-Ahead Order Pickup & Delivery
                 </h4>
-                <p className="text-[11px] text-zinc-400 line-clamp-1">Steak & Cheese Subs, 16" Pizzas, Wings</p>
-                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
-                  <span>Effingham, NH</span>
-                  <span className="text-zinc-400">4.8 ★ (184)</span>
-                </div>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  Place your takeout or hardware order by phone at any local spot in Effingham, Ossipee, Freedom, or Wakefield — Sean Martin picks it up and delivers it right to your door.
+                </p>
               </div>
-            </Link>
+              <div className="pt-2 flex flex-wrap gap-2">
+                <Link
+                  href="/courier"
+                  className="px-4 py-2.5 rounded-xl bg-emerald-400 text-black font-black text-xs uppercase tracking-wider"
+                >
+                  Book Pickup Run →
+                </Link>
+                <a
+                  href="tel:5085070305"
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs"
+                >
+                  Call or Text (508) 507-0305
+                </a>
+              </div>
+            </div>
 
-            <Link
-              href="/eats"
-              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
-            >
-              <div className="h-32 rounded-xl overflow-hidden relative">
-                <img
-                  src="https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80"
-                  alt="Pizza Barn BBQ"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
-                  25-35 min
+            {/* Card 2: Free Custom NFC Card & Menu Studio for Businesses */}
+            <div className="p-6 rounded-3xl bg-white/[0.03] border border-amber-500/30 flex flex-col justify-between space-y-4">
+              <div className="space-y-2">
+                <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 text-[9px] font-mono font-bold uppercase">
+                  🎁 100% Free for Businesses & Contractors
                 </span>
-              </div>
-              <div>
-                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
-                  Pizza Barn & Smokehouse
+                <h4 className="text-lg font-black uppercase text-white">
+                  Claim Your Free Custom NFC Card
                 </h4>
-                <p className="text-[11px] text-zinc-400 line-clamp-1">Applewood Pulled Pork, Buffalo Pizza</p>
-                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
-                  <span>Ossipee, NH</span>
-                  <span className="text-zinc-400">4.9 ★ (312)</span>
-                </div>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  Register your restaurant, shop, or contracting trade and customize your Free NFC Card on the site to showcase your menu/services and reward customers with Next-Visit Points + Leaderboard XP.
+                </p>
               </div>
-            </Link>
+              <div className="pt-2">
+                <Link
+                  href="/custom-nfc"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-400 text-black font-black text-xs uppercase tracking-wider"
+                >
+                  <span>Customize Free NFC Card</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
 
-            <Link
-              href="/eats"
-              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
-            >
-              <div className="h-32 rounded-xl overflow-hidden relative">
-                <img
-                  src="https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=600&auto=format&fit=crop&q=80"
-                  alt="Oasis Cold Brew"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
-                  15-20 min
-                </span>
-              </div>
-              <div>
-                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
-                  Oasis Roastery & Bakehouse
-                </h4>
-                <p className="text-[11px] text-zinc-400 line-clamp-1">Nitro Cold Brew Growlers, Sourdough</p>
-                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
-                  <span>Effingham, NH</span>
-                  <span className="text-zinc-400">5.0 ★ (428)</span>
+            {/* Card 3: Either First Registered Storefront or Instant Storefront Builder */}
+            {storefronts.length > 0 ? (
+              <Link
+                href={`/site/${storefronts[0].slug}`}
+                className="p-6 rounded-3xl bg-white/[0.03] border border-indigo-500/30 flex flex-col justify-between space-y-4 hover:border-amber-400/50 transition-all"
+              >
+                <div className="space-y-2">
+                  <span className="px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 text-[9px] font-mono font-bold uppercase">
+                    {storefronts[0].logoEmoji} Featured Registered Storefront
+                  </span>
+                  <h4 className="text-lg font-black uppercase text-white">
+                    {storefronts[0].businessName}
+                  </h4>
+                  <p className="text-xs text-zinc-300 line-clamp-2">
+                    {storefronts[0].description}
+                  </p>
+                </div>
+                <div className="pt-2 text-xs font-black text-amber-400 uppercase flex items-center gap-1">
+                  <span>View Menu & Order Online</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </Link>
+            ) : (
+              <div className="p-6 rounded-3xl bg-white/[0.03] border border-indigo-500/30 flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <span className="px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 text-[9px] font-mono font-bold uppercase">
+                    ⚡ 0% Commission Storefronts
+                  </span>
+                  <h4 className="text-lg font-black uppercase text-white">
+                    Launch Your Online Menu in 60s
+                  </h4>
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    Build a standalone ordering page for your restaurant, farmstand, or trade service with zero platform commissions and automatic SMS order alerts.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <Link
+                    href="/create-storefront"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-black text-xs uppercase tracking-wider"
+                  >
+                    <span>Build My Storefront</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </div>
-            </Link>
-
-            <Link
-              href="/eats"
-              className="group p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-amber-400/30 transition-all space-y-3"
-            >
-              <div className="h-32 rounded-xl overflow-hidden relative">
-                <img
-                  src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80"
-                  alt="Freedom Village Scones"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-mono font-bold">
-                  15-25 min
-                </span>
-              </div>
-              <div>
-                <h4 className="font-black text-white text-sm uppercase group-hover:text-amber-400 transition-colors">
-                  Freedom Village Store
-                </h4>
-                <p className="text-[11px] text-zinc-400 line-clamp-1">Blueberry Scones, Maple Syrup, Pantry</p>
-                <div className="flex items-center justify-between pt-2 text-[10px] font-mono text-amber-400">
-                  <span>Freedom, NH</span>
-                  <span className="text-zinc-400">4.9 ★ (168)</span>
-                </div>
-              </div>
-            </Link>
+            )}
           </div>
         </section>
 
@@ -885,7 +883,7 @@ export default function HomePage() {
               </h2>
 
               <p className="text-sm text-zinc-300 leading-relaxed max-w-xl">
-                Need supplies picked up from Ace Hardware, items from Smoke World, dinner from Yankee Smokehouse BBQ, or a package delivered across town? Prepay online via Cash App, Venmo, or Zelle, or pay on delivery—Sean Martin handles the rest with live GPS tracking.
+                Need supplies picked up from a local hardware store, groceries, takeout from your favorite diner, or a package delivered across town? Prepay online via Cash App, Venmo, or Zelle, or pay on delivery—Sean Martin handles the rest with live GPS tracking.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">

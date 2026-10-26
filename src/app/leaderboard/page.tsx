@@ -311,11 +311,18 @@ export default function LeaderboardPage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
             <Link
+              href="/custom-nfc"
+              className="px-4 py-2 rounded-xl bg-emerald-400 text-black font-black text-xs uppercase tracking-wider hover:bg-emerald-300 transition-all flex items-center gap-1.5 shadow-lg shadow-emerald-400/20"
+            >
+              <Gift className="w-3.5 h-3.5" />
+              <span>Claim Free Custom NFC Card (Businesses & Contractors)</span>
+            </Link>
+            <Link
               href="/dashboard/programmer"
               className="px-4 py-2 rounded-xl bg-amber-400 text-black font-black text-xs uppercase tracking-wider hover:bg-amber-300 transition-all flex items-center gap-1.5 shadow-lg shadow-amber-400/20"
             >
               <Zap className="w-3.5 h-3.5 fill-black" />
-              <span>Program Business NFC Reward Cards</span>
+              <span>Program Physical NFC Cards</span>
             </Link>
             <Link
               href="/tap/card-sean-vcard"
