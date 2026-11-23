@@ -331,10 +331,14 @@ export default function TapRouterPage() {
         {/* Top Header: Business Logo & NFC Reward Program Badge */}
         <div className="text-center space-y-3">
           <div 
-            className="w-16 h-16 rounded-3xl mx-auto flex items-center justify-center text-3xl shadow-xl border border-white/10"
+            className="w-18 h-18 rounded-3xl mx-auto flex items-center justify-center text-3xl shadow-xl border border-white/10 overflow-hidden"
             style={{ backgroundColor: `${card.primaryColor || '#f59e0b'}25` }}
           >
-            {card.logoUrl || '🎁'}
+            {card.logoImageUrl ? (
+              <img src={card.logoImageUrl} alt={card.businessName} className="w-full h-full object-cover" />
+            ) : (
+              card.logoUrl || '🎁'
+            )}
           </div>
 
           <div className="space-y-1">
@@ -348,6 +352,40 @@ export default function TapRouterPage() {
             <p className="text-xs text-zinc-400 font-mono">
               {card.town || 'Carroll County, NH'} {card.assignedLocation ? `• ${card.assignedLocation}` : ''}
             </p>
+            {(card.contactWebsite || card.contactInstagram || card.contactFacebook) && (
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1.5">
+                {card.contactWebsite && (
+                  <a
+                    href={card.contactWebsite.startsWith('http') ? card.contactWebsite : `https://${card.contactWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-bold text-zinc-200"
+                  >
+                    🌐 Website
+                  </a>
+                )}
+                {card.contactInstagram && (
+                  <a
+                    href={card.contactInstagram.startsWith('http') ? card.contactInstagram : `https://instagram.com/${card.contactInstagram.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded-full bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-[10px] font-bold text-pink-300"
+                  >
+                    📸 Instagram
+                  </a>
+                )}
+                {card.contactFacebook && (
+                  <a
+                    href={card.contactFacebook.startsWith('http') ? card.contactFacebook : `https://facebook.com/${card.contactFacebook}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded-full bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-[10px] font-bold text-blue-300"
+                  >
+                    📘 Facebook
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

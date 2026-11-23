@@ -190,7 +190,10 @@ export interface NfcCardConfig {
 
   // Presentation & Operations
   entityRole?: 'business' | 'contractor';
-  cardTheme?: 'matte_obsidian' | 'gold_foil' | 'emerald_neon' | 'indigo_cyber' | 'crimson_velvet';
+  cardTheme?: 'matte_obsidian' | 'gold_foil' | 'emerald_neon' | 'indigo_cyber' | 'crimson_velvet' | 'brushed_titanium' | 'walnut_wood';
+  cardFontStyle?: 'modern_bold' | 'classic_serif' | 'clean_minimal' | 'tech_mono';
+  cardPattern?: 'none' | 'carbon_mesh' | 'radial_glow' | 'diagonal_stripes';
+  logoImageUrl?: string;
   cardTagline?: string;
   showcaseTitle?: string;
   showcaseItems?: {
