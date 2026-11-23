@@ -923,7 +923,7 @@ export default function FoodDeliveryDriverApp() {
                   <label className="text-[10px] font-mono uppercase text-zinc-400">Select Payout Method:</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { id: 'cash_app', label: 'Cash App', default: '$sean' },
+                      { id: 'cash_app', label: 'Cash App', default: '$serum37' },
                       { id: 'venmo', label: 'Venmo', default: '@sean' },
                       { id: 'bank', label: 'Direct Bank', default: 'Ending in ••42' },
                     ].map((m) => (

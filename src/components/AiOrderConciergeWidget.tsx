@@ -279,7 +279,7 @@ export default function AiOrderConciergeWidget() {
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
-            text: "🚚 **Any-Store Pickup & Courier Delivery:**\n\nOrder takeout, groceries, or hardware from **any local store in Carroll County** (pay the store by phone, prepay Sean via Cash App `$frijj555` / Venmo `@Sean-Martin-NH`, or pay cash on delivery), and dispatch Sean Martin below:",
+            text: "🚚 **Any-Store Pickup & Courier Delivery:**\n\nOrder takeout, groceries, or hardware from **any local store in Carroll County** (pay the store by phone, prepay Sean via Cash App `$serum37` / Venmo `@Sean-Martin-NH`, or pay cash on delivery), and dispatch Sean Martin below:",
             suggestedDishes: matches.length > 0 ? matches : undefined,
             showCallAheadForm: true,
             quickOptions: [
@@ -972,7 +972,7 @@ export default function AiOrderConciergeWidget() {
                           <div className="space-y-1.5">
                             {[
                               { id: 'paid_phone', label: '💳 I Paid the Store Over the Phone', desc: 'Pickup fee only ($4.99) — give Sean your pickup name/order #' },
-                              { id: 'prepay_sean', label: '💚 Prepay Sean ($frijj555 / @Sean-Martin-NH)', desc: 'Sean buys the items at the register & delivers receipt' },
+                              { id: 'prepay_sean', label: '💚 Prepay Sean ($serum37 / @Sean-Martin-NH)', desc: 'Sean buys the items at the register & delivers receipt' },
                               { id: 'cash_delivery', label: '💵 Cash on Delivery', desc: 'Pay cash for items + delivery at your door/dock' },
                             ].map((opt) => (
                               <button
@@ -1103,7 +1103,7 @@ export default function AiOrderConciergeWidget() {
                           className="w-full bg-[#141420] border border-white/10 rounded-lg px-2 py-1 text-xs text-white"
                         >
                           <option value="cash_on_delivery">💵 Cash on Delivery / Hand to Sean</option>
-                          <option value="cash_app">💚 Cash App ($frijj555)</option>
+                          <option value="cash_app">💚 Cash App ($serum37)</option>
                           <option value="venmo">💙 Venmo (@Sean-Martin-NH)</option>
                           <option value="card">💳 Credit Card / Apple Pay</option>
                         </select>

@@ -397,7 +397,7 @@ export default function DeliveryOrderPage() {
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {[
-                        { id: 'cash_app', name: 'Cash App', badge: '$frijj555', color: 'emerald' },
+                        { id: 'cash_app', name: 'Cash App', badge: '$serum37', color: 'emerald' },
                         { id: 'venmo', name: 'Venmo', badge: '@Sean-Martin-NH', color: 'cyan' },
                         { id: 'paypal', name: 'PayPal', badge: 'seanhse97@gmail.com', color: 'blue' },
                         { id: 'zelle', name: 'Zelle', badge: '508-507-0305', color: 'purple' },
@@ -464,18 +464,18 @@ export default function DeliveryOrderPage() {
                     {paymentMethod === 'cash_app' && (
                       <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-emerald-400">Cash App: $frijj555</span>
+                          <span className="text-xs font-black text-emerald-400">Cash App: $serum37</span>
                           <div className="flex gap-2">
                             <button
                               type="button"
-                              onClick={() => copyToClipboard('$frijj555')}
+                              onClick={() => copyToClipboard('$serum37')}
                               className="px-2 py-1 bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-300 text-[10px] font-mono rounded-lg transition-colors flex items-center gap-1"
                             >
                               {copiedHandle ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                               <span>{copiedHandle ? 'Copied' : 'Copy'}</span>
                             </button>
                             <a
-                              href={`https://cash.app/$frijj555/${total.toFixed(2)}`}
+                              href={`https://cash.app/$serum37/${total.toFixed(2)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2.5 py-1 bg-emerald-400 text-black text-[10px] font-black rounded-lg hover:bg-emerald-300 transition-colors flex items-center gap-1"

@@ -514,7 +514,7 @@ export default function CourierErrandsPage() {
                     {paymentMethod === 'cash_app' && <Check className="w-4 h-4 text-emerald-400" />}
                   </div>
                   <div className="font-black text-xs text-white">Cash App</div>
-                  <div className="text-[9px] font-mono text-emerald-400">$frijj555</div>
+                  <div className="text-[9px] font-mono text-emerald-400">$serum37</div>
                 </button>
 
                 {/* Venmo */}
@@ -630,7 +630,7 @@ export default function CourierErrandsPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleCopy('$frijj555', 'cashapp')}
+                      onClick={() => handleCopy('$serum37', 'cashapp')}
                       className="text-[10px] font-mono text-emerald-400 hover:underline flex items-center gap-1"
                     >
                       {copiedKey === 'cashapp' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -638,10 +638,10 @@ export default function CourierErrandsPage() {
                     </button>
                   </div>
                   <p className="text-[11px] text-zinc-300 leading-snug">
-                    Send <strong className="text-white">${total.toFixed(2)}</strong> to <strong className="text-emerald-400">$frijj555</strong> with note "{customerName || 'Courier Order'}".
+                    Send <strong className="text-white">${total.toFixed(2)}</strong> to <strong className="text-emerald-400">$serum37</strong> with note "{customerName || 'Courier Order'}".
                   </p>
                   <a
-                    href={`https://cash.app/$frijj555/${total.toFixed(2)}`}
+                    href={`https://cash.app/$serum37/${total.toFixed(2)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg"

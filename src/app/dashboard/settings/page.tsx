@@ -29,7 +29,7 @@ export default function NotificationSettingsPage() {
   // Merchant & Driver Payment Payout Handles
   const [paypalEmail, setPaypalEmail] = useState('seanhse97@gmail.com');
   const [paypalHandle, setPaypalHandle] = useState('paypal.me/seanhse97');
-  const [cashAppTag, setCashAppTag] = useState('$frijj555');
+  const [cashAppTag, setCashAppTag] = useState('$serum37');
   const [venmoHandle, setVenmoHandle] = useState('@Sean-Martin-NH');
   const [zellePhone, setZellePhone] = useState('(508) 507-0305');
 
@@ -273,7 +273,7 @@ export default function NotificationSettingsPage() {
                   type="text"
                   value={cashAppTag}
                   onChange={(e) => setCashAppTag(e.target.value)}
-                  placeholder="$frijj555"
+                  placeholder="$serum37"
                   className="w-full bg-black/40 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-400"
                 />
               </div>
