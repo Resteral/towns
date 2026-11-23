@@ -55,12 +55,18 @@ export default function HomePage() {
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Link
+              href="/shop"
+              className="px-6 py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-black font-black text-sm transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+            >
+              <span>🛒 Shop Groceries &amp; Stores</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
               href="/deals"
               className="px-6 py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-400 text-black font-black text-sm transition-all flex items-center gap-2 shadow-lg shadow-orange-500/20"
             >
               <Flame className="w-4 h-4" />
-              <span>Browse Local &amp; Penny Deals</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Local &amp; Penny Deals</span>
             </Link>
             <a
               href="tel:5085070305"

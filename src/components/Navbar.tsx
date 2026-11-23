@@ -79,6 +79,18 @@ export default function Navbar() {
           {/* Simple Primary Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
             <Link
+              href="/shop"
+              className={`px-3.5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 ${
+                pathname?.startsWith('/shop')
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                  : 'text-emerald-300 hover:bg-emerald-500/15'
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4 text-emerald-400" />
+              <span>Shop Groceries</span>
+            </Link>
+
+            <Link
               href="/deals"
               className={`px-3.5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 ${
                 pathname?.startsWith('/deals')
@@ -225,6 +237,19 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-[#08080e] border-t border-white/10 px-4 py-5 space-y-4">
             <div className="grid grid-cols-2 gap-2.5">
+              <Link
+                href="/shop"
+                className="col-span-2 p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-200 flex items-center justify-between font-bold text-sm"
+              >
+                <span className="flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                  Shop Groceries &amp; Local Stores
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-400 text-black font-black">
+                  Live API
+                </span>
+              </Link>
+
               <Link
                 href="/deals"
                 className="col-span-2 p-3.5 rounded-2xl bg-orange-500/15 border border-orange-500/35 text-orange-200 flex items-center justify-between font-bold text-sm"

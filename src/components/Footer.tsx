@@ -30,6 +30,11 @@ export default function Footer() {
               </div>
               <ul className="space-y-2 text-zinc-400">
                 <li>
+                  <Link href="/shop" className="text-emerald-400 font-bold hover:text-emerald-300">
+                    🛒 Shop Groceries (Live API)
+                  </Link>
+                </li>
+                <li>
                   <Link href="/deals" className="text-orange-400 font-bold hover:text-orange-300">
                     🪙 Local &amp; Penny Deals
                   </Link>
