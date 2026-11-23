@@ -192,16 +192,27 @@ export default function Navbar() {
               )}
             </Link>
 
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              className="px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-white flex items-center gap-1.5"
-              title="Sign In / Account"
-            >
-              <span>{currentUser?.avatar || '👤'}</span>
-              <span className="hidden sm:inline max-w-[70px] truncate">
-                {currentUser?.name.split(' ')[0] || 'Sign In'}
-              </span>
-            </button>
+            {currentUser ? (
+              <Link
+                href="/profile"
+                className="px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-white flex items-center gap-1.5"
+                title="View My Profile"
+              >
+                <span>{currentUser.avatar || '👤'}</span>
+                <span className="hidden sm:inline max-w-[70px] truncate">
+                  {currentUser.name.split(' ')[0]}
+                </span>
+              </Link>
+            ) : (
+              <button
+                onClick={() => setIsAuthOpen(true)}
+                className="px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-white flex items-center gap-1.5"
+                title="Sign In / Account"
+              >
+                <span>👤</span>
+                <span className="hidden sm:inline">Sign In</span>
+              </button>
+            )}
 
             <Link
               href="/dashboard"
