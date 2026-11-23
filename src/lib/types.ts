@@ -407,6 +407,8 @@ export interface NotificationSettings {
   telegramChatId?: string;
   enableDiscord: boolean;
   discordWebhookUrl?: string;
+  enableNtfy?: boolean;
+  ntfyTopic?: string;
   enableSoundChime: boolean;
 }
 

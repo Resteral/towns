@@ -26,6 +26,8 @@ export async function POST(req: Request) {
       telegramChatId: settings?.telegramChatId || process.env.TELEGRAM_CHAT_ID,
       enableDiscord: settings?.enableDiscord || !!(settings?.discordWebhookUrl || process.env.DISCORD_WEBHOOK_URL),
       discordWebhookUrl: settings?.discordWebhookUrl || process.env.DISCORD_WEBHOOK_URL,
+      enableNtfy: settings?.enableNtfy ?? true,
+      ntfyTopic: settings?.ntfyTopic || process.env.NTFY_TOPIC || 'townraise-sean-0305',
       enableSoundChime: settings?.enableSoundChime ?? true,
     };
 

@@ -8,6 +8,41 @@ export async function sendOrderPhoneNotification(
   const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.deliveryAddress)}`;
   const itemsText = order.items.map(item => `• ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toFixed(2)})`).join('\n');
 
+  // 0. Free Instant Phone Push Notification via ntfy (iOS & Android App)
+  const ntfyTopic = (settings.ntfyTopic || process.env.NTFY_TOPIC || '').trim();
+  if (settings.enableNtfy !== false && ntfyTopic) {
+    try {
+      const storeLabel = order.pickupStoreName || order.restaurantName || 'Local Pickup';
+      const pushBody = [
+        `Store: ${storeLabel}`,
+        `Customer: ${order.customerName} (${order.customerPhone})`,
+        `Address: ${order.deliveryAddress}`,
+        `Items:\n${itemsText}`,
+        order.deliveryInstructions ? `Notes: ${order.deliveryInstructions}` : '',
+        `Total: $${order.total.toFixed(2)}`,
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      const ntfyRes = await fetch(`https://ntfy.sh/${encodeURIComponent(ntfyTopic)}`, {
+        method: 'POST',
+        headers: {
+          'Title': `New Townraise Order #${order.orderNumber} ($${order.total.toFixed(2)})`,
+          'Priority': 'high',
+          'Tags': 'truck,moneybag',
+          'Click': mapLink,
+        },
+        body: pushBody,
+      });
+
+      if (ntfyRes.ok) {
+        channels.push(`Phone Push (ntfy: ${ntfyTopic})`);
+      }
+    } catch (e) {
+      console.error('ntfy push notification failed', e);
+    }
+  }
+
   // 1. WhatsApp Instant Relay (via CallMeBot or Twilio WhatsApp)
   if (settings.enableWhatsApp) {
     const waPhone = (settings.whatsappPhone || settings.phoneNumber || process.env.COURIER_DISPATCH_PHONE || '15085070305').replace(/[^0-9]/g, '');

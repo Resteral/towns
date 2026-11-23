@@ -24,6 +24,8 @@ export default function NotificationSettingsPage() {
   const [telegramChatId, setTelegramChatId] = useState(notificationSettings.telegramChatId || '');
   const [enableDiscord, setEnableDiscord] = useState(notificationSettings.enableDiscord ?? false);
   const [discordWebhook, setDiscordWebhook] = useState(notificationSettings.discordWebhookUrl || '');
+  const [enableNtfy, setEnableNtfy] = useState(notificationSettings.enableNtfy ?? true);
+  const [ntfyTopic, setNtfyTopic] = useState(notificationSettings.ntfyTopic || 'townraise-sean-0305');
   const [enableSound, setEnableSound] = useState(notificationSettings.enableSoundChime ?? true);
 
   // Merchant & Driver Payment Payout Handles
@@ -80,6 +82,8 @@ export default function NotificationSettingsPage() {
       telegramChatId,
       enableDiscord,
       discordWebhookUrl: discordWebhook,
+      enableNtfy,
+      ntfyTopic,
       enableSoundChime: enableSound,
     });
     setSavedNotice(true);
@@ -186,6 +190,60 @@ export default function NotificationSettingsPage() {
       )}
 
       <form onSubmit={handleSaveSettings} className="space-y-8">
+
+        {/* Method 0: Free Instant Phone Push Notifications (ntfy App — No SMS Fees!) */}
+        <div className="bg-gradient-to-br from-emerald-500/10 via-[#0e0e14] to-[#0a0a10] border border-emerald-500/35 rounded-3xl p-6 md:p-8 space-y-4">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-400/15 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <Bell className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-lg font-black italic text-white uppercase">
+                    Instant Phone Push Notifications (Free)
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[10px] font-bold uppercase">
+                    Replaces SMS • 100% Free
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-300 mt-0.5">
+                  Get instant lock-screen push notifications on iPhone or Android whenever an order is placed — no Twilio or SMS fees.
+                </p>
+              </div>
+            </div>
+
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={enableNtfy}
+                onChange={(e) => setEnableNtfy(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-400"></div>
+            </label>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-xs text-zinc-300 space-y-1">
+            <div className="font-bold text-emerald-300">30-Second Setup on Your Phone:</div>
+            <p>1. Install the free <strong>ntfy</strong> app on iPhone (App Store) or Android (Google Play).</p>
+            <p>2. Tap <strong>+</strong> and subscribe to your private topic name below (e.g. <code className="text-amber-300">{ntfyTopic}</code>).</p>
+            <p>3. Click <strong>&quot;Test Send to My Phone&quot;</strong> above — your phone will ring immediately!</p>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-mono uppercase text-emerald-300 mb-1.5 block">
+              Your Private ntfy Push Topic Name
+            </label>
+            <input
+              type="text"
+              value={ntfyTopic}
+              onChange={(e) => setNtfyTopic(e.target.value)}
+              placeholder="townraise-sean-0305"
+              className="w-full bg-white/5 border border-emerald-500/30 rounded-xl px-4 py-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-400 font-mono"
+            />
+          </div>
+        </div>
         
         {/* Method 1: Primary Mobile Phone (SMS & Driver Contact) */}
         <div className="bg-[#0e0e14] border border-white/10 rounded-3xl p-6 md:p-8 space-y-4">
