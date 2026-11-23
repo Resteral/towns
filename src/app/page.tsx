@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useNfcStore } from '@/lib/store';
 import { loadLocalDeals, LocalShoppingDeal } from '@/lib/deals-data';
+import { QuickDeliveryMessageForm } from '@/components/QuickDeliveryMessage';
 import {
   ArrowRight,
   Flame,
@@ -291,36 +292,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. SIMPLE COURIER & AI ASSISTANT BANNER */}
-      <section className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-[#0d0d14] to-amber-950/30 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400">
+      {/* 4. INSTANT DELIVERY MESSAGE TO SEAN (PUSH NOTIFICATION TO PHONE) */}
+      <section className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-950/40 via-[#0d0d14] to-amber-950/20 border border-emerald-500/30 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="lg:col-span-5 space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-xs font-bold text-emerald-300">
             <Truck className="w-4 h-4" />
-            <span>Sean Martin 4x4 Local Courier</span>
+            <span>Sean Martin 4x4 Local Delivery</span>
           </div>
-          <h2 className="text-2xl font-black text-white">
-            Need Groceries, Hardware, or Takeout Delivered?
+          <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+            Message Sean for Fast Local Delivery
           </h2>
-          <p className="text-sm text-zinc-300">
-            Order ahead at any local store — including Hannaford, Home Depot, Tractor Supply, or your favorite takeout spot — and Sean will pick it up and deliver it right to your door.
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            Need groceries, Home Depot / hardware supplies, or takeout picked up and dropped off? Send a quick message here — it rings Sean&apos;s phone immediately with a push notification.
           </p>
+          <div className="flex flex-wrap gap-2.5 pt-1">
+            <Link
+              href="/courier"
+              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-1.5"
+            >
+              <span>Full Courier Booking</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/ai-concierge"
+              className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-200 font-bold text-xs flex items-center gap-1.5"
+            >
+              <Bot className="w-3.5 h-3.5 text-cyan-400" />
+              <span>AI Helper</span>
+            </Link>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3 shrink-0">
-          <Link
-            href="/courier"
-            className="px-5 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-bold text-sm flex items-center gap-2"
-          >
-            <Truck className="w-4 h-4" />
-            <span>Book Pickup</span>
-          </Link>
-          <Link
-            href="/ai-concierge"
-            className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-sm flex items-center gap-2"
-          >
-            <Bot className="w-4 h-4 text-cyan-400" />
-            <span>Ask AI Helper</span>
-          </Link>
+        <div className="lg:col-span-7 p-5 rounded-2xl bg-black/40 border border-white/10">
+          <QuickDeliveryMessageForm />
         </div>
       </section>
 
