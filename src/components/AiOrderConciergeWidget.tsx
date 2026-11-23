@@ -100,10 +100,9 @@ export default function AiOrderConciergeWidget() {
       sender: 'ai',
       text: "👋 Hi! I'm your **Carroll County AI Courier & Business Assistant**.\n\n• **For Businesses & Contractors:** I can help you claim & customize your **100% Free Custom NFC Card** to showcase your menu or trade services, reward customers with Next-Visit Points, and boost Website Leaderboard XP!\n• **For Customers:** I can dispatch **Sean Martin** (`Call or Text (508) 507-0305`) to pick up takeout, groceries, hardware, or dockside firewood from any local spot!",
       quickOptions: [
+        '🪙 Home Depot Penny Deals ($0.01) & Local Deals',
         '🎁 Claim Free Business / Contractor NFC Card',
-        '🔨 Setup Contractor NFC Card & Services',
         '🚚 Request Store Pickup & Delivery',
-        '🪵 Order Dockside Firewood ($8.50)',
         '📞 Call or Text Sean (508-507-0305)'
       ],
       timestamp: 'Just now'
@@ -157,6 +156,33 @@ export default function AiOrderConciergeWidget() {
 
     setTimeout(() => {
       const lower = text.toLowerCase();
+
+      // 0. Local Shopping Deals & Home Depot Penny Deals
+      if (
+        lower.includes('penny') ||
+        lower.includes('home depot') ||
+        lower.includes('deal') ||
+        lower.includes('clearance') ||
+        lower.includes('sale') ||
+        lower.includes('coupon')
+      ) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `ai-${Date.now()}`,
+            sender: 'ai',
+            text: "🪙 **Home Depot $0.01 Penny Deals & Local Shopping Deals!**\n\nWe track **North Conway & Rochester Home Depot $0.01 penny SKUs**, `.03` & `.06` clearance drops, plus weekly deals at **Hannaford, Tractor Supply, Walmart North Conway, and Settlers Green**!\n\n👉 Head to our **Deals & Penny Finds Hub** (`/deals`) to copy 10-digit SKUs, check aisle/overhead bay tips, or post a deal you spotted.\n\nNeed Sean Martin to pick up hardware or groceries? Call or Text `(508) 507-0305` or tap **Request Store Pickup** below!",
+            quickOptions: [
+              '🚚 Request Store Pickup & Delivery',
+              '📞 Call or Text Sean (508-507-0305)',
+              '🎁 Claim Free Business / Contractor NFC Card'
+            ],
+            timestamp: 'Just now'
+          }
+        ]);
+        setIsTyping(false);
+        return;
+      }
 
       // 1. Free Custom NFC Card / Business / Contractor / Menu & Rewards Assistant
       if (
