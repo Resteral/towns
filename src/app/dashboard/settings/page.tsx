@@ -30,7 +30,7 @@ export default function NotificationSettingsPage() {
   const [paypalEmail, setPaypalEmail] = useState('seanhse97@gmail.com');
   const [paypalHandle, setPaypalHandle] = useState('paypal.me/seanhse97');
   const [cashAppTag, setCashAppTag] = useState('$serum37');
-  const [venmoHandle, setVenmoHandle] = useState('@Sean-Martin-NH');
+  const [venmoHandle, setVenmoHandle] = useState('@seanstax');
   const [zellePhone, setZellePhone] = useState('(508) 507-0305');
 
   // Load custom payment accounts from localStorage on mount
@@ -291,7 +291,7 @@ export default function NotificationSettingsPage() {
                   type="text"
                   value={venmoHandle}
                   onChange={(e) => setVenmoHandle(e.target.value)}
-                  placeholder="@Sean-Martin-NH"
+                  placeholder="@seanstax"
                   className="w-full bg-black/40 border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-400"
                 />
               </div>

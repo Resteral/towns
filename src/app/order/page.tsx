@@ -398,7 +398,7 @@ export default function DeliveryOrderPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {[
                         { id: 'cash_app', name: 'Cash App', badge: '$serum37', color: 'emerald' },
-                        { id: 'venmo', name: 'Venmo', badge: '@Sean-Martin-NH', color: 'cyan' },
+                        { id: 'venmo', name: 'Venmo', badge: '@seanstax', color: 'cyan' },
                         { id: 'paypal', name: 'PayPal', badge: 'seanhse97@gmail.com', color: 'blue' },
                         { id: 'zelle', name: 'Zelle', badge: '508-507-0305', color: 'purple' },
                         { id: 'card', name: 'Card / Apple Pay', badge: 'Online Reader', color: 'amber' },
@@ -498,18 +498,18 @@ export default function DeliveryOrderPage() {
                   {paymentMethod === 'venmo' && (
                     <div className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-cyan-400">Venmo: @Sean-Martin-NH</span>
+                        <span className="text-xs font-black text-cyan-400">Venmo: @seanstax</span>
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            onClick={() => copyToClipboard('@Sean-Martin-NH')}
+                            onClick={() => copyToClipboard('@seanstax')}
                             className="px-2 py-1 bg-cyan-400/20 hover:bg-cyan-400/30 text-cyan-300 text-[10px] font-mono rounded-lg transition-colors flex items-center gap-1"
                           >
                             {copiedHandle ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                             <span>{copiedHandle ? 'Copied' : 'Copy'}</span>
                           </button>
                           <a
-                            href={`https://venmo.com/Sean-Martin-NH?txn=pay&amount=${total.toFixed(2)}&note=Oasis%20Delivery%20Order`}
+                            href={`https://venmo.com/seanstax?txn=pay&amount=${total.toFixed(2)}&note=Townraise%20Delivery%20Order`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-2.5 py-1 bg-cyan-400 text-black text-[10px] font-black rounded-lg hover:bg-cyan-300 transition-colors flex items-center gap-1"

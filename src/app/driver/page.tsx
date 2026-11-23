@@ -924,7 +924,7 @@ export default function FoodDeliveryDriverApp() {
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { id: 'cash_app', label: 'Cash App', default: '$serum37' },
-                      { id: 'venmo', label: 'Venmo', default: '@sean' },
+                      { id: 'venmo', label: 'Venmo', default: '@seanstax' },
                       { id: 'bank', label: 'Direct Bank', default: 'Ending in ••42' },
                     ].map((m) => (
                       <button

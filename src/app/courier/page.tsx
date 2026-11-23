@@ -532,7 +532,7 @@ export default function CourierErrandsPage() {
                     {paymentMethod === 'venmo' && <Check className="w-4 h-4 text-blue-400" />}
                   </div>
                   <div className="font-black text-xs text-white">Venmo</div>
-                  <div className="text-[9px] font-mono text-blue-300">@Sean-Martin-NH</div>
+                  <div className="text-[9px] font-mono text-blue-300">@seanstax</div>
                 </button>
 
                 {/* PayPal */}
@@ -660,7 +660,7 @@ export default function CourierErrandsPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleCopy('@Sean-Martin-NH', 'venmo')}
+                      onClick={() => handleCopy('@seanstax', 'venmo')}
                       className="text-[10px] font-mono text-blue-400 hover:underline flex items-center gap-1"
                     >
                       {copiedKey === 'venmo' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -668,7 +668,7 @@ export default function CourierErrandsPage() {
                     </button>
                   </div>
                   <p className="text-[11px] text-zinc-300 leading-snug">
-                    Send <strong className="text-white">${total.toFixed(2)}</strong> to <strong className="text-blue-300">@Sean-Martin-NH</strong> on Venmo.
+                    Send <strong className="text-white">${total.toFixed(2)}</strong> to <strong className="text-blue-300">@seanstax</strong> on Venmo.
                   </p>
                 </div>
               )}

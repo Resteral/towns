@@ -220,7 +220,7 @@ export default function InstacartStyleShopPage() {
       .map((c) => `• ${c.qty}x ${c.product.brand} ${c.product.name} (~$${c.product.estimatedPrice.toFixed(2)})`)
       .join('\n');
 
-    const smsBody = `Hi Sean! New Townraise Shop Order #${order.orderNumber}\nStore: ${selectedStore.name}\nItems:\n${itemLines}\nEst. Total (w/ $9.99 delivery): $${grandTotal.toFixed(2)}\nPayment: ${paymentMethod === 'cash_app' ? 'Cash App ($serum37)' : paymentMethod === 'venmo' ? 'Venmo (@Sean-Martin-NH)' : 'Cash on Delivery'}\nSubs: ${substitutionPref}\nDeliver to: ${customerName.trim()}, ${deliveryAddress.trim()}, ${town}\nPhone: ${customerPhone.trim()}`;
+    const smsBody = `Hi Sean! New Townraise Shop Order #${order.orderNumber}\nStore: ${selectedStore.name}\nItems:\n${itemLines}\nEst. Total (w/ $9.99 delivery): $${grandTotal.toFixed(2)}\nPayment: ${paymentMethod === 'cash_app' ? 'Cash App ($serum37)' : paymentMethod === 'venmo' ? 'Venmo (@seanstax)' : 'Cash on Delivery'}\nSubs: ${substitutionPref}\nDeliver to: ${customerName.trim()}, ${deliveryAddress.trim()}, ${town}\nPhone: ${customerPhone.trim()}`;
 
     setCompletedOrder({
       orderNumber: order.orderNumber,
@@ -308,6 +308,16 @@ export default function InstacartStyleShopPage() {
               className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-emerald-400/40 text-emerald-300 font-bold text-xs flex items-center gap-2"
             >
               <span>Pay via Cash App ($serum37)</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            <a
+              href={`https://venmo.com/seanstax?txn=pay&amount=${completedOrder.total.toFixed(2)}&note=Townraise%20Order%20${completedOrder.orderNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-cyan-400/40 text-cyan-300 font-bold text-xs flex items-center gap-2"
+            >
+              <span>Pay via Venmo (@seanstax)</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -684,7 +694,7 @@ export default function InstacartStyleShopPage() {
                   className="w-full px-3 py-2 rounded-xl bg-black/50 border border-emerald-500/30 text-xs text-white outline-none"
                 >
                   <option value="cash_app">💚 Cash App ($serum37)</option>
-                  <option value="venmo">💙 Venmo (@Sean-Martin-NH)</option>
+                  <option value="venmo">💙 Venmo (@seanstax)</option>
                   <option value="cash_on_delivery">💵 Cash on Delivery</option>
                 </select>
 
